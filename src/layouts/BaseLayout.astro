@@ -1,6 +1,7 @@
 ---
 import JsonLd from "@/components/seo/JsonLd.astro";
 import { NAV_LINKS, SEO_DEFAULTS, SITE, SOCIAL_LINKS } from "@/config/site";
+import Analytics from "@vercel/analytics/astro";
 import "@/styles/global.css";
 
 interface Props {
@@ -135,5 +136,6 @@ const currentPath = normalizePath(Astro.url.pathname);
         </div>
       </footer>
     </div>
+    <Analytics />
   </body>
 </html>

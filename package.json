@@ -1,5 +1,5 @@
 {
-  "name": "ege-site",
+  "name": "www",
   "type": "module",
   "version": "0.1.0",
   "scripts": {
@@ -19,6 +19,7 @@
     "@tailwindcss/vite": "^4.2.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
+    "@vercel/analytics": "^1.6.1",
     "astro": "^5.17.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
