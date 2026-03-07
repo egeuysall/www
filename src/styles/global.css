@@ -1,6 +1,14 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMono-Variable.woff2") format("woff2-variations");
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
 :root {
   --bg: #050505;
   --fg: #f5f5f5;
@@ -16,8 +24,8 @@
   --color-line: var(--line);
   --color-accent: var(--accent);
   --font-mono:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
-    "Courier New", monospace;
+    "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
 }
 
 html,
@@ -97,6 +105,69 @@ a {
 
 .prose {
   font-size: 0.9rem;
+  color: #d4d4d8;
+  line-height: 1.65;
+  font-weight: 400;
+}
+
+.prose p {
+  margin: 0.95rem 0;
+}
+
+.prose h2 {
+  margin-top: 1.9rem;
+  margin-bottom: 0.6rem;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  color: #f5f5f5;
+}
+
+.prose h3 {
+  margin-top: 1.45rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: #f5f5f5;
+}
+
+.prose h4 {
+  margin-top: 1.25rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #f5f5f5;
+}
+
+.prose ul,
+.prose ol {
+  margin: 0.9rem 0;
+  padding-left: 1.1rem;
+}
+
+.prose ul {
+  list-style: disc;
+}
+
+.prose ol {
+  list-style: decimal;
+}
+
+.prose li {
+  margin: 0.25rem 0;
+}
+
+.prose a {
+  color: #f5f5f5;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  text-decoration-color: #3f3f46;
+}
+
+.prose blockquote {
+  margin: 1.15rem 0;
+  padding-left: 0.8rem;
+  border-left: 2px solid #3f3f46;
+  color: #d4d4d8;
 }
 
 .prose :not(pre) > code {
@@ -130,4 +201,8 @@ a {
 
 .prose :where(h2, h3, h4) {
   font-weight: 500 !important;
+}
+
+.prose strong {
+  font-weight: 600;
 }

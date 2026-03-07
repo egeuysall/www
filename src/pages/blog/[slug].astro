@@ -62,11 +62,11 @@ const jsonLd = {
   jsonLd={jsonLd}
 >
   <article
-    class="prose prose-neutral prose-invert max-w-none animate-enter prose-p:text-neutral-300 prose-headings:text-neutral-100 prose-h2:text-[0.95rem] prose-h2:leading-6 prose-h2:font-medium prose-h3:text-[0.88rem] prose-h3:leading-6 prose-h3:font-medium prose-h4:text-[0.82rem] prose-h4:leading-5 prose-h4:font-medium prose-strong:text-neutral-100 prose-a:text-neutral-100 prose-a:decoration-neutral-700 prose-hr:border-neutral-800 prose-pre:border prose-pre:border-neutral-800 prose-pre:text-neutral-200 prose-code:text-neutral-200"
+    class="prose prose-neutral font-bold prose-invert max-w-none animate-enter prose-p:text-neutral-300 prose-headings:text-neutral-100 prose-h2:text-[0.95rem]! prose-h2:leading-6! prose-h2:font-medium! prose-h3:text-[0.88rem]! prose-h3:leading-6! prose-h3:font-medium! prose-h4:text-[0.82rem]! prose-h4:leading-5! prose-h4:font-medium prose-strong:font-semibold! prose-strong:text-neutral-100 prose-a:text-neutral-100 prose-a:decoration-neutral-700 prose-hr:border-neutral-800 prose-pre:border prose-pre:border-neutral-800 prose-pre:text-neutral-200 prose-code:text-neutral-200"
     style="--delay: 40ms;"
   >
     <header class="mb-6 border-b border-neutral-900 pb-5">
-      <h1 class="text-base text-neutral-100">{post.data.title}</h1>
+      <h1 class="text-base font-semibold! text-neutral-100">{post.data.title}</h1>
       <p class="mt-2 text-xs text-neutral-400">
         {formatDate(post.data.publishedAt)}
         {post.data.updatedAt ? (
