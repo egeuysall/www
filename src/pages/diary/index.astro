@@ -15,7 +15,7 @@ const dayMap = await getDiaryDayMap();
         return (
           <li class="row-border pb-4">
             <a href={`/diary/${getDiaryEntrySlug(entry)}/`} class="block">
-              <p class="text-xs text-neutral-500 tabular-nums">
+              <p class="text-xs text-neutral-400 tabular-nums">
                 Day {dayNumber}
               </p>
               <p class="mt-2 text-sm text-neutral-100">{entry.data.summary}</p>

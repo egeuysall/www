@@ -19,7 +19,7 @@ export const SITE = {
   url: process.env.PUBLIC_SITE_URL ?? "https://egeuysal.com",
   locale: "en-US",
   timezone: "America/Chicago",
-  themeColor: "#0a0a0a",
+  themeColor: "#000000",
   author: {
     name: "Ege Uysal",
     role: "Founder",
@@ -59,7 +59,6 @@ export const PROJECTS: ProjectProofItem[] = [
 ];
 
 export const ALLOWED_IMAGE_HOSTS = [
-  "hebbkx1anhila5yf.public.blob.vercel-storage.com",
   "images.githubusercontent.com",
   "avatars.githubusercontent.com",
   "opengraph.githubassets.com",

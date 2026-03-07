@@ -51,6 +51,20 @@ const currentPath = normalizePath(Astro.url.pathname);
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link
+      rel="preload"
+      href="/fonts/GeistMono-Regular.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      href="/fonts/GeistMono-Medium.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin="anonymous"
+    />
 
     <meta property="og:type" content={type} />
     <meta property="og:title" content={pageTitle} />
@@ -77,16 +91,12 @@ const currentPath = normalizePath(Astro.url.pathname);
     {jsonLd && <JsonLd data={jsonLd} />}
   </head>
   <body class="min-h-full bg-bg font-mono text-fg antialiased">
-    <div class="ambient-backdrop" aria-hidden="true">
-      <span class="ambient-orb ambient-orb-a"></span>
-      <span class="ambient-orb ambient-orb-b"></span>
-    </div>
     <div class="mx-auto flex min-h-screen w-full max-w-155 flex-col px-6 py-8 sm:px-8 sm:py-10">
       <header class="pb-8">
         <div class="flex items-end justify-between gap-6">
           <div>
             <a href="/" class="text-[15px] tracking-tight text-neutral-100 hover:text-neutral-200">{SITE.title}</a>
-            <p class="mt-1 text-xs text-neutral-500">{SITE.author.role}</p>
+            <p class="mt-1 text-xs text-neutral-400">{SITE.author.role}</p>
           </div>
           <nav class="flex items-center gap-4 text-xs text-neutral-400">
             {NAV_LINKS.map((item) => (
@@ -106,11 +116,17 @@ const currentPath = normalizePath(Astro.url.pathname);
         <slot />
       </main>
 
-      <footer class="pt-8 text-xs text-neutral-500">
+      <footer class="pt-8 text-xs text-neutral-400">
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             {SOCIAL_LINKS.map((link) => (
-              <a href={link.href} target="_blank" rel="noopener noreferrer" class="hover:text-neutral-300">
+              <a
+                href={link.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="hover:text-neutral-300"
+                aria-label={link.label === "X" ? "X (Twitter)" : link.label}
+              >
                 {link.label}
               </a>
             ))}

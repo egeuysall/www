@@ -44,7 +44,7 @@ const contentComponents = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: `Day ${dayNumber}`,
+  headline: entry.data.summary,
   description: entry.data.summary,
   datePublished: entry.data.date.toISOString(),
   dateModified: entry.data.date.toISOString(),
@@ -57,7 +57,7 @@ const jsonLd = {
 ---
 
 <BaseLayout
-  title={`Day ${dayNumber}`}
+  title={entry.data.summary}
   description={entry.data.summary}
   pathname={canonicalPath}
   type="article"
@@ -70,9 +70,10 @@ const jsonLd = {
     style="--delay: 40ms;"
   >
     <header class="mb-6 border-b border-neutral-900 pb-5">
-      <h1 class="text-base text-neutral-100">Day {dayNumber}</h1>
-      <p class="mt-2 text-xs text-neutral-600">{formatDate(entry.data.date)}</p>
-      <p class="mt-2 text-sm text-neutral-400">{entry.data.summary}</p>
+      <h1 class="text-base text-neutral-100">{entry.data.summary}</h1>
+      <p class="mt-2 text-xs text-neutral-400">
+        {formatDate(entry.data.date)} &middot; Day {dayNumber}
+      </p>
     </header>
 
     <Content components={contentComponents} />
