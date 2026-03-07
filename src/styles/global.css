@@ -15,7 +15,8 @@
   --color-muted: var(--muted);
   --color-line: var(--line);
   --color-accent: var(--accent);
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
     "Courier New", monospace;
 }
 
@@ -51,7 +52,7 @@ a {
 .animate-enter {
   opacity: 0;
   transform: translateY(4px);
-  animation: enter 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: enter 1200ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: var(--delay, 0ms);
 }
 
