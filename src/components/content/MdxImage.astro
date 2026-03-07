@@ -1,0 +1,20 @@
+---
+import { Image } from "astro:assets";
+import type { LocalImageProps, RemoteImageProps } from "astro:assets";
+
+type Props = (LocalImageProps | RemoteImageProps) & {
+  class?: string;
+  quality?: number;
+};
+
+const imageProps = Astro.props as Props;
+const mergedClass = ["rounded-sm", imageProps.class].filter(Boolean).join(" ");
+---
+
+<Image
+  {...imageProps}
+  quality={imageProps.quality ?? 72}
+  loading={imageProps.loading ?? "lazy"}
+  decoding={imageProps.decoding ?? "async"}
+  class={mergedClass}
+/>

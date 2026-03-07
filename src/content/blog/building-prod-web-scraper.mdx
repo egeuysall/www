@@ -1,0 +1,334 @@
+---
+title: "Building a Production Web Scraper"
+description: "Most Go concurrency tutorials show you how to spawn goroutines and pass data through channels. Then you try to build something real and immediately hit..."
+publishedAt: 2026-01-18
+tags: ["technology","coding","tutorial"]
+image: "https://images.pexels.com/photos/29502370/pexels-photo-29502370.jpeg"
+---
+
+Most Go concurrency tutorials show you how to spawn goroutines and pass data through channels. Then you try to build something real and immediately hit problems the tutorials never mentioned: deadlocks, backpressure, graceful shutdowns that aren't actually graceful.
+
+I built Drop, a price tracking service that scrapes hundreds of product URLs daily and notifies users about price drops. Here's what I learned about Go concurrency patterns that actually matter in production.
+
+## The Architecture: Scheduler + Worker Pool + Scraper
+
+Drop's core is simple: check product prices periodically, update the database, notify users when prices drop below their targets.
+
+The naive approach would be to loop through items and scrape them one by one. For 1,000 items checking every hour, that's over 16 minutes of sequential scraping. Unacceptable.
+
+Instead, I built a worker pool that processes items concurrently while respecting resource constraints.
+
+## Pattern 1: Buffered Channels for Producer-Consumer Decoupling
+
+The scheduler needs to distribute work to multiple workers. Here's the critical decision:
+
+```go
+// Bad: Unbuffered channel
+jobs := make(chan ItemJob)
+
+// Good: Buffered to item count
+jobs := make(chan ItemJob, len(items))
+```
+
+Why buffer to `len(items)`?
+
+With an unbuffered channel, every send blocks until a worker receives. This creates tight coupling between producer and consumer speeds. If workers aren't ready yet, or you miscalculate worker count, you get deadlocks.
+
+Buffered channels decouple this completely. The producer enqueues all jobs immediately without waiting for workers:
+
+```go
+func (s *PriceRefresherScheduler) refreshAllPrices() {
+    ctx := context.Background()
+    items, err := s.itemsService.GetItemsDueForCheck(ctx)
+    if err != nil {
+        log.Printf("Error while refreshing prices: %s", err.Error())
+        return
+    }
+
+    if len(items) == 0 {
+        log.Printf("No items due for price refresh")
+        return
+    }
+
+    log.Printf("Starting concurrent refresh of %d items with %d workers",
+        len(items), s.workerCount)
+
+    // Create channels for work distribution
+    jobs := make(chan ItemJob, len(items))
+    results := make(chan string, len(items))
+
+    // Start worker pool
+    for w := 1; w <= s.workerCount; w++ {
+        go s.priceRefreshWorker(w, jobs, results)
+    }
+
+    // Producer fills the queue
+    for _, item := range items {
+        jobs <- ItemJob{
+            ID:     item.ID,
+            UserID: item.UserID,
+            URL:    item.URL,
+            Name:   item.Name,
+        }
+    }
+    close(jobs) // Signal: no more work coming
+
+    // Collect results...
+}
+```
+
+This gives you:
+
+- **No producer blocking** - fill the queue instantly
+- **Workers can start anytime** - no timing assumptions
+- **Clean shutdown** - close the channel when done
+
+The buffer size matters. Too small and you're back to blocking. Too large and you waste memory. Buffering to exactly `len(items)` is perfect for bounded work batches.
+
+## Pattern 2: Worker Pool with Independent Goroutines
+
+Each worker is dead simple - no shared state, just pure functions:
+
+```go
+// priceRefreshWorker processes individual refresh jobs
+// Each worker runs independently with no shared state
+func (s *PriceRefresherScheduler) priceRefreshWorker(
+    workerID int,
+    jobs <-chan ItemJob,
+    results chan<- string,
+) {
+    for job := range jobs {
+        log.Printf("Worker %d processing item: %s (ID: %s)",
+            workerID, job.Name, job.ID)
+
+        err := s.itemsService.RefreshPrice(
+            context.Background(),
+            job.ID,
+            job.UserID,
+            job.URL,
+        )
+
+        if err != nil {
+            results <- fmt.Sprintf("FAILED: %s (%s): %v",
+                job.ID, job.Name, err)
+        } else {
+            results <- fmt.Sprintf("SUCCESS: %s", job.Name)
+        }
+    }
+}
+```
+
+The `for job := range jobs` pattern is crucial. It:
+
+- Automatically handles channel closing (loop exits when channel closes)
+- Processes jobs until queue is empty
+- Requires zero synchronization primitives
+
+Workers are completely independent. No mutexes, no wait groups in the worker itself, no coordination needed.
+
+## Pattern 3: Results Collection with Blocking Receive
+
+After dispatching jobs, we need to wait for all results:
+
+```go
+successCount := 0
+failCount := 0
+
+for range items {
+    result := <-results
+    if strings.HasPrefix(result, "SUCCESS:") {
+        successCount++
+        log.Println(result)
+    } else {
+        failCount++
+        log.Println(result)
+    }
+}
+
+log.Printf("Price refresh complete: %d succeeded, %d failed out of %d total",
+    successCount, failCount, len(items))
+```
+
+This blocks until exactly `len(items)` results come back. No busy waiting, no sleep loops - just synchronous collection of async work.
+
+The results channel is also buffered to `len(items)`, preventing workers from blocking when sending results. Workers finish faster, resources are released sooner.
+
+## Pattern 4: Timeout Context for Individual Operations
+
+Web scraping has an enemy: hanging requests. A single stuck HTTP call can block a worker indefinitely.
+
+In the service layer, I wrap each scrape with a timeout context:
+
+```go
+func (s *service) CreateItem(ctx context.Context, userID string,
+    req CreateItemRequest) (*ItemResponse, error) {
+
+    if err := utils.ValidateURL(req.URL); err != nil {
+        return nil, fmt.Errorf("invalid URL: %w", err)
+    }
+
+    if err := s.checkForDuplicates(ctx, userID, req.URL); err != nil {
+        return nil, fmt.Errorf("duplicate item: %w", err)
+    }
+
+    // Create a timeout context for scraping to prevent hanging
+    scrapeCtx, cancel := context.WithTimeout(ctx, 15*time.Second)
+    defer cancel()
+
+    // Create channels to receive the scrape result or timeout
+    resultChan := make(chan *scraper.PriceInfo, 1)
+    errorChan := make(chan error, 1)
+
+    // Run scraping in a separate goroutine
+    go func() {
+        pi, err := s.scraper.ScrapePrice(req.URL)
+        if err != nil {
+            errorChan <- err
+        } else {
+            resultChan <- pi
+        }
+    }()
+
+    // Wait for result or timeout
+    var priceInfo *scraper.PriceInfo
+    var scrapeErr error
+
+    select {
+    case pi := <-resultChan:
+        priceInfo = pi
+    case err := <-errorChan:
+        scrapeErr = err
+    case <-scrapeCtx.Done():
+        return nil, fmt.Errorf("price scraping timed out after 15 seconds")
+    }
+
+    // Handle the result
+    if scrapeErr != nil {
+        if strings.Contains(scrapeErr.Error(), "out of stock") {
+            currentPrice := 0.0
+            if req.TargetPrice != nil {
+                currentPrice = *req.TargetPrice
+            }
+            inStock := false
+            req.CurrentPrice = currentPrice
+            req.InStock = &inStock
+        } else {
+            return nil, fmt.Errorf("failed to scrape price: %w", scrapeErr)
+        }
+    } else if priceInfo != nil {
+        req.CurrentPrice = priceInfo.Price
+        req.InStock = &priceInfo.InStock
+    }
+
+    // Create item in database...
+}
+```
+
+Why not just rely on HTTP client timeout?
+
+The HTTP client timeout only covers the request/response cycle. It doesn't account for:
+
+- HTML parsing time (goquery can be slow on massive pages)
+- Price extraction logic
+- Any other processing in the scraping function
+
+The context timeout covers the entire operation. After 15 seconds, we abandon it completely and return an error. The goroutine might still be running, but we've moved on.
+
+The channel buffers (`make(chan X, 1)`) prevent goroutine leaks - even if we timeout and stop listening, the goroutine can still send its result without blocking.
+
+## Pattern 5: Ticker-Based Scheduling with Graceful Stop
+
+The scheduler runs continuously, checking prices at regular intervals:
+
+```go
+type PriceRefresherScheduler struct {
+    itemsService items.Service
+    interval     time.Duration
+    workerCount  int
+    stopChan     chan bool
+}
+
+func NewPriceRefresherScheduler(itemsService items.Service,
+    interval time.Duration, workerCount int) *PriceRefresherScheduler {
+
+    return &PriceRefresherScheduler{
+        itemsService: itemsService,
+        interval:     interval,
+        workerCount:  workerCount,
+        stopChan:     make(chan bool),
+    }
+}
+
+func (s *PriceRefresherScheduler) Start() {
+    s.refreshAllPrices() // Initial run
+
+    ticker := time.NewTicker(s.interval)
+
+    go func() {
+        for {
+            select {
+            case <-ticker.C:
+                s.refreshAllPrices()
+            case <-s.stopChan:
+                ticker.Stop()
+                return
+            }
+        }
+    }()
+}
+
+func (s *PriceRefresherScheduler) Stop() {
+    s.stopChan <- true
+}
+```
+
+The select statement handles two cases:
+
+- `ticker.C`: Time to run another batch
+- `stopChan`: Shutdown signal received
+
+This is intentionally simple. When `Stop()` is called, the scheduler stops accepting new batches immediately. In-flight scraping jobs continue until completion - we don't forcefully cancel them.
+
+Why not wait for workers to finish?
+
+In practice, scraping jobs complete quickly (under 15s due to our timeout). Forcefully canceling them mid-scrape creates more problems than it solves - half-written database records, resource leaks, complex cleanup logic.
+
+The tradeoff: shutdown takes up to 15 seconds. For a background service, that's acceptable.
+
+## The Scraper: Keeping It Simple
+
+The actual scraping logic is deliberately simple:
+
+```go
+type Scraper struct {
+    client *http.Client
+}
+
+func NewScraper() *Scraper {
+    return &Scraper{
+        client: &http.Client{
+            Timeout: 10 * time.Second,
+        },
+    }
+}
+
+func (s *Scraper) ScrapePrice(url string) (*PriceInfo, error) {
+    req, err := http.NewRequest("GET", url, nil)
+    if err != nil {
+        return nil, fmt.Errorf("failed to create request: %w", err)
+    }
+
+    req.Header.Set("User-Agent",
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36...")
+
+    resp, err := s.client.Do(req)
+    if err != nil {
+        return nil, fmt.Errorf("failed to fetch page: %w", err)
+    }
+    defer resp.Body.Close()
+
+    if resp.StatusCode != 200 {
+        return nil, fmt.Errorf("bad status code: %d", resp.StatusCode)
+    }
+
+...

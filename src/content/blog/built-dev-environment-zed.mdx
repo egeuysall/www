@@ -1,0 +1,103 @@
+---
+title: "How I Built My Dev Environment with Zed"
+description: "Last week, I completely transformed how I write code. After months of using GoLand and Cursor, I switched to Zed, and honestly, I wish I'd done it sooner."
+publishedAt: 2025-10-02
+tags: ["coding","technology","review"]
+image: "https://images.pexels.com/photos/3861972/pexels-photo-3861972.jpeg"
+---
+
+Last week, I completely transformed how I write code. After months of using GoLand and Cursor, I switched to Zed, and honestly, I wish I'd done it sooner.
+
+### Why I Switched from GoLand and Cursor
+
+GoLand is an incredible IDE with amazing Go support and built-in database tools. But I wasn't using 90% of those features. Cursor had great AI capabilities, but the pricing was a dealbreaker.
+
+The real problem? **Resource usage.** When you're running local LLM models, development servers, and MCP servers in the background, every megabyte counts. GoLand was eating up 4GB of RAM just for writing some Go code.
+
+I needed something lean, fast, and powerful enough to handle my full-stack workflow with Next.js, TypeScript, Go, and PostgreSQL.
+
+### Why Zed is the Fastest Code Editor
+
+Zed caught my attention for one simple reason: performance. Built entirely in Rust, it's even faster than Sublime Text.
+
+The difference was immediate:
+
+> GoLand: 4GB RAM  
+> Zed: 600MB RAM
+
+That's an 85% reduction in memory usage. I could finally run all my background services smoothly.
+
+When I checked Zed's GitHub repository, I was shocked. They're pushing new releases *every single day*. The last commit? Eight minutes ago. This isn't some abandoned project, it's actively maintained and completely free.
+
+### Setting Up Zed: Themes and Customization
+
+I've always been drawn to minimalist interfaces, and Zed nails that aesthetic. It gives you those NeoVim vibes without the steep learning curve. With the **Vesper theme** and **Symbols icon theme**, it's exactly the clean environment I wanted.
+
+The only feature I miss from GoLand is the built-in database query runner. But since I use Supabase, their web app handles that perfectly.
+
+### Integrating AI: Claude Code and GitHub Copilot
+
+Here's where things get really interesting. Switching to Zed wasn't just about performance, it was about rethinking how I work with AI.
+
+I used to rely on ChatGPT, but Claude feels *smarter*. More human. It understands context and can reason through complex problems better than other AI tools.
+
+#### Using Claude Code for Full-Stack Development
+
+Claude Code has genuinely blown me away. Unlike other coding assistants, it understands my *entire project structure*. When I'm working on a Next.js app with PostgreSQL backends, it doesn't just suggest code, it understands the architecture.
+
+I've integrated Claude Code with MCP servers, giving it abilities like:
+- Fetching information from the web
+- Sequential thinking for complex problems
+- Managing my GitHub account and creating pull requests
+- Running in the background while I review code later
+
+I can delegate entire features to Claude Code and come back to review production-ready code.
+
+#### GitHub Copilot for Inline Code Suggestions
+
+While Claude Code handles the big-picture stuff, GitHub Copilot is my go-to for inline suggestions. I've customized my keyboard shortcuts to work like Cursor (⌘+K), so I get AI assistance without breaking my flow.
+
+The tab completions are solid. I can tab through suggestions and modify files incredibly quickly.
+
+#### My AI-Powered Coding Workflow
+
+Here's how it works:
+
+1. **GitHub Copilot** handles tab completions and inline suggestions while coding
+2. **Claude Code** (via Zed's right panel) handles architectural decisions and complex refactoring
+3. **Claude** helps with planning, debugging, and learning new concepts
+
+This setup has significantly reduced my coding time while *increasing* what I learn. Claude explains *why* it's doing something, so I'm constantly picking up new patterns.
+
+### Why Timing Matters with AI Coding Tools
+
+Let me be clear: I didn't want to become "AI-dependent." I spent months learning full-stack development from the ground up. I understand the fundamentals.
+
+But now? Now it's time to **automate**, not to vibe code.
+
+> There's a huge difference between using AI as a crutch because you don't understand, and using AI as a force multiplier because you *do* understand and want to move faster.
+
+### Key Takeaways
+
+Making this switch taught me important lessons:
+
+- **Choose the right tool, not the most feature-rich tool.** Zed gives me exactly what I need.
+- **Learn fundamentals before relying on AI.** AI becomes a productivity multiplier, not a crutch.
+- **Performance matters.** When your editor uses 85% less RAM, you can do so much more.
+- **Open source moves fast.** Zed's daily releases mean constant improvements.
+
+### My Current Development Setup
+
+- **Editor:** Zed (Vesper theme + Symbols icons)
+- **AI Coding:** Claude Code with MCP integrations
+- **Inline Suggestions:** GitHub Copilot
+- **Planning & Learning:** Claude
+- **Database:** Supabase
+
+### Final Thoughts
+
+If you value speed, minimalism, and want to harness AI without sacrificing your learning, try this setup. Zed gives you NeoVim energy without configuration hell. Claude Code and GitHub Copilot give you AI superpowers without turning you into a copy-paste developer.
+
+I'm a 15-year-old full-stack developer building my personal brand and working on SaaS ideas. This setup has made me faster, smarter, and more efficient.
+
+The future of development isn't replacing developers with AI, it's giving developers AI superpowers.

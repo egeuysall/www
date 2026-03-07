@@ -1,0 +1,84 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+
+import MdxImage from "@/components/content/MdxImage.astro";
+import { mdxComponents } from "@/components/content/mdx-components";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate } from "@/lib/utils";
+import { SITE } from "@/config/site";
+
+type Props = {
+  post: CollectionEntry<"blog">;
+};
+
+export async function getStaticPaths() {
+  const posts = await getCollection("blog", ({ data }) => !data.draft);
+
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props as Props;
+const { Content } = await post.render();
+
+const canonicalPath = `/blog/${post.slug}/`;
+const postImage = post.data.image;
+const siteOrigin = Astro.site ?? new URL(SITE.url);
+const contentComponents = {
+  ...mdxComponents,
+  Image: MdxImage,
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  headline: post.data.title,
+  description: post.data.description,
+  datePublished: post.data.publishedAt.toISOString(),
+  dateModified: (post.data.updatedAt ?? post.data.publishedAt).toISOString(),
+  mainEntityOfPage: new URL(canonicalPath, siteOrigin).toString(),
+  ...(postImage
+    ? {
+        image: [new URL(postImage, siteOrigin).toString()],
+      }
+    : {}),
+  author: {
+    "@type": "Person",
+    name: SITE.author.name,
+  },
+};
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  pathname={canonicalPath}
+  image={postImage}
+  type="article"
+  publishedTime={post.data.publishedAt.toISOString()}
+  updatedTime={(post.data.updatedAt ?? post.data.publishedAt).toISOString()}
+  jsonLd={jsonLd}
+>
+  <article
+    class="prose prose-neutral prose-invert max-w-none animate-enter prose-p:text-neutral-300 prose-headings:text-neutral-100 prose-strong:text-neutral-100 prose-a:text-neutral-100 prose-a:decoration-neutral-700 prose-hr:border-neutral-800 prose-pre:border prose-pre:border-neutral-800 prose-pre:text-neutral-200 prose-code:text-neutral-200"
+    style="--delay: 40ms;"
+  >
+    <header class="mb-6 border-b border-neutral-900 pb-5">
+      <h1 class="text-base text-neutral-100">{post.data.title}</h1>
+      <p class="mt-2 text-xs text-neutral-600">
+        {formatDate(post.data.publishedAt)}
+        {post.data.updatedAt ? (
+          <>
+            {" "}
+            &middot; updated {formatDate(post.data.updatedAt)}
+          </>
+        ) : null}
+      </p>
+      <p class="mt-2 text-sm text-neutral-400">{post.data.description}</p>
+    </header>
+
+    <Content components={contentComponents} />
+  </article>
+</BaseLayout>

@@ -1,0 +1,28 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getDiaryDayMap, getDiaryEntrySlug, getPublishedDiaryEntries } from "@/lib/content";
+
+const entries = await getPublishedDiaryEntries();
+const dayMap = await getDiaryDayMap();
+---
+
+<BaseLayout title="Diary" pathname="/diary/" description="Daily short progress notes, sorted by date.">
+  <section class="animate-enter" style="--delay: 110ms;">
+    <ol class="space-y-4">
+      {entries.map((entry) => {
+        const dayNumber = dayMap.get(entry.id) ?? 0;
+
+        return (
+          <li class="row-border pb-4">
+            <a href={`/diary/${getDiaryEntrySlug(entry)}/`} class="block">
+              <p class="text-xs text-neutral-500 tabular-nums">
+                Day {dayNumber}
+              </p>
+              <p class="mt-2 text-sm text-neutral-100">{entry.data.summary}</p>
+            </a>
+          </li>
+        );
+      })}
+    </ol>
+  </section>
+</BaseLayout>

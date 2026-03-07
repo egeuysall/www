@@ -1,0 +1,218 @@
+---
+title: "I Killed My SaaS at 15. Here's What I Built Instead."
+description: "Two weeks ago I published Why I'm Killing My SaaS Before Launch, the story of spending 2 months building 70,000 lines of enterprise grade infrastructure and..."
+publishedAt: 2026-02-07
+tags: ["technology","story","build"]
+image: "https://images.pexels.com/photos/7440520/pexels-photo-7440520.jpeg"
+---
+
+Two weeks ago I published Why I'm Killing My SaaS Before Launch, the story of spending 2 months building 70,000 lines of enterprise-grade infrastructure and never shipping.
+
+Today I'm launching [Huesly](https://huesly.app). Built in 2 weeks. Live users. Actual revenue.
+
+Here's what I did differently.
+
+## What Changed
+
+**Ryva (killed):**
+- 2 months building
+- 70,000 lines of Go
+- Custom backend, CI/CD, email queues
+- Zero users
+- Never launched
+
+**Huesly (shipped):**
+- 2 weeks building  
+- Supabase + Next.js + Vercel
+- Live on Product Hunt, Hacker News, X
+- First signups in 24 hours
+- Actually making money
+
+The difference? I finally listened to my own advice: ship fast, scale later.
+
+## The Stack Comparison
+
+| Ryva | Huesly |
+|------|--------|
+| Custom Go backend with service layers | Next.js API routes |
+| Multi-stage CI/CD with load balancing | Vercel deploy button |
+| Custom email queuing system | Resend (one API call) |
+| 3 containerized Docker instances | Single Vercel deployment |
+| Custom auth with JWT + refresh tokens | Supabase Auth |
+| 2-week billing system integration | Stripe Checkout (30 minutes) |
+
+Every "enterprise feature" I over-engineered for Ryva had a boring alternative that let me ship 10x faster.
+
+## What Huesly Does
+
+Simple problem: developers spend 3+ hours picking colors, fonts, and spacing for side projects that might never ship.
+
+Huesly generates complete design systems from moods in less than 1 second.
+
+**How it works:**
+1. Enter a mood (Minimal, Bold, Professional, Elegant, etc)
+2. Get instant WCAG-compliant colors, font pairings, spacing scales
+3. Export to CSS variables, Tailwind v4 config, SCSS, or JSON tokens
+
+That's it. No Figma. No design skills needed. Straight from idea to production-ready code.
+
+## The Technical Decisions
+
+### Why OKLCH Color Space?
+
+Most color generators use RGB or HSL. They create mathematically correct palettes that look terrible together.
+
+OKLCH is perceptually uniform - colors that are mathematically similar actually look harmonious to humans. When you adjust lightness, the hue stays consistent. With HSL, yellow at 50% lightness looks way brighter than blue at 50%.
+
+This is why Huesly's palettes feel cohesive instead of random.
+
+### Why Next.js + Supabase?
+
+After Ryva, I had a choice:
+- Reuse my 70k lines of production-grade Go infrastructure
+- Start fresh with boring technology
+
+I chose boring. Here's why:
+
+**For an MVP, Supabase gives you:**
+- Auth (GitHub OAuth in 5 minutes)
+- Database (PostgreSQL with RLS)
+- Real-time subscriptions
+- Row Level Security for multi-tenancy
+
+What took me 2 months to build in Go, I got in 2 days with Supabase.
+
+**The rule:** Use custom infrastructure when you're serving thousands of paying customers and Supabase becomes the bottleneck. Not before.
+
+## Early Results
+
+**Launch day (24 hours):**
+- Posted to X, Hacker News, Dev.to, Product Hunt
+- 2 signups
+- Active discussions on HN
+- Email from old Ryva waitlist converting to Huesly users
+
+Not massive numbers. But users are using it. People are exporting design systems to real projects. That's infinitely more than Ryva's zero.
+
+**What I learned:**
+- 2 real users > 0 hypothetical enterprise customers
+- Shipping creates momentum
+- Feedback only comes from real usage
+- Revenue proves value, not architecture
+
+## The Pricing Experiment
+
+I'm testing two models:
+- **Lifetime:** $30 (capped at 100 users)
+- **Monthly:** $15/month unlimited
+
+Early theory: developers hate subscriptions for simple tools. They want to own it once and use it across multiple projects.
+
+So far, lifetime is converting 3:1 vs monthly.
+
+This might be a mistake long-term (lower LTV), but for early traction, it's working. Developers are more willing to try something when they know they won't get hit with recurring charges.
+
+I can always introduce v2 features as subscription-only later.
+
+## What I'm Doing Differently
+
+### 1. Building in Public
+
+Ryva was built in silence. I thought code quality would attract users.
+
+Huesly is different. I'm:
+- Posting daily updates on X
+- Sharing metrics (even small ones)
+- Writing about technical decisions
+- Documenting failures
+
+Attention is the bottleneck, not engineering skill.
+
+### 2. Simple Problem, Fast Validation
+
+Ryva tried to solve developer productivity across Slack, GitHub, email, and project management tools. Complex integrations, rate limits, syncing hell.
+
+Huesly solves one thing: getting from mood to production-ready design system in seconds.
+
+Simple problem = fast validation = quick iteration.
+
+### 3. Content-First Strategy
+
+I'm learning:
+- High-level video editing
+- Viral hooks for short-form content
+- Long-form storytelling
+- Platform-specific content (X threads, TikTok demos, blog posts)
+
+Engineering got me to 0 → 1. Marketing will get me to 1 → 100.
+
+## The Ryva Code Isn't Wasted
+
+Those 70,000 lines of Go? Still valuable.
+
+When Huesly actually needs scale - when Supabase becomes the bottleneck serving thousands of paying customers - I'll have battle-tested patterns ready:
+
+- Multi-tenant architecture with RLS
+- Service layer with dependency injection
+- Comprehensive testing infrastructure
+- Production-grade error handling
+- Multi-stage deployment pipelines
+
+The code isn't wasted. The timing was just wrong.
+
+**The lesson:** Build enterprise infrastructure when you have enterprise problems, not before.
+
+## What's Next
+
+**Short-term (next 30 days):**
+- Reach 100 users
+- Get 10 paying customers
+- Collect testimonials
+- Improve based on feedback
+- Learn what features actually matter
+
+**Medium-term (3-6 months):**
+- Hit $1K MRR
+- Launch v2 features
+- Build viral content engine
+- Grow through word-of-mouth
+
+**Long-term (before graduation):**
+- $100K ARR
+- Prove a 16-year-old can build real businesses
+- Document everything publicly
+
+The goal isn't just revenue. It's proving that:
+1. You can ship fast without sacrificing quality
+2. Boring technology beats interesting architecture for MVPs
+3. Marketing matters more than perfect code
+4. Age is irrelevant if you solve real problems
+
+## To Everyone Who Over-Engineers
+
+I spent 2 months building infrastructure I didn't need.
+
+You might be doing the same right now:
+- Perfect CI/CD before you have users
+- Custom auth instead of Supabase/Clerk
+- Microservices for a product with 0 customers
+- Abstraction layers "for when we scale"
+
+**Stop.**
+
+Ship something ugly. Get users. Iterate based on real feedback.
+
+You can always refactor later. You can't get time back.
+
+## Try Huesly
+
+If you've ever spent hours tweaking hex codes or searching for the perfect font pairing:
+
+👉 [huesly.app](https://huesly.app)
+
+Enter a mood. Get a design system. Export to code. Ship your project.
+
+And if you're building your first SaaS: learn from my mistakes. Ship fast. The perfect infrastructure can wait.
+
+**Follow the journey:**
+- X: [@egewrk](https://x.com/egewrk)

@@ -1,0 +1,123 @@
+---
+import JsonLd from "@/components/seo/JsonLd.astro";
+import { NAV_LINKS, SEO_DEFAULTS, SITE, SOCIAL_LINKS } from "@/config/site";
+import "@/styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+  pathname?: string;
+  image?: string;
+  type?: "website" | "article";
+  publishedTime?: string;
+  updatedTime?: string;
+  jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description = SITE.description,
+  pathname = Astro.url.pathname,
+  image = SEO_DEFAULTS.defaultOgImage,
+  type = "website",
+  publishedTime,
+  updatedTime,
+  jsonLd,
+  noindex = false,
+} = Astro.props;
+
+const siteOrigin = Astro.site ?? new URL(SITE.url);
+const pageTitle = title ? `${title} | ${SITE.title}` : SITE.title;
+const canonical = new URL(pathname, siteOrigin).toString();
+const ogImage = new URL(image, siteOrigin).toString();
+const normalizePath = (value: string) => value.replace(/\/+$/, "") || "/";
+const currentPath = normalizePath(Astro.url.pathname);
+---
+
+<!doctype html>
+<html lang="en" class="h-full bg-bg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="theme-color" content={SITE.themeColor} />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content={description} />
+    <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
+
+    <title>{pageTitle}</title>
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:secure_url" content={ogImage} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${SITE.title} preview`} />
+
+    <meta name="twitter:card" content={SEO_DEFAULTS.twitterCard} />
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <meta name="twitter:image:alt" content={`${SITE.title} preview`} />
+
+    {publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {updatedTime && <meta property="article:modified_time" content={updatedTime} />}
+
+    {jsonLd && <JsonLd data={jsonLd} />}
+  </head>
+  <body class="min-h-full bg-bg font-mono text-fg antialiased">
+    <div class="ambient-backdrop" aria-hidden="true">
+      <span class="ambient-orb ambient-orb-a"></span>
+      <span class="ambient-orb ambient-orb-b"></span>
+    </div>
+    <div class="mx-auto flex min-h-screen w-full max-w-155 flex-col px-6 py-8 sm:px-8 sm:py-10">
+      <header class="pb-8">
+        <div class="flex items-end justify-between gap-6">
+          <div>
+            <a href="/" class="text-[15px] tracking-tight text-neutral-100 hover:text-neutral-200">{SITE.title}</a>
+            <p class="mt-1 text-xs text-neutral-500">{SITE.author.role}</p>
+          </div>
+          <nav class="flex items-center gap-4 text-xs text-neutral-400">
+            {NAV_LINKS.map((item) => (
+              <a
+                href={item.href}
+                class="nav-link"
+                aria-current={currentPath === normalizePath(item.href) ? "page" : undefined}
+              >
+                {item.label}
+              </a>
+            ))}
+          </nav>
+        </div>
+      </header>
+
+      <main class="flex-1 pb-8">
+        <slot />
+      </main>
+
+      <footer class="pt-8 text-xs text-neutral-500">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-4">
+            {SOCIAL_LINKS.map((link) => (
+              <a href={link.href} target="_blank" rel="noopener noreferrer" class="hover:text-neutral-300">
+                {link.label}
+              </a>
+            ))}
+          </div>
+          <p>&copy; {new Date().getFullYear()}</p>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

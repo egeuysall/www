@@ -1,0 +1,85 @@
+---
+title: "How I Built a Blog from Scratch"
+description: "Building my own blog wasn't just a coding project—it was a chance to create a space I fully control. No templates, no bloated CMS, just clean design and..."
+publishedAt: 2025-08-01
+tags: ["coding","productivity","release"]
+image: "https://images.pexels.com/photos/3584969/pexels-photo-3584969.jpeg"
+---
+
+Building my own blog wasn't just a coding project—it was a chance to create a space I fully control. No templates, no bloated CMS, just clean design and fast performance. Here's how I did it, step by step.
+
+---
+
+### 🔧 Tech Stack
+
+I chose a lightweight but modern stack that fits my minimal style and scales easily:
+
+- **Next.js 15** – for fast rendering and routing with the App Router  
+- **Tailwind CSS** – to keep styling utility-first and consistent  
+- **TypeScript** – for better code quality and maintainability  
+- **Golang** – powers a custom backend API for blog posts, auth, and data handling  
+- **Supabase** – used as the PostgreSQL database  
+- **Vercel** – for seamless deployments and domain handling  
+
+Go made the backend clean, fast, and reliable. I exposed a REST API that the frontend consumes to create and fetch blog posts.
+
+---
+
+### ✍️ Writing Experience
+
+I didn’t want a clunky editor or dashboard. I write all posts in **Markdown**, directly in my codebase or synced via GitHub. That keeps the writing distraction-free and version-controlled.
+
+---
+
+### 🗂️ Structure & Content
+
+Each blog post is a simple `.mdx` or `.ts` file with:
+
+- A **title**
+- **Slug**
+- **Tags**
+- A **cover image URL**
+- And of course, the **content**
+
+I designed a clean layout using Tailwind and made sure it looks great on mobile too.
+
+---
+
+### 🧠 Why I Didn’t Use Notion or WordPress
+
+While Notion is flexible and WordPress is easy, I wanted:
+
+- **Full control** over design and performance  
+- **No external dependencies**  
+- **Custom SEO**, analytics, and tracking  
+
+Plus, building it myself was a better learning experience.
+
+---
+
+### 🚀 Hosting & Deployment
+
+- **Frontend**: hosted on **Vercel** — every push to `main` deploys instantly  
+- **Backend**: self-hosted Golang API on a VPS  
+- **Database**: Supabase PostgreSQL, connected through `pgxpool` in Go  
+
+It’s fast, secure, and cost-effective.
+
+---
+
+### 🧩 Features I Plan to Add
+
+- Post reactions and comments  
+- Email subscriptions  
+- Tags and filtering  
+- Light/dark mode toggle  
+
+This blog will evolve over time—but it’s already my favorite corner of the internet.
+
+---
+
+### 💭 Final Thoughts
+
+If you're 15 like me and thinking of building your own blog: do it. You’ll learn more than you expect, and you'll own every part of the process. No algorithm. No ads. Just your voice, published your way.
+
+Feel free to reach out or fork the repo—happy to help.

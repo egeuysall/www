@@ -1,0 +1,112 @@
+---
+title: "I Built a Terminal and Code Editor"
+description: "Last week I built a web based terminal, code editor, and assignment system."
+publishedAt: 2026-02-16
+tags: ["technology","coding","tutorial"]
+image: "https://images.pexels.com/photos/36182505/pexels-photo-36182505.png"
+---
+
+Last week I built a web-based terminal, code editor, and assignment system.
+
+I built it for an NGO called **CyberMinds**.
+
+You can try it here:  
+https://cyber-minds.github.io/CyberMinds/
+
+The project is fully open source:  
+https://github.com/Cyber-Minds/CyberMinds
+
+## Why I Built This
+
+CyberMinds teaches cybersecurity and technical skills.
+
+Most platforms either explain concepts without letting you try them, or they feel too heavy to actually use.
+
+I wanted something simple.
+
+Write code.  
+Run commands.  
+See real output.
+
+All in the browser.
+
+## What It Does
+
+The platform combines three things.
+
+A code editor  
+A live terminal  
+An assignment system
+
+Users can write code, run it, and get instant feedback.
+
+Nothing is mocked.
+
+## The Terminal Is Real
+
+Commands are executed on the backend and streamed back to the browser in real time.
+
+```go
+// Create and attach to shell in container
+execResp, _ := cli.ContainerExecCreate(context.Background(), session.ContainerID, execConfig)
+attachResp, _ := cli.ContainerExecAttach(context.Background(), execResp.ID, types.ExecStartCheck{Tty: true})
+defer attachResp.Close()
+
+// Stream container output to browser
+go func() {
+    buf := make([]byte, readBufferSize)
+    for {
+        n, _ := attachResp.Reader.Read(buf)
+        if n > 0 {
+            chunk := strings.ToValidUTF8(string(buf[:n]), "")
+            conn.WriteMessage(websocket.TextMessage, []byte(chunk))
+        }
+    }
+}()
+
+// Stream browser input to container
+for {
+    _, message, _ := conn.ReadMessage()
+    attachResp.Conn.Write(message)
+}
+```
+
+This is what makes it feel responsive and real.
+
+## Assignments Make It Useful
+
+Assignments control what users can edit, run, and submit.
+
+They define the rules without locking users down.
+
+```js
+const challengeCatalog = {
+  "linux-basics": {
+    objective:
+      "List files, inspect permissions, and create a short report in report.txt.",
+    steps: [
+      "Run pwd, whoami, and ls -la.",
+      "Create challenge-notes and add a file named report.txt.",
+      "Write one line summarizing current directory ownership.",
+    ],
+    firstCommand: "pwd",
+    checkScript:
+      'set -e; test -f report.txt; test -s report.txt; grep -Eqi "(owner|permission|user|group)" report.txt',
+    starterLang: "python",
+    starterCode: `import os\nprint("Current directory:", os.getcwd())\n`,
+  },
+  // ... other challenges
+};
+```
+
+This turns the platform from a sandbox into a learning tool.
+
+## Final Thought
+
+This was not built as a demo.
+
+It was built to be used.
+
+And building it for an NGO was a good reminder that real software does not have to be about startups or revenue.
+
+Sometimes it is just about making something that works.

@@ -1,0 +1,59 @@
+---
+title: "Local AI in 2025 What You Need to Know"
+description: "Running AI locally is no longer just an experiment. It is becoming practical, powerful, and private. With local AI, you can access knowledge offline,..."
+publishedAt: 2025-09-27
+tags: ["technology","tutorial","ai"]
+image: "https://images.pexels.com/photos/16037283/pexels-photo-16037283.jpeg"
+---
+
+Running AI locally is no longer just an experiment. It is becoming practical, powerful, and private. With local AI, you can access knowledge offline, protect your data, and integrate AI directly into your projects. In this post, I will share my experience running local models, why **GPT‑OSS** matters, and what makes local AI exciting in 2025.
+
+---
+
+### My Local AI Journey
+
+I started with **Ollama** ([ollama.com](https://ollama.com/)) installed via Homebrew ([brew.sh](https://brew.sh/)). It lets you run models like GPT‑OSS with simple commands: ``ollama run gpt-oss``.
+
+While it worked, I wanted a GUI, so I switched to **Open-WebUI** ([openwebui.com](https://openwebui.com/)) with Docker. This setup made managing models, storing data, and running everything offline much easier.
+
+---
+
+### Why Local AI Matters
+
+- **Offline Knowledge** – Access AI even on planes or remote areas.
+- **Privacy** – Keep your data safe. Unlike cloud AI, local models stay on your device. DeepSeek, for example, is cloud-based in China and could potentially expose data.
+- **Project Integration** – Embed AI directly into apps, scripts, or experiments without relying on the internet.
+
+---
+
+### DeepSeek and GPT‑OSS
+
+DeepSeek proved that large AI can run locally or on edge devices, showing a path beyond cloud-only models. GPT‑OSS takes this further with **open-weight, Apache 2.0 licensed models**. You can run, inspect, fine-tune, and integrate them freely. This is a huge step for privacy-first AI and personal projects.
+
+---
+
+### Tech Highlights
+
+#### Quantization
+
+Reduces memory usage by storing weights in lower precision (for example, 8-bit), letting big models like GPT‑OSS run on ~16GB GPUs.
+
+#### MoE vs Non-MoE
+
+MoE models like **Mixtral** activate only a subset of parameters per token, saving compute. Non-MoE models like **Mistral** use all parameters but are simpler to run.
+
+#### Efficiency Tips
+
+Use memory-efficient runners like vLLM, optimize GPU usage, and persist data in Docker volumes.
+
+---
+
+### Conclusion
+
+Local AI in 2025 is accessible, private, and versatile. With tools like **Ollama**, **Open-WebUI**, and models like **GPT‑OSS**, you can:
+
+- Run AI offline on your Mac or VPS.
+- Keep sensitive data private.
+- Integrate AI into projects and experiments easily.
+
+Even a 20B model on your laptop gives you a personal AI assistant that works without touching the cloud. This is the start of a new era where **AI is yours to control**.

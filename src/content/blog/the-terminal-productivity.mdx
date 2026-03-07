@@ -1,0 +1,69 @@
+---
+title: "The Terminal Transformed My Productivity"
+description: "Six months ago, I didn't know what cd was. Today, I'm publishing websites in seconds with tools I built myself. Here's how the terminal went from terrifying..."
+publishedAt: 2025-10-12
+tags: ["technology","coding","tutorial"]
+image: "https://images.pexels.com/photos/207580/pexels-photo-207580.jpeg"
+---
+
+Six months ago, I didn't know what `cd` was. Today, I'm publishing websites in seconds with tools I built myself. Here's how the terminal went from terrifying to essential.
+
+### Learning Terminal on an iPad (Out of Desperation)
+
+I wanted to learn Next.js but didn't have a computer. Just an iPad. So I spun up a free Digital Ocean droplet, grabbed Termius, and SSH'd into a Linux server. That black screen became my entire dev environment.
+
+Problem? I knew nothing. Not `cd`, not `ls`, definitely not Neovim (which I had to learn because no GUI). The learning curve was brutal.
+
+The first command I learned was `lt`, a custom alias using [eza](https://github.com/eza-community/eza) to show files with icons in a tree. Sounds small, but it made the terminal feel less hostile. First time I thought "okay, this might actually be powerful."
+
+After two months of daily practice, something clicked. Commands became muscle memory. The terminal went from scary to fast.
+
+### What I Do in Terminal Now
+
+Pretty much everything:
+
+- Git workflows with `rebase` and `cherry-pick` instead of clicking through GitHub Desktop
+- Docker debugging with `docker compose logs`
+- File operations with Vim
+- Publishing websites with [Bridge](https://github.com/egeuysall/bridge) (my CLI tool)
+
+Bridge is the best example. Type `b hello.md` and boom, your markdown file becomes a live Next.js site with SEO, analytics, and zero config. What used to take 20+ steps now takes one command.
+
+### My Setup
+
+I'm on a Mac now (finally) with a pretty dialed setup:
+
+- Warp for AI completions that actually work
+- Oh My Zsh because it looks clean and has great plugins
+- tmux for background processes and session management
+- Neovim because once you learn it, nothing else feels as fast
+
+You can see my full setup at [github.com/egeuysall/dotfiles](https://github.com/egeuysall/dotfiles).
+
+### Three Tools That Changed Everything
+
+1. Warp Terminal - the AI autocomplete saves so much time
+2. Oh My Zsh - makes everything look good and shows git status instantly
+3. tmux - switching between projects is seamless
+
+### Mistakes I Made
+
+I overcomplicated my `.zshrc` early on. Start simple. Only add aliases when you're typing the same thing repeatedly.
+
+I also jumped into Neovim before learning basic navigation. Learn `cd`, `ls`, `mkdir`, and `grep` first. Build the foundation.
+
+And I was too scared to break things. You will break stuff. That's how you learn. Just keep backups.
+
+### If You're Intimidated
+
+Six months ago, the terminal felt like a black box for movie hackers, not for someone learning on an iPad.
+
+But here's the thing: it's just commands. Start with one workflow. Maybe use `git` in terminal instead of a GUI. Or navigate with `cd` instead of Finder. Practice until it's natural, then add more.
+
+Two months from now, you'll wonder how you worked any other way.
+
+The terminal doesn't just make you faster. It changes how you think. When everything is one command away, you start automating everything. You build tools because you can. You stop clicking and start shipping.
+
+Try it for a week. I promise you'll get hooked.
+
+Check out my [dotfiles](https://github.com/egeuysall/dotfiles) or try [Bridge](https://github.com/egeuysall/bridge) to publish sites in seconds.
