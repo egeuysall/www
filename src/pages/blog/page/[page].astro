@@ -1,0 +1,49 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+import Pagination from "@/components/ui/pagination.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPublishedBlogPosts } from "@/lib/content";
+import { getStaticPaginationPages, paginateItems } from "@/lib/pagination";
+import { formatDate } from "@/lib/utils";
+
+type Props = {
+  page: number;
+  posts: Array<CollectionEntry<"blog"> & { readingTime: number }>;
+};
+
+export async function getStaticPaths() {
+  const posts = await getPublishedBlogPosts();
+  const pages = getStaticPaginationPages(posts.length, 9).filter((page) => page > 1);
+
+  return pages.map((page) => ({
+    params: { page: String(page) },
+    props: {
+      page,
+      posts,
+    },
+  }));
+}
+
+const { page, posts } = Astro.props as Props;
+const pagination = paginateItems(posts, page, 9);
+---
+
+<BaseLayout
+  title={`Blog - Page ${pagination.currentPage}`}
+  pathname={`/blog/page/${pagination.currentPage}/`}
+  description="Technical notes, architecture choices, and build logs."
+  noindex
+>
+  <section class="space-y-5 animate-enter" style="--delay: 100ms;">
+    {pagination.items.map((post) => (
+      <article class="row-border pb-5">
+        <a href={`/blog/${post.slug}/`} class="block">
+          <h2 class="text-sm text-neutral-100">{post.data.title}</h2>
+          <p class="mt-1 text-xs text-neutral-400">{formatDate(post.data.publishedAt)}</p>
+        </a>
+      </article>
+    ))}
+  </section>
+  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/blog" />
+</BaseLayout>

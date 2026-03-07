@@ -1,0 +1,178 @@
+---
+title: "I Rebuilt My Website From Scratch Yesterday"
+description: "I deleted my old site and rebuilt everything from zero in one day. Here is the full process, what I changed, and the exact numbers at the end."
+publishedAt: 2026-03-07
+tags: ["technology","coding","performance"]
+---
+
+Yesterday I deleted my old website and started from zero.
+
+Not a refactor.  
+Not a cleanup pass.  
+A full rebuild.
+
+I did it because the old version had too much historical baggage. Every small change felt heavier than it should. The project still worked, but it no longer felt sharp.
+
+I wanted a site that was simple to maintain, fast to load, and easy to write on every day.
+
+This is the full process I used.
+
+---
+
+## Why I Started Over
+
+My website is not just a portfolio. It is where I publish what I build and what I learn.
+
+If the publishing system feels slow or messy, writing becomes harder. So I set one rule before I touched code:
+
+If a decision increases complexity without clear user value, it does not ship.
+
+That rule removed a lot of noise immediately.
+
+---
+
+## Plan Before Code
+
+I set constraints first, then designed around them.
+
+- Keep core pages around the 40KB range (`HTML + shared CSS`)
+- Keep home useful but compact
+- Add pagination early, before content grows more
+- Keep content file based with MDX
+- Treat security as part of the build, not post-launch work
+
+Once those constraints were locked, most implementation choices became obvious.
+
+---
+
+## How I Rebuilt It
+
+### 1) Reorganized the structure
+
+I split the site into three clear surfaces:
+
+- Home for quick context
+- Blog for long form writing
+- Diary for short daily logs
+
+Then I limited landing content to six blog posts and six diary entries so home stays readable.
+
+### 2) Added pagination immediately
+
+I did not wait for content to become unmanageable.
+
+I set both blog and diary listings to `9` items per page from day one.
+
+```ts
+// listing pages
+const pagination = paginateItems(postsOrEntries, 1, 9)
+
+// paginated routes
+const pages = getStaticPaginationPages(totalCount, 9).filter((page) => page > 1)
+```
+
+This kept page 1 lightweight while preserving discovery for older posts.
+
+### 3) Removed dead weight
+
+I removed unused components, dependencies, and assets.
+
+The biggest visual decision was dropping custom font files and preloads for this version. A clean system mono stack was enough for the design language and saved bytes.
+
+### 4) Kept analytics intentionally
+
+I kept Vercel Analytics because I still want product signal. But everything else stayed strict and minimal.
+
+The goal was balance: visibility without bloat.
+
+---
+
+## Security Changes I Included
+
+I treated security as default behavior during the rebuild.
+
+What I tightened:
+
+- outbound MDX link sanitization for unsafe schemes
+- safe escaping for inline JSON-LD
+- explicit production headers in config
+
+```json
+{
+  "key": "Content-Security-Policy",
+  "value": "default-src 'self'; object-src 'none'; frame-ancestors 'none'; script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com"
+}
+```
+
+I also added the rest of the standard header set:
+
+- `X-Content-Type-Options`
+- `X-Frame-Options`
+- `Referrer-Policy`
+- `Permissions-Policy`
+- `Cross-Origin-Opener-Policy`
+
+That gave me safer defaults without complicating the writing workflow.
+
+---
+
+## Final Numbers
+
+After the rebuild, core pages landed here (`HTML + shared CSS`):
+
+- Home: **41,090 B**
+- Blog index: **39,623 B**
+- Diary index: **37,133 B**
+
+Roughly 40KB per key page.
+
+I measured this after the final pass using the build output.
+
+```bash
+wc -c dist/index.html dist/blog/index.html dist/diary/index.html dist/_astro/*.css
+```
+
+Those numbers were the target, so I stopped there.
+
+---
+
+## What Actually Worked
+
+A few things mattered most:
+
+1. I deleted instead of patching old complexity.
+2. I set constraints before implementation.
+3. I added pagination early.
+4. I removed anything without a clear job.
+5. I measured after each major change.
+
+Most wins did not come from clever tricks. They came from controlled scope and consistent cleanup.
+
+---
+
+## If You Want to Rebuild Your Own Site
+
+Start with rules, not tools.
+
+Pick your weight target. Define the core pages. Decide what content belongs on home and what belongs in paginated lists. Then remove everything that fights those decisions.
+
+If I had to compress the approach into one checklist:
+
+1. Set hard constraints first.
+2. Build the smallest useful structure.
+3. Add pagination before growth hurts.
+4. Remove dead code weekly.
+5. Ship with explicit security headers.
+6. Measure and lock the result.
+
+That process is repeatable.
+
+---
+
+## Closing
+
+I rebuilt this website from scratch yesterday because I wanted speed, clarity, and control.
+
+Now it is easier to maintain, easier to write on, and ready to ship.
+
+If you are stuck with a site that feels heavier every week, try a one-day rebuild with strict constraints. You will learn fast, and your system will feel new again.

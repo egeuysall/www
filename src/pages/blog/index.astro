@@ -1,14 +1,17 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Pagination from "@/components/ui/pagination.astro";
 import { getPublishedBlogPosts } from "@/lib/content";
+import { paginateItems } from "@/lib/pagination";
 import { formatDate } from "@/lib/utils";
 
 const posts = await getPublishedBlogPosts();
+const pagination = paginateItems(posts, 1, 9);
 ---
 
 <BaseLayout title="Blog" pathname="/blog/" description="Technical notes, architecture choices, and build logs.">
   <section class="space-y-5 animate-enter" style="--delay: 100ms;">
-    {posts.map((post) => (
+    {pagination.items.map((post) => (
       <article class="row-border pb-5">
         <a href={`/blog/${post.slug}/`} class="block">
           <h2 class="text-sm text-neutral-100">{post.data.title}</h2>
@@ -17,4 +20,5 @@ const posts = await getPublishedBlogPosts();
       </article>
     ))}
   </section>
+  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/blog" />
 </BaseLayout>

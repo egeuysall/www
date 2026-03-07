@@ -1,13 +1,41 @@
 import { cn } from "@/lib/utils";
 import type { MDXComponents } from "mdx/types";
 
+const ALLOWED_EXTERNAL_PROTOCOLS = new Set(["http:", "https:", "mailto:", "tel:"]);
+
+function getSafeHref(input: string): string {
+  const href = input.trim();
+
+  if (!href) {
+    return "#";
+  }
+
+  if (href.startsWith("#") || href.startsWith("/") || href.startsWith("./") || href.startsWith("../")) {
+    return href;
+  }
+
+  const hasProtocol = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(href);
+
+  if (!hasProtocol) {
+    return href;
+  }
+
+  try {
+    const parsed = new URL(href);
+    return ALLOWED_EXTERNAL_PROTOCOLS.has(parsed.protocol) ? href : "#";
+  } catch {
+    return "#";
+  }
+}
+
 export const mdxComponents: MDXComponents = {
   a: ({ href = "", ...props }) => {
-    const isExternal = /^https?:\/\//.test(String(href));
+    const safeHref = getSafeHref(String(href));
+    const isExternal = /^https?:\/\//i.test(safeHref);
 
     return (
       <a
-        href={String(href)}
+        href={safeHref}
         {...(isExternal
           ? { target: "_blank", rel: "noopener noreferrer" }
           : {})}

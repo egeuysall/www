@@ -1,15 +1,18 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Pagination from "@/components/ui/pagination.astro";
 import { getDiaryDayMap, getDiaryEntrySlug, getPublishedDiaryEntries } from "@/lib/content";
+import { paginateItems } from "@/lib/pagination";
 
 const entries = await getPublishedDiaryEntries();
 const dayMap = await getDiaryDayMap();
+const pagination = paginateItems(entries, 1, 9);
 ---
 
 <BaseLayout title="Diary" pathname="/diary/" description="Daily short progress notes, sorted by date.">
   <section class="animate-enter" style="--delay: 110ms;">
     <ol class="space-y-4">
-      {entries.map((entry) => {
+      {pagination.items.map((entry) => {
         const dayNumber = dayMap.get(entry.id) ?? 0;
 
         return (
@@ -25,4 +28,5 @@ const dayMap = await getDiaryDayMap();
       })}
     </ol>
   </section>
+  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/diary" />
 </BaseLayout>

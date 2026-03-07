@@ -1,0 +1,106 @@
+---
+import { getPaginationTokens } from "@/lib/pagination";
+
+interface Props {
+  currentPage: number;
+  totalPages: number;
+  basePath: string;
+  ariaLabel?: string;
+  previousText?: string;
+  nextText?: string;
+}
+
+const {
+  currentPage,
+  totalPages,
+  basePath,
+  ariaLabel = "Pagination navigation",
+  previousText = "Previous",
+  nextText = "Next",
+} = Astro.props;
+
+const normalizedBasePath = basePath.replace(/\/+$/, "");
+
+const getPageHref = (page: number) =>
+  page === 1 ? `${normalizedBasePath}/` : `${normalizedBasePath}/page/${page}/`;
+
+const tokens = getPaginationTokens(currentPage, totalPages);
+---
+
+{
+  totalPages > 0 && (
+    <nav aria-label={ariaLabel} class="mt-8 flex justify-center">
+      <ul class="flex flex-wrap items-center gap-2 text-xs text-neutral-400">
+        <li>
+          {currentPage > 1 ? (
+            <a
+              href={getPageHref(currentPage - 1)}
+              aria-label="Go to previous page"
+              class="inline-flex h-8 items-center rounded-md px-3 hover:bg-neutral-900 hover:text-neutral-100"
+            >
+              <span class="hidden sm:block">{previousText}</span>
+              <span class="sm:hidden">Prev</span>
+            </a>
+          ) : (
+            <span
+              aria-disabled="true"
+              aria-hidden="true"
+              class="inline-flex h-8 cursor-not-allowed items-center rounded-md px-3 text-neutral-700"
+            >
+              <span class="hidden sm:block">{previousText}</span>
+              <span class="sm:hidden">Prev</span>
+            </span>
+          )}
+        </li>
+
+        {tokens.map((token) => (
+          <li>
+            {token === "ellipsis" ? (
+              <span
+                class="inline-flex h-8 w-8 items-center justify-center text-neutral-400"
+                aria-hidden="true"
+              >
+                ...
+              </span>
+            ) : (
+              <a
+                href={getPageHref(token)}
+                aria-current={token === currentPage ? "page" : undefined}
+                class:list={[
+                  "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 tabular-nums transition-colors",
+                  token === currentPage
+                    ? "text-neutral-100"
+                    : "hover:bg-neutral-900 hover:text-neutral-100",
+                ]}
+              >
+                {token}
+              </a>
+            )}
+          </li>
+        ))}
+
+        <li>
+          {currentPage < totalPages ? (
+            <a
+              href={getPageHref(currentPage + 1)}
+              aria-label="Go to next page"
+              class="inline-flex h-8 items-center rounded-md px-3 hover:bg-neutral-900 hover:text-neutral-100"
+            >
+              <span class="hidden sm:block">{nextText}</span>
+              <span class="sm:hidden">Next</span>
+            </a>
+          ) : (
+            <span
+              aria-disabled="true"
+              aria-hidden="true"
+              class="inline-flex h-8 cursor-not-allowed items-center rounded-md px-3 text-neutral-700"
+            >
+              <span class="hidden sm:block">{nextText}</span>
+              <span class="sm:hidden">Next</span>
+            </span>
+          )}
+        </li>
+      </ul>
+    </nav>
+  )
+}

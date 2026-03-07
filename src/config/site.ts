@@ -76,22 +76,3 @@ export const ALLOWED_IMAGE_PATTERNS = [
     hostname: "images.pexels.com",
   },
 ];
-
-export const EXTERNAL_IMAGE_PARAMS = {
-  fit: "cover",
-  format: "webp",
-  quality: "82",
-};
-
-export function withImageParams(
-  source: string,
-  params: Record<string, string> = EXTERNAL_IMAGE_PARAMS,
-): string {
-  const url = new URL(source);
-
-  Object.entries(params).forEach(([key, value]) => {
-    url.searchParams.set(key, value);
-  });
-
-  return url.toString();
-}

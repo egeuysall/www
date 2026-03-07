@@ -5,10 +5,18 @@ interface Props {
 
 const { data } = Astro.props;
 const payload = Array.isArray(data) ? data : [data];
+
+const safeJson = (entry: Record<string, unknown>) =>
+  JSON.stringify(entry)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 ---
 
 {
   payload.map((entry) => (
-    <script type="application/ld+json" is:inline set:html={JSON.stringify(entry)} />
+    <script type="application/ld+json" is:inline set:html={safeJson(entry)} />
   ))
 }

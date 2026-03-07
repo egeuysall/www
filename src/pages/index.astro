@@ -8,8 +8,8 @@ const blogPosts = await getPublishedBlogPosts();
 const diaryEntries = await getPublishedDiaryEntries();
 const diaryDayMap = await getDiaryDayMap();
 
-const recentPosts = blogPosts.slice(0, 3);
-const recentDiary = diaryEntries.slice(0, 5);
+const recentPosts = blogPosts.slice(0, 6);
+const recentDiary = diaryEntries.slice(0, 6);
 
 const jsonLd = [
   {
