@@ -7,7 +7,12 @@ import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
 import tailwindcss from "@tailwindcss/vite";
 
-import { ALLOWED_IMAGE_HOSTS, ALLOWED_IMAGE_PATTERNS, SITE } from "./src/config/site";
+import {
+  ALLOWED_IMAGE_HOSTS,
+  ALLOWED_IMAGE_PATTERNS,
+  SITE,
+} from "./src/config/site";
+import remarkInlineShiki from "./src/plugins/remark-inline-shiki.mjs";
 
 // https://astro.build/config
 export default defineConfig({
@@ -19,6 +24,7 @@ export default defineConfig({
   },
   markdown: {
     syntaxHighlight: "shiki",
+    remarkPlugins: [remarkInlineShiki],
   },
   vite: {
     plugins: [tailwindcss()],

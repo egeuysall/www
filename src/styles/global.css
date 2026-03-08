@@ -171,10 +171,11 @@ a {
 }
 
 .prose :not(pre) > code {
-  background-color: #171717;
-  color: #e5e5e5;
+  background-color: transparent;
+  color: inherit;
+  border: 1px solid #262626;
   border-radius: 0.25rem;
-  padding: 0.1rem 0.35rem;
+  padding: 0.1rem 0.3rem;
 }
 
 .prose code::before,
