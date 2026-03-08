@@ -11,3 +11,141 @@ Wrote and published a new blog post about the rebuild process.
 Did manual outreach for Ryva, talked to a lot of people, and closed the first two users. They are high-quality users and a strong starting point.
 
 Also built and shipped a website for **Aegean Pro**, the umbrella company for my SaaS projects.
+
+## Patterns observed in Ryva discovery
+
+After today’s outreach and conversations, the pattern is clearer than before.
+
+### 1. The core problem is real
+
+People repeatedly described the same issue:
+
+> Information exists, but context is scattered.
+
+Common systems they mentioned:
+
+- GitHub commits and PR threads
+- Slack channels and DMs
+- Jira or ticket systems
+- docs and wikis
+
+Most teams rebuild context manually in meetings.
+
+---
+
+### 2. Teams already try manual fixes
+
+A lot of teams have workarounds in place already:
+
+- automated status posts
+- Slack to Notion automations
+- Jira workflows and strict ticket hierarchies
+- Excel dashboards
+- team info radiators
+
+The pattern is the same: these systems work only if someone constantly maintains them.
+
+### 3. Status is not state
+
+The strongest signal today was this distinction:
+
+- `status` = activity feed
+- `state` = real project condition
+
+Leaders mostly ask:
+
+1. Are we actually on track?
+2. What changed materially?
+3. What decision is missing?
+4. What needs attention now?
+
+```txt
+Status: "3 PRs opened, 2 merged"
+State:  "Release risk increased because migration scope changed and ownership is unclear"
+```
+
+---
+
+### 4. Team-size breakpoint is around 5-10
+
+This came up more than once:
+
+- Under 5 people, context is mostly in everyone’s head.
+- Around 5 to 10+, fragmentation starts.
+- After that, coordination overhead climbs fast.
+
+This looks like the key ICP transition point.
+
+### 5. Good teams prefer automation over status meetings
+
+Operators consistently said the goal is to automate routine updates and preserve meetings for actual problem-solving.
+
+Target operating model:
+
+1. Keep project state written and current.
+2. Automate reporting where possible.
+3. Use meetings for decisions, blockers, and tradeoffs.
+
+---
+
+### 6. Biggest AI concern is trust quality
+
+The main objection was not AI itself. It was data quality.
+
+Failure sources mentioned:
+
+- stale documentation
+- messy or outdated tickets
+- deprecated tasks still in workflow
+- poor naming in repos or channels
+
+If the source signals are bad, output trust collapses quickly.
+
+Ryva solves this problem by implementing an archive and prioritization system.
+
+The system ensures only the most relevant, up-to-date context feeds into AI outputs.
+
+### 7. Async and distributed teams feel this pain most
+
+Strongest pain signals came from teams with:
+
+- multiple time zones
+- remote collaboration
+- Slack-heavy workflows
+- high repo velocity
+
+For these teams, meetings are expensive and often incomplete.
+
+---
+
+### 8. Manual context transfer is already happening
+
+People are already doing this by hand:
+
+- screenshotting Slack messages into tasks
+- copying thread decisions into Jira tickets
+- writing manual summaries across systems
+
+That is a strong validation signal.
+
+### 9. Best early audience is operator roles
+
+Most engaged:
+
+- founders
+- engineering managers
+- CTOs
+- operators
+
+Least engaged: individual contributors and developers who feel less cross-team coordination pressure day to day.
+
+### 10. Current signal stage
+
+1. Clear problem recognition
+2. Thoughtful workflow feedback
+3. Manual process pain confirmation
+4. First high-quality testers
+
+But it didn't show repeated "this showed me something I did not know" moments because nobody had used it yet.
+
+This still looks like **problem-solution resonance**. Next milestone is consistent, repeated "aha" moments in real workflows.
