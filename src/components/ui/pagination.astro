@@ -62,15 +62,19 @@ const tokens = getPaginationTokens(currentPage, totalPages);
               >
                 ...
               </span>
+            ) : token === currentPage ? (
+              <span
+                aria-current="page"
+                class="inline-flex h-8 min-w-8 cursor-default items-center justify-center rounded-md px-2 tabular-nums text-neutral-100"
+              >
+                {token}
+              </span>
             ) : (
               <a
                 href={getPageHref(token)}
-                aria-current={token === currentPage ? "page" : undefined}
                 class:list={[
                   "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 tabular-nums transition-colors",
-                  token === currentPage
-                    ? "text-neutral-100"
-                    : "hover:bg-neutral-900 hover:text-neutral-100",
+                  "hover:bg-neutral-900 hover:text-neutral-100",
                 ]}
               >
                 {token}
