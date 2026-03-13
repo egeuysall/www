@@ -105,6 +105,8 @@ function getYouTubeEmbedUrl(input: string): string | null {
 
   const embedUrl = new URL(`https://www.youtube.com/embed/${videoId}`);
   embedUrl.searchParams.set("autoplay", "1");
+  embedUrl.searchParams.set("loop", "1");
+  embedUrl.searchParams.set("playlist", videoId);
   embedUrl.searchParams.set("mute", "1");
   embedUrl.searchParams.set("controls", "0");
   embedUrl.searchParams.set("modestbranding", "1");
