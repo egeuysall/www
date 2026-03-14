@@ -56,6 +56,12 @@ export const PROJECTS: ProjectProofItem[] = [
     url: "https://shipr.egeuysal.com",
     linkLabel: "shipr.egeuysal.com",
   },
+  {
+    title: "Huesly",
+    summary: "Generate beautiful, accessible brands in seconds.",
+    url: "https://huesly.app",
+    linkLabel: "huesly.app",
+  },
 ];
 
 export const ALLOWED_IMAGE_HOSTS = [
