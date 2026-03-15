@@ -2,7 +2,7 @@
 title: "I Rebuilt My Website From Scratch Yesterday"
 description: "I deleted my old site and rebuilt everything from zero in one day. Here is the full process, what I changed, and the exact numbers at the end."
 publishedAt: 2026-03-07
-tags: ["technology","coding","performance"]
+tags: ["technology", "coding", "performance"]
 ---
 
 Yesterday I deleted my old website and started from zero.
@@ -65,10 +65,12 @@ I set both blog and diary listings to `9` items per page from day one.
 
 ```ts
 // listing pages
-const pagination = paginateItems(postsOrEntries, 1, 9)
+const pagination = paginateItems(postsOrEntries, 1, 9);
 
 // paginated routes
-const pages = getStaticPaginationPages(totalCount, 9).filter((page) => page > 1)
+const pages = getStaticPaginationPages(totalCount, 9).filter(
+  (page) => page > 1,
+);
 ```
 
 This kept page 1 lightweight while preserving discovery for older posts.

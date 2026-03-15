@@ -2,7 +2,7 @@
 title: "I Killed My SaaS at 15. Here's What I Built Instead."
 description: "Two weeks ago I published Why I'm Killing My SaaS Before Launch, the story of spending 2 months building 70,000 lines of enterprise grade infrastructure and..."
 publishedAt: 2026-02-07
-tags: ["technology","story","build"]
+tags: ["technology", "story", "build"]
 image: "https://images.pexels.com/photos/7440520/pexels-photo-7440520.jpeg"
 ---
 
@@ -15,6 +15,7 @@ Here's what I did differently.
 ## What Changed
 
 **Ryva (killed):**
+
 - 2 months building
 - 70,000 lines of Go
 - Custom backend, CI/CD, email queues
@@ -22,7 +23,8 @@ Here's what I did differently.
 - Never launched
 
 **Huesly (shipped):**
-- 2 weeks building  
+
+- 2 weeks building
 - Supabase + Next.js + Vercel
 - Live on Product Hunt, Hacker News, X
 - First signups in 24 hours
@@ -32,14 +34,14 @@ The difference? I finally listened to my own advice: ship fast, scale later.
 
 ## The Stack Comparison
 
-| Ryva | Huesly |
-|------|--------|
-| Custom Go backend with service layers | Next.js API routes |
-| Multi-stage CI/CD with load balancing | Vercel deploy button |
-| Custom email queuing system | Resend (one API call) |
-| 3 containerized Docker instances | Single Vercel deployment |
-| Custom auth with JWT + refresh tokens | Supabase Auth |
-| 2-week billing system integration | Stripe Checkout (30 minutes) |
+| Ryva                                  | Huesly                       |
+| ------------------------------------- | ---------------------------- |
+| Custom Go backend with service layers | Next.js API routes           |
+| Multi-stage CI/CD with load balancing | Vercel deploy button         |
+| Custom email queuing system           | Resend (one API call)        |
+| 3 containerized Docker instances      | Single Vercel deployment     |
+| Custom auth with JWT + refresh tokens | Supabase Auth                |
+| 2-week billing system integration     | Stripe Checkout (30 minutes) |
 
 Every "enterprise feature" I over-engineered for Ryva had a boring alternative that let me ship 10x faster.
 
@@ -50,6 +52,7 @@ Simple problem: developers spend 3+ hours picking colors, fonts, and spacing for
 Huesly generates complete design systems from moods in less than 1 second.
 
 **How it works:**
+
 1. Enter a mood (Minimal, Bold, Professional, Elegant, etc)
 2. Get instant WCAG-compliant colors, font pairings, spacing scales
 3. Export to CSS variables, Tailwind v4 config, SCSS, or JSON tokens
@@ -69,12 +72,14 @@ This is why Huesly's palettes feel cohesive instead of random.
 ### Why Next.js + Supabase?
 
 After Ryva, I had a choice:
+
 - Reuse my 70k lines of production-grade Go infrastructure
 - Start fresh with boring technology
 
 I chose boring. Here's why:
 
 **For an MVP, Supabase gives you:**
+
 - Auth (GitHub OAuth in 5 minutes)
 - Database (PostgreSQL with RLS)
 - Real-time subscriptions
@@ -87,6 +92,7 @@ What took me 2 months to build in Go, I got in 2 days with Supabase.
 ## Early Results
 
 **Launch day (24 hours):**
+
 - Posted to X, Hacker News, Dev.to, Product Hunt
 - 2 signups
 - Active discussions on HN
@@ -95,6 +101,7 @@ What took me 2 months to build in Go, I got in 2 days with Supabase.
 Not massive numbers. But users are using it. People are exporting design systems to real projects. That's infinitely more than Ryva's zero.
 
 **What I learned:**
+
 - 2 real users > 0 hypothetical enterprise customers
 - Shipping creates momentum
 - Feedback only comes from real usage
@@ -103,6 +110,7 @@ Not massive numbers. But users are using it. People are exporting design systems
 ## The Pricing Experiment
 
 I'm testing two models:
+
 - **Lifetime:** $30 (capped at 100 users)
 - **Monthly:** $15/month unlimited
 
@@ -121,6 +129,7 @@ I can always introduce v2 features as subscription-only later.
 Ryva was built in silence. I thought code quality would attract users.
 
 Huesly is different. I'm:
+
 - Posting daily updates on X
 - Sharing metrics (even small ones)
 - Writing about technical decisions
@@ -139,6 +148,7 @@ Simple problem = fast validation = quick iteration.
 ### 3. Content-First Strategy
 
 I'm learning:
+
 - High-level video editing
 - Viral hooks for short-form content
 - Long-form storytelling
@@ -165,6 +175,7 @@ The code isn't wasted. The timing was just wrong.
 ## What's Next
 
 **Short-term (next 30 days):**
+
 - Reach 100 users
 - Get 10 paying customers
 - Collect testimonials
@@ -172,17 +183,20 @@ The code isn't wasted. The timing was just wrong.
 - Learn what features actually matter
 
 **Medium-term (3-6 months):**
+
 - Hit $1K MRR
 - Launch v2 features
 - Build viral content engine
 - Grow through word-of-mouth
 
 **Long-term (before graduation):**
+
 - $100K ARR
 - Prove a 16-year-old can build real businesses
 - Document everything publicly
 
 The goal isn't just revenue. It's proving that:
+
 1. You can ship fast without sacrificing quality
 2. Boring technology beats interesting architecture for MVPs
 3. Marketing matters more than perfect code
@@ -193,6 +207,7 @@ The goal isn't just revenue. It's proving that:
 I spent 2 months building infrastructure I didn't need.
 
 You might be doing the same right now:
+
 - Perfect CI/CD before you have users
 - Custom auth instead of Supabase/Clerk
 - Microservices for a product with 0 customers
@@ -215,4 +230,5 @@ Enter a mood. Get a design system. Export to code. Ship your project.
 And if you're building your first SaaS: learn from my mistakes. Ship fast. The perfect infrastructure can wait.
 
 **Follow the journey:**
+
 - X: [@egewrk](https://x.com/egewrk)

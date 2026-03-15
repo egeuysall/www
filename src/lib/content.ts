@@ -46,8 +46,7 @@ export async function getPublishedBlogPosts(): Promise<
       readingTime: readingTimeMinutes(entry.body),
     }))
     .sort(
-      (a, b) =>
-        b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+      (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
     );
 }
 
@@ -68,7 +67,9 @@ export async function getDiaryDayMap(): Promise<Map<string, number>> {
   entries.forEach(assertDiaryFilenameMatchesDate);
   assertUniqueDiarySlugs(entries);
 
-  const asc = entries.sort((a, b) => a.data.date.getTime() - b.data.date.getTime());
+  const asc = entries.sort(
+    (a, b) => a.data.date.getTime() - b.data.date.getTime(),
+  );
 
   const map = new Map<string, number>();
 
