@@ -34,6 +34,15 @@ const canonical = new URL(pathname, siteOrigin).toString();
 const ogImage = new URL(image, siteOrigin).toString();
 const normalizePath = (value: string) => value.replace(/\/+$/, "") || "/";
 const currentPath = normalizePath(Astro.url.pathname);
+const isNavActive = (href: string): boolean => {
+  const normalizedHref = normalizePath(href);
+
+  if (normalizedHref === "/") {
+    return currentPath === "/";
+  }
+
+  return currentPath === normalizedHref || currentPath.startsWith(`${normalizedHref}/`);
+};
 ---
 
 <!doctype html>
@@ -89,7 +98,7 @@ const currentPath = normalizePath(Astro.url.pathname);
               <a
                 href={item.href}
                 class="nav-link"
-                aria-current={currentPath === normalizePath(item.href) ? "page" : undefined}
+                aria-current={isNavActive(item.href) ? "page" : undefined}
               >
                 {item.label}
               </a>

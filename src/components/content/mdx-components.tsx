@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import type { MDXComponents } from "mdx/types";
 
 const ALLOWED_EXTERNAL_PROTOCOLS = new Set([
@@ -166,7 +165,7 @@ export const mdxComponents: MDXComponents = {
       alt={String(alt)}
       loading="lazy"
       decoding="async"
-      className={cn("rounded-sm", className)}
+      className="not-prose my-6 overflow-hidden rounded-sm border border-neutral-800"
       {...props}
     />
   ),
