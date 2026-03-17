@@ -337,8 +337,7 @@ export const DitherShader: React.FC<DitherShaderProps> = ({
     const processImage = (img: HTMLImageElement) => {
       if (isCancelled) return;
 
-      const dpr =
-        typeof window !== "undefined" ? window.devicePixelRatio || 1 : 1;
+      const dpr = 1;
       const displayWidth = dimensions.width;
       const displayHeight = dimensions.height;
 

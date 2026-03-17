@@ -33,6 +33,7 @@ const pagination = paginateItems(photos, page, PHOTO_PAGE_SIZE);
   title={`Photo - Page ${pagination.currentPage}`}
   pathname={`/photo/page/${pagination.currentPage}/`}
   description="Portrait photo archive by Ege Uysal."
+  mainClass="flex items-center justify-center !pb-0"
   noindex
 >
   <PhotoGallery

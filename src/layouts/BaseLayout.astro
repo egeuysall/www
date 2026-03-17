@@ -14,6 +14,7 @@ interface Props {
   updatedTime?: string;
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
   noindex?: boolean;
+  mainClass?: string;
 }
 
 const {
@@ -26,6 +27,7 @@ const {
   updatedTime,
   jsonLd,
   noindex = false,
+  mainClass = "",
 } = Astro.props;
 
 const siteOrigin = Astro.site ?? new URL(SITE.url);
@@ -107,7 +109,7 @@ const isNavActive = (href: string): boolean => {
         </div>
       </header>
 
-      <main class="flex-1 pb-8">
+      <main class:list={["flex-1 pb-8", mainClass]}>
         <slot />
       </main>
 

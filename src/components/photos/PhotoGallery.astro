@@ -1,5 +1,6 @@
 ---
 import Pagination from "@/components/ui/pagination.astro";
+import { getImage, Image } from "astro:assets";
 import { DitherShader } from "@/components/ui/dither-shader";
 import type { PhotoAsset } from "@/lib/photos";
 
@@ -11,63 +12,81 @@ interface Props {
 }
 
 const { photos, currentPage, totalPages, configured } = Astro.props;
+const ditherSrcBySlug = new Map<string, string>(
+  await Promise.all(
+    photos.map(async (photo) => {
+      const ditherImage = await getImage({
+        src: photo.displaySrc,
+        width: 360,
+        height: 450,
+        format: "webp",
+        quality: 42,
+      });
+
+      return [photo.slug, ditherImage.src] as const;
+    }),
+  ),
+);
 ---
 
-{
-  photos.length > 0 ? (
-    <ol class="grid gap-6 sm:grid-cols-2">
-    {photos.map((photo, index) => (
-      <li class="animate-enter" style={`--delay: ${140 + (index % 6) * 55}ms;`}>
-        <a
-          href={`/photo/${photo.slug}/`}
-          class="group block"
-          aria-label={`Open ${photo.title} story`}
-        >
-          <div class="not-prose relative aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800">
-            <img
-              src={photo.displaySrc}
-              sizes="(min-width: 640px) 44vw, 100vw"
-              alt={photo.alt}
-              width="720"
-              height="900"
-              loading={currentPage === 1 && index < 2 ? "eager" : "lazy"}
-              decoding="async"
-              fetchpriority={currentPage === 1 && index === 0 ? "high" : "auto"}
-              class="h-full w-full object-cover"
-            />
+<div class="mx-auto w-full md:max-w-[48rem]">
+  {
+    photos.length > 0 ? (
+      <ol class="m-0 grid list-none gap-6 p-0 sm:grid-cols-2 md:justify-items-center">
+      {photos.map((photo, index) => (
+        <li class="animate-enter w-full md:max-w-[22.5rem]" style={`--delay: ${140 + (index % 6) * 55}ms;`}>
+          <a
+            href={`/photo/${photo.slug}/`}
+            class="group block"
+            aria-label={`Open ${photo.title} story`}
+          >
+            <div class="not-prose relative aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800">
+              <Image
+                src={photo.displaySrc}
+                sizes="(min-width: 640px) 44vw, 100vw"
+                alt={photo.alt}
+                width={720}
+                height={900}
+                quality={68}
+                loading={currentPage === 1 && index === 0 ? "eager" : "lazy"}
+                decoding="async"
+                fetchpriority={currentPage === 1 && index === 0 ? "high" : "auto"}
+                class="h-full w-full object-cover"
+              />
 
-            <div
-              aria-hidden="true"
-              class="pointer-events-none absolute inset-0 opacity-35 transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0 [background-size:4px_4px] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.35)_1px,transparent_1px)]"
-            >
+              <div
+                aria-hidden="true"
+                class="pointer-events-none absolute inset-0 opacity-35 transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0 [background-size:4px_4px] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.35)_1px,transparent_1px)]"
+              >
+              </div>
+
+              <DitherShader
+                client:visible
+                src={ditherSrcBySlug.get(photo.slug) ?? photo.displaySrc}
+                ditherMode="bayer"
+                colorMode="grayscale"
+                gridSize={2}
+                brightness={-0.2}
+                className="pointer-events-none absolute inset-0 h-full w-full transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
+              />
             </div>
+          </a>
+        </li>
+      ))}
+      </ol>
+    ) : (
+      <section class="animate-enter" style="--delay: 120ms;">
+        <div class="row-border py-6">
+          <p class="text-sm text-neutral-100">No photos available yet.</p>
+          <p class="mt-2 max-w-[56ch] text-xs leading-relaxed text-neutral-400">
+            {configured
+              ? "The photo archive is empty."
+              : "Add photo notes in /src/content/photo/ with frontmatter fields like title, imageUrl, and publishedAt."}
+          </p>
+        </div>
+      </section>
+    )
+  }
 
-            <DitherShader
-              client:load
-              src={photo.displaySrc}
-              ditherMode="bayer"
-              colorMode="grayscale"
-              gridSize={2}
-              brightness={-0.2}
-              className="pointer-events-none absolute inset-0 h-full w-full transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
-            />
-          </div>
-        </a>
-      </li>
-    ))}
-    </ol>
-  ) : (
-    <section class="animate-enter" style="--delay: 120ms;">
-      <div class="row-border py-6">
-        <p class="text-sm text-neutral-100">No photos available yet.</p>
-        <p class="mt-2 max-w-[56ch] text-xs leading-relaxed text-neutral-400">
-          {configured
-            ? "The photo archive is empty."
-            : "Add photo notes in /src/content/photo/ with frontmatter fields like title, imageUrl, and publishedAt."}
-        </p>
-      </div>
-    </section>
-  )
-}
-
-<Pagination currentPage={currentPage} totalPages={totalPages} basePath="/photo" ariaLabel="Photo pagination" />
+  <Pagination currentPage={currentPage} totalPages={totalPages} basePath="/photo" ariaLabel="Photo pagination" />
+</div>
