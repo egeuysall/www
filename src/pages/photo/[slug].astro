@@ -4,7 +4,6 @@ import { mdxComponents } from "@/components/content/mdx-components";
 import { SITE } from "@/config/site";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { formatDate } from "@/lib/utils";
-import { Image } from "astro:assets";
 import { getPhotoFeed, type PhotoAsset } from "@/lib/photos";
 
 type Props = {
@@ -69,13 +68,12 @@ const jsonLd = {
       </p>
     </header>
 
-    <Image
+    <img
       src={photo.displaySrc}
       sizes="(min-width: 1024px) 52rem, 100vw"
       alt={photo.alt}
       width={720}
       height={900}
-      quality={72}
       loading="eager"
       decoding="async"
       fetchpriority="high"

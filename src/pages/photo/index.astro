@@ -1,7 +1,6 @@
 ---
 import PhotoGallery from "@/components/photos/PhotoGallery.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getImage } from "astro:assets";
 import { getPhotoFeed, PHOTO_PAGE_SIZE } from "@/lib/photos";
 import { paginateItems } from "@/lib/pagination";
 
@@ -15,19 +14,7 @@ const nextPage = hasNextPage
   : null;
 const nextPageHref = nextPage ? `/photo/page/${nextPage.currentPage}/` : undefined;
 const nextPageImageUrls = nextPage
-  ? await Promise.all(
-      nextPage.items.map(async (item) => {
-        const ditherImage = await getImage({
-          src: item.displaySrc,
-          width: 1080,
-          height: 1350,
-          format: "webp",
-          quality: 68,
-        });
-
-        return ditherImage.src;
-      }),
-    )
+  ? nextPage.items.flatMap((item) => [item.displaySrc, item.ditherSrc])
   : [];
 ---
 

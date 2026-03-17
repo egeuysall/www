@@ -1,6 +1,5 @@
 ---
 import Pagination from "@/components/ui/pagination.astro";
-import { getImage, Image } from "astro:assets";
 import { DitherShader } from "@/components/ui/dither-shader";
 import PhotoGalleryPrefetch from "@/components/photos/PhotoGalleryPrefetch";
 import type { PhotoAsset } from "@/lib/photos";
@@ -22,22 +21,6 @@ const {
   nextPageHref,
   nextPageImageUrls = [],
 } = Astro.props;
-
-const ditherSrcBySlug = new Map<string, string>(
-  await Promise.all(
-    photos.map(async (photo) => {
-      const ditherImage = await getImage({
-        src: photo.displaySrc,
-        width: 1080,
-        height: 1350,
-        format: "webp",
-        quality: 68,
-      });
-
-      return [photo.slug, ditherImage.src] as const;
-    }),
-  ),
-);
 ---
 
 <div class="mx-auto w-full md:max-w-[48rem]">
@@ -52,13 +35,12 @@ const ditherSrcBySlug = new Map<string, string>(
             aria-label={`Open ${photo.title} story`}
           >
             <div class="not-prose relative aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800">
-              <Image
+              <img
                 src={photo.displaySrc}
                 sizes="(min-width: 640px) 44vw, 100vw"
                 alt={photo.alt}
                 width={720}
                 height={900}
-                quality={68}
                 loading={currentPage === 1 && index === 0 ? "eager" : "lazy"}
                 decoding="async"
                 fetchpriority={currentPage === 1 && index === 0 ? "high" : "auto"}
@@ -67,10 +49,10 @@ const ditherSrcBySlug = new Map<string, string>(
 
               <DitherShader
                 client:load
-                src={ditherSrcBySlug.get(photo.slug) ?? photo.displaySrc}
+                src={photo.ditherSrc}
                 processingWidth={256}
-                maxResizeWidth={512}
-                maxResizeHeight={512}
+                maxResizeWidth={256}
+                maxResizeHeight={256}
                 threshold={0.6}
                 brightness={-0.2}
                 className="pointer-events-none transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
