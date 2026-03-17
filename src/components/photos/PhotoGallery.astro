@@ -2,6 +2,7 @@
 import Pagination from "@/components/ui/pagination.astro";
 import { getImage, Image } from "astro:assets";
 import { DitherShader } from "@/components/ui/dither-shader";
+import PhotoGalleryPrefetch from "@/components/photos/PhotoGalleryPrefetch";
 import type { PhotoAsset } from "@/lib/photos";
 
 interface Props {
@@ -9,18 +10,28 @@ interface Props {
   currentPage: number;
   totalPages: number;
   configured: boolean;
+  nextPageHref?: string;
+  nextPageImageUrls?: string[];
 }
 
-const { photos, currentPage, totalPages, configured } = Astro.props;
+const {
+  photos,
+  currentPage,
+  totalPages,
+  configured,
+  nextPageHref,
+  nextPageImageUrls = [],
+} = Astro.props;
+
 const ditherSrcBySlug = new Map<string, string>(
   await Promise.all(
     photos.map(async (photo) => {
       const ditherImage = await getImage({
         src: photo.displaySrc,
-        width: 360,
-        height: 450,
+        width: 1080,
+        height: 1350,
         format: "webp",
-        quality: 42,
+        quality: 68,
       });
 
       return [photo.slug, ditherImage.src] as const;
@@ -54,20 +65,15 @@ const ditherSrcBySlug = new Map<string, string>(
                 class="h-full w-full object-cover"
               />
 
-              <div
-                aria-hidden="true"
-                class="pointer-events-none absolute inset-0 opacity-35 transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0 [background-size:4px_4px] [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.35)_1px,transparent_1px)]"
-              >
-              </div>
-
               <DitherShader
-                client:visible
+                client:load
                 src={ditherSrcBySlug.get(photo.slug) ?? photo.displaySrc}
-                ditherMode="bayer"
-                colorMode="grayscale"
-                gridSize={2}
+                processingWidth={256}
+                maxResizeWidth={512}
+                maxResizeHeight={512}
+                threshold={0.6}
                 brightness={-0.2}
-                className="pointer-events-none absolute inset-0 h-full w-full transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
+                className="pointer-events-none transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
               />
             </div>
           </a>
@@ -89,4 +95,10 @@ const ditherSrcBySlug = new Map<string, string>(
   }
 
   <Pagination currentPage={currentPage} totalPages={totalPages} basePath="/photo" ariaLabel="Photo pagination" />
+  <PhotoGalleryPrefetch
+    client:load
+    nextPageHref={nextPageHref}
+    nextPageImageUrls={nextPageImageUrls}
+    maxNetworkWidth={1350}
+  />
 </div>

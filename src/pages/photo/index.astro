@@ -1,12 +1,34 @@
 ---
 import PhotoGallery from "@/components/photos/PhotoGallery.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getImage } from "astro:assets";
 import { getPhotoFeed, PHOTO_PAGE_SIZE } from "@/lib/photos";
 import { paginateItems } from "@/lib/pagination";
 
 const photos = await getPhotoFeed();
 const pagination = paginateItems(photos, 1, PHOTO_PAGE_SIZE);
 const configured = photos.length > 0;
+
+const hasNextPage = pagination.currentPage < pagination.totalPages;
+const nextPage = hasNextPage
+  ? paginateItems(photos, pagination.currentPage + 1, PHOTO_PAGE_SIZE)
+  : null;
+const nextPageHref = nextPage ? `/photo/page/${nextPage.currentPage}/` : undefined;
+const nextPageImageUrls = nextPage
+  ? await Promise.all(
+      nextPage.items.map(async (item) => {
+        const ditherImage = await getImage({
+          src: item.displaySrc,
+          width: 1080,
+          height: 1350,
+          format: "webp",
+          quality: 68,
+        });
+
+        return ditherImage.src;
+      }),
+    )
+  : [];
 ---
 
 <BaseLayout
@@ -20,5 +42,7 @@ const configured = photos.length > 0;
     currentPage={pagination.currentPage}
     totalPages={pagination.totalPages}
     configured={configured}
+    nextPageHref={nextPageHref}
+    nextPageImageUrls={nextPageImageUrls}
   />
 </BaseLayout>

@@ -2,6 +2,7 @@
 import JsonLd from "@/components/seo/JsonLd.astro";
 import { NAV_LINKS, SEO_DEFAULTS, SITE, SOCIAL_LINKS } from "@/config/site";
 import Analytics from "@vercel/analytics/astro";
+import { ClientRouter } from "astro:transitions";
 import "@/styles/global.css";
 
 interface Props {
@@ -87,6 +88,7 @@ const isNavActive = (href: string): boolean => {
     {updatedTime && <meta property="article:modified_time" content={updatedTime} />}
 
     {jsonLd && <JsonLd data={jsonLd} />}
+    <ClientRouter />
   </head>
   <body class="min-h-full bg-bg font-mono text-fg antialiased">
     <div class="mx-auto flex min-h-screen w-full max-w-155 flex-col px-6 py-8 sm:px-8 sm:py-10">
@@ -127,6 +129,9 @@ const isNavActive = (href: string): boolean => {
                 {link.label}
               </a>
             ))}
+            <a href="mailto:hi@egeuysal.com" class="hover:text-neutral-300">
+              Contact
+            </a>
           </div>
           <p>&copy; {new Date().getFullYear()}</p>
         </div>

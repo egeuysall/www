@@ -16,7 +16,7 @@ export interface PhotoAsset {
   storyEntry: CollectionEntry<"photo">;
 }
 
-const PHOTO_PAGE_SIZE = 2;
+const PHOTO_PAGE_SIZE = 6;
 
 let photoFeedPromise: Promise<PhotoAsset[]> | undefined;
 
