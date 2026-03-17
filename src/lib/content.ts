@@ -31,8 +31,29 @@ function assertUniqueDiarySlugs(entries: CollectionEntry<"diary">[]): void {
   }
 }
 
+function assertUniquePhotoSlugs(entries: CollectionEntry<"photo">[]): void {
+  const seen = new Map<string, string>();
+
+  for (const entry of entries) {
+    const slug = getPhotoEntrySlug(entry);
+    const existing = seen.get(slug);
+
+    if (existing) {
+      throw new Error(
+        `Duplicate photo slug "${slug}" found in "${entry.id}" and "${existing}".`,
+      );
+    }
+
+    seen.set(slug, entry.id);
+  }
+}
+
 export function getDiaryEntrySlug(entry: CollectionEntry<"diary">): string {
   return entry.data.slug ?? entry.slug;
+}
+
+export function getPhotoEntrySlug(entry: CollectionEntry<"photo">): string {
+  return entry.slug;
 }
 
 export async function getPublishedBlogPosts(): Promise<
@@ -59,6 +80,17 @@ export async function getPublishedDiaryEntries(): Promise<
   assertUniqueDiarySlugs(entries);
 
   return entries.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+}
+
+export async function getPublishedPhotoEntries(): Promise<
+  CollectionEntry<"photo">[]
+> {
+  const entries = await getCollection("photo", ({ data }) => !data.draft);
+
+  assertUniquePhotoSlugs(entries);
+  return entries.sort(
+    (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),
+  );
 }
 
 export async function getDiaryDayMap(): Promise<Map<string, number>> {

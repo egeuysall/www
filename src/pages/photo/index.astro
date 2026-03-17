@@ -1,0 +1,23 @@
+---
+import PhotoGallery from "@/components/photos/PhotoGallery.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getPhotoFeed, PHOTO_PAGE_SIZE } from "@/lib/photos";
+import { paginateItems } from "@/lib/pagination";
+
+const photos = await getPhotoFeed();
+const pagination = paginateItems(photos, 1, PHOTO_PAGE_SIZE);
+const configured = photos.length > 0;
+---
+
+<BaseLayout
+  title="Photo"
+  pathname="/photo/"
+  description="Portrait photo archive by Ege Uysal."
+>
+  <PhotoGallery
+    photos={pagination.items}
+    currentPage={pagination.currentPage}
+    totalPages={pagination.totalPages}
+    configured={configured}
+  />
+</BaseLayout>

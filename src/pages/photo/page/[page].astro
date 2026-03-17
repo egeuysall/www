@@ -1,0 +1,44 @@
+---
+import PhotoGallery from "@/components/photos/PhotoGallery.astro";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getStaticPaginationPages, paginateItems } from "@/lib/pagination";
+import { getPhotoFeed, PHOTO_PAGE_SIZE, type PhotoAsset } from "@/lib/photos";
+
+type Props = {
+  page: number;
+  photos: PhotoAsset[];
+  configured: boolean;
+};
+
+export async function getStaticPaths() {
+  const photos = await getPhotoFeed();
+  const configured = photos.length > 0;
+  const pages = getStaticPaginationPages(photos.length, PHOTO_PAGE_SIZE).filter((page) => page > 1);
+
+  return pages.map((page) => ({
+    params: { page: String(page) },
+    props: {
+      page,
+      photos,
+      configured,
+    },
+  }));
+}
+
+const { page, photos, configured } = Astro.props as Props;
+const pagination = paginateItems(photos, page, PHOTO_PAGE_SIZE);
+---
+
+<BaseLayout
+  title={`Photo - Page ${pagination.currentPage}`}
+  pathname={`/photo/page/${pagination.currentPage}/`}
+  description="Portrait photo archive by Ege Uysal."
+  noindex
+>
+  <PhotoGallery
+    photos={pagination.items}
+    currentPage={pagination.currentPage}
+    totalPages={pagination.totalPages}
+    configured={configured}
+  />
+</BaseLayout>

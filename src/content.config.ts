@@ -28,7 +28,21 @@ const diary = defineCollection({
   }),
 });
 
+const photo = defineCollection({
+  type: "content",
+  schema: z.object({
+    title: z.string().min(1),
+    imageUrl: z.string().url(),
+    publishedAt: z.coerce.date(),
+    description: z.string().optional(),
+    location: z.string().optional(),
+    tags: z.array(z.string().min(1)).default([]),
+    draft: z.boolean().default(false),
+  }),
+});
+
 export const collections = {
   blog,
   diary,
+  photo,
 };

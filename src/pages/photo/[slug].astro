@@ -1,0 +1,85 @@
+---
+import MdxImage from "@/components/content/MdxImage.astro";
+import { mdxComponents } from "@/components/content/mdx-components";
+import { SITE } from "@/config/site";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { formatDate } from "@/lib/utils";
+import { getPhotoFeed, type PhotoAsset } from "@/lib/photos";
+
+type Props = {
+  photo: PhotoAsset;
+};
+
+export async function getStaticPaths() {
+  const photos = await getPhotoFeed();
+
+  return photos.map((photo) => ({
+    params: { slug: photo.slug },
+    props: { photo },
+  }));
+}
+
+const { photo } = Astro.props as Props;
+const canonicalPath = `/photo/${photo.slug}/`;
+const siteOrigin = Astro.site ?? new URL(SITE.url);
+const contentComponents = {
+  ...mdxComponents,
+  Image: MdxImage,
+};
+if (!photo.storyEntry) {
+  throw new Error(`Missing photo story entry for slug "${photo.slug}".`);
+}
+
+const { Content } = await photo.storyEntry.render();
+const storyDate = photo.publishedAt ? formatDate(new Date(photo.publishedAt)) : null;
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ImageObject",
+  name: photo.title,
+  description: photo.description,
+  contentUrl: photo.fullSrc,
+  url: new URL(canonicalPath, siteOrigin).toString(),
+  datePublished: photo.publishedAt || undefined,
+  creator: {
+    "@type": "Person",
+    name: SITE.author.name,
+  },
+};
+---
+
+<BaseLayout
+  title={photo.title}
+  description={photo.description}
+  pathname={canonicalPath}
+  type="article"
+  publishedTime={photo.publishedAt || undefined}
+  updatedTime={photo.publishedAt || undefined}
+  jsonLd={jsonLd}
+>
+  <article
+    class="animate-enter prose prose-neutral prose-invert max-w-none prose-p:text-neutral-300 prose-headings:text-neutral-100 prose-h2:text-[0.95rem]! prose-h2:leading-6! prose-h2:font-medium! prose-h3:text-[0.88rem]! prose-h3:leading-6 prose-h3:font-medium! prose-h4:text-[0.82rem]! prose-h4:leading-5! prose-h4:font-medium! prose-strong:font-semibold! prose-strong:text-neutral-100 prose-a:text-neutral-100 prose-a:decoration-neutral-700 prose-hr:border-neutral-900 prose-thead:!border-neutral-900 prose-tr:!border-neutral-900 prose-th:!border-neutral-900 prose-td:!border-neutral-900 prose-pre:border prose-pre:border-neutral-800 prose-pre:text-neutral-200 prose-code:text-neutral-200"
+    style="--delay: 40ms;"
+  >
+    <header class="mb-6 border-b border-neutral-900 pb-5">
+      <h1 class="text-base font-semibold! text-neutral-100">{photo.title}</h1>
+      <p class="mt-2 text-xs text-neutral-400">
+        {storyDate ?? "Undated"}{photo.location ? ` \u00b7 ${photo.location}` : ""}
+      </p>
+    </header>
+
+    <img
+      src={photo.displaySrc}
+      sizes="(min-width: 1024px) 52rem, 100vw"
+      alt={photo.alt}
+      width="720"
+      height="900"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high"
+      class="not-prose mb-6 overflow-hidden rounded-sm border border-neutral-800 aspect-[4/5] w-full object-cover"
+    />
+
+    <Content components={contentComponents} />
+  </article>
+</BaseLayout>
