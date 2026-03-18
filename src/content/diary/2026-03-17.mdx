@@ -1,0 +1,108 @@
+---
+date: 2026-03-17
+summary: "Photo polish, outreach follow-through, and first-user persistence."
+tags: ["ryva", "experiment"]
+---
+
+import { DitherShader } from "@/components/ui/dither-shader";
+
+Today was mostly a refinement and follow-through day. I closed the loop on photo rendering quality, kept outreach active, and stayed disciplined with lower weekly volume because of final-week school load.
+
+The biggest emotional theme was the early-stage valley: getting the first users is slow and uncertain, but every real conversation still compounds.
+
+## What I shipped
+
+- Finalized the `/photo` page update and stabilized the dithering behavior.
+- Improved performance under multi-image load (6-image handling) and reduced unnecessary refetches.
+- Replied to all pending Reddit comments and continued direct-message follow-ups.
+- Reconnected with ICP prospects on LinkedIn using the same workflow that produced the first user conversation.
+- Published two YouTube videos and distribution posts:
+  - X: [See the post](https://x.com/egewrk/status/2034073025746735608?s=20)
+  - LinkedIn: [Read the post](https://www.linkedin.com/posts/egeuysall_nobody-actually-likes-standups-teams-keep-share-7439839376836087808-TySf?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- Fixed the YouTube embedding fallback behavior on the site to make blocked-player states more user-friendly.
+
+<YouTubeVideo
+  url="https://youtu.be/WvbgktYfa0Q"
+  title="Ege Uysal website showcase"
+/>
+
+The first video is the public website showcase. Its job is to give fast visual context for the product story and overall positioning.
+
+The second video is narrower and more practical: it walks through the docs flow for people who already want implementation details.
+
+<YouTubeVideo
+  url="https://youtu.be/jL0AtK6P1YQ"
+  title="Ryva docs walkthrough"
+/>
+
+## Visual note
+
+This is another view of Ryva's new docs surface:
+
+<div className="not-prose group my-6">
+  <div className="relative aspect-[16/10] w-full overflow-hidden rounded-sm border border-neutral-800">
+    <img
+      src="https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/docs.png"
+      alt="Ryva docs preview"
+      loading="lazy"
+      decoding="async"
+      className="h-full w-full object-cover"
+    />
+    <DitherShader
+      client:load
+      src="https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/docs.png"
+      processingWidth={128}
+      maxResizeWidth={512}
+      maxResizeHeight={512}
+      threshold={0.6}
+      brightness={-0.3}
+      className="pointer-events-none transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-within:opacity-0"
+    />
+  </div>
+</div>
+
+This is a one-off dither preview in the diary. Hover to reveal the original image.
+
+## Outreach and ICP momentum
+
+I treated today as execution on existing leads, not broad expansion. I cleared response debt, sent targeted DMs, and got a meaningful signal: one Reddit prospect who strongly lives this pain agreed to check Ryva.
+
+I also want to shift more focus to Slack communities, especially Rand's Leadership. Some people there already responded, and the overall tone feels warmer than most public channels. The opportunity is to build familiarity and credibility over time without sounding salesy or risking getting removed from the community.
+
+I did not have time today to review and reply to those Rand's Leadership responses, so that follow-up is now a priority for tomorrow.
+
+This is still the hard stage. The first users take the most effort and patience, but the path is clear:
+
+- Keep replying with useful context.
+- Move qualified people to DMs.
+- Convert pain-heavy conversations into product trials.
+
+## Weekly strategy and constraint
+
+This is the last school week, so the plan remains intentionally low-volume and high-quality. The goal is to keep warm-lead momentum alive without overloading execution capacity.
+
+After Friday, I can increase build and distribution intensity significantly.
+
+## Friction and risk
+
+- Final-week school workload reduces deep-work time.
+- Outreach progress can feel invisible before the first few users convert.
+- Manual follow-up load grows quickly if top-of-funnel responses increase.
+- Delayed Slack-community replies can cool momentum if I do not close the loop quickly.
+
+## Numbers
+
+- 1 major `/photo` polish pass completed
+- 1 YouTube fallback UX improvement shipped
+- 2 YouTube videos published
+- 2 social posts published (X + LinkedIn)
+- All pending Reddit replies cleared
+- 1 high-fit Reddit prospect agreed to try Ryva
+
+## Quotes of today
+
+> People didn't tag things unless I nagged them. I let the system die and focused on a bigger problem: getting the team to come to a decision, even if it meant disagree and commit.
+
+> I'm yet to get even a test user. If it doesn't violate ToS, I'd hypothetically send a feedback form to the first user who churned. If they respond honestly, that's a strong starting point for iteration.
+
+Main progress today: I improved product quality at the edge, kept ICP conversations active, and stayed consistent through the hardest part of early user acquisition.

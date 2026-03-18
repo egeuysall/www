@@ -152,6 +152,8 @@ function YouTubeVideo({
       if (!frame || !fallbackOverlay) return;
 
       let resolved = false;
+      let fallbackTimeout = 0;
+      let statePoll = 0;
 
       const reveal = () => {
         if (resolved) return;
@@ -173,21 +175,34 @@ function YouTubeVideo({
         if (resolved) return;
         try {
           const href = frame.contentWindow?.location?.href || "";
-          if (!href || href === "about:blank") {
-            reveal();
+          if (href && href !== "about:blank") {
+            hide();
             return;
           }
         } catch {
-          // Cross-origin frame content cannot be inspected reliably.
-          // Wait for YouTube postMessage events or timeout-based fallback.
+          // Cross-origin access error indicates the iframe navigated away from
+          // about:blank, which is enough to treat the embed as loaded.
+          hide();
           return;
         }
-        hide();
       };
 
       const onMessage = (event) => {
-        const origin = String(event.origin || "");
-        if (!origin.includes("youtube.com") && !origin.includes("youtube-nocookie.com")) {
+        const rawOrigin = String(event.origin || "");
+        let hostname = "";
+        try {
+          hostname = new URL(rawOrigin).hostname.toLowerCase();
+        } catch {
+          return;
+        }
+
+        const isYouTubeOrigin =
+          hostname === "youtube.com" ||
+          hostname.endsWith(".youtube.com") ||
+          hostname === "youtube-nocookie.com" ||
+          hostname.endsWith(".youtube-nocookie.com");
+
+        if (!isYouTubeOrigin) {
           return;
         }
 
@@ -204,18 +219,38 @@ function YouTubeVideo({
         }
       };
 
-      const quickTimeout = window.setTimeout(checkFrameState, 1000);
-      const hardTimeout = window.setTimeout(reveal, 2500);
+      const onLoad = () => {
+        checkFrameState();
+      };
+
+      const onError = () => {
+        reveal();
+      };
+
+      // Give slow networks and privacy tools enough time before showing fallback.
+      fallbackTimeout = window.setTimeout(() => {
+        checkFrameState();
+        if (!resolved) reveal();
+      }, 12000);
+
+      // Some browsers don't reliably surface a second load event when iframe
+      // starts on about:blank then navigates to a cross-origin video.
+      statePoll = window.setInterval(checkFrameState, 250);
 
       const cleanup = () => {
-        window.clearTimeout(quickTimeout);
-        window.clearTimeout(hardTimeout);
+        window.clearTimeout(fallbackTimeout);
+        window.clearInterval(statePoll);
         window.removeEventListener("message", onMessage);
+        frame.removeEventListener("load", onLoad);
+        frame.removeEventListener("error", onError);
       };
 
       window.addEventListener("message", onMessage);
-      frame.addEventListener("load", checkFrameState, { once: true });
-      frame.addEventListener("error", reveal, { once: true });
+      frame.addEventListener("load", onLoad);
+      frame.addEventListener("error", onError);
+
+      // In some browsers the initial load event may fire before listeners attach.
+      window.setTimeout(checkFrameState, 300);
     })();
   `;
 

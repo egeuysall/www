@@ -42,15 +42,11 @@ type WorkerResponse =
       error: string;
     };
 
-const BAYER_MATRIX_8X8 = new Uint8Array([
-  0, 32, 8, 40, 2, 34, 10, 42,
-  48, 16, 56, 24, 50, 18, 58, 26,
-  12, 44, 4, 36, 14, 46, 6, 38,
-  60, 28, 52, 20, 62, 30, 54, 22,
-  3, 35, 11, 43, 1, 33, 9, 41,
-  51, 19, 59, 27, 49, 17, 57, 25,
-  15, 47, 7, 39, 13, 45, 5, 37,
-  63, 31, 55, 23, 61, 29, 53, 21,
+const BAYER_MATRIX_4X4 = new Uint8Array([
+  0, 8, 2, 10,
+  12, 4, 14, 6,
+  3, 11, 1, 9,
+  15, 7, 13, 5,
 ]);
 
 const MAX_PARALLEL_WORKER_JOBS = 2;
@@ -160,7 +156,7 @@ function applyOrderedBayerDither(
   const brightnessOffset = brightness * 255;
 
   for (let y = 0; y < imageData.height; y += 1) {
-    const matrixRowOffset = (y & 7) * 8;
+    const matrixRowOffset = (y & 3) * 4;
 
     for (let x = 0; x < width; x += 1) {
       const idx = (y * width + x) * 4;
@@ -181,8 +177,11 @@ function applyOrderedBayerDither(
           brightnessOffset,
       );
 
-      const matrixValue = (BAYER_MATRIX_8X8[matrixRowOffset + (x & 7)] + 0.5) / 64;
-      const cutoff = clamp(matrixValue + thresholdShift, 0, 1) * 255;
+      const matrixValue = (BAYER_MATRIX_4X4[matrixRowOffset + (x & 3)] + 0.5) / 16;
+      // Add a tiny deterministic noise offset to break visible Bayer mesh artifacts.
+      const hash = ((x * 73856093) ^ (y * 19349663)) >>> 0;
+      const jitter = ((hash & 255) / 255 - 0.5) * 0.18;
+      const cutoff = clamp(matrixValue + thresholdShift + jitter, 0, 1) * 255;
 
       let out = luma < cutoff ? 0 : 255;
       if (invert) {
@@ -221,7 +220,7 @@ async function runDitherOnMainThread(request: DitherRequest): Promise<ImageBitma
     resizedCtx.imageSmoothingQuality = "high";
     resizedCtx.drawImage(bitmap, 0, 0, resizedSize.width, resizedSize.height);
 
-    const clampedProcessingWidth = clamp(Math.round(request.processingWidth), 256, 320);
+    const clampedProcessingWidth = clamp(Math.round(request.processingWidth), 128, 384);
     const processWidth = Math.max(1, Math.min(resizedSize.width, clampedProcessingWidth));
     const processHeight = Math.max(
       1,
@@ -381,7 +380,8 @@ export const DitherShader: FC<DitherShaderProps> = ({
         return;
       }
 
-      const dpr = Math.min(2, Math.max(1, window.devicePixelRatio || 1));
+      // Use integer DPR for crisp rendering on HiDPI screens without fractional resampling artifacts.
+      const dpr = clamp(Math.round(window.devicePixelRatio || 1), 1, 2);
       const targetWidth = Math.max(1, Math.round(cssWidth * dpr));
       const targetHeight = Math.max(1, Math.round(cssHeight * dpr));
 

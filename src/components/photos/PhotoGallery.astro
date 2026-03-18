@@ -50,11 +50,11 @@ const {
               <DitherShader
                 client:load
                 src={photo.ditherSrc}
-                processingWidth={256}
-                maxResizeWidth={256}
-                maxResizeHeight={256}
+                processingWidth={128}
+                maxResizeWidth={512}
+                maxResizeHeight={512}
                 threshold={0.6}
-                brightness={-0.2}
+                brightness={-0.3}
                 className="pointer-events-none transition-opacity duration-300 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
               />
             </div>
