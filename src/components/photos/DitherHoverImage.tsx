@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, type FC } from "react";
+import {
+  buildDitherCacheKey,
+  getCachedDitherBitmap,
+  storeDitherCanvas,
+} from "@/lib/client/dither-output-cache";
 import { getCachedImageBlob } from "@/lib/client/image-cache";
 
 type ObjectFitMode = "cover" | "contain" | "fill" | "none";
@@ -395,6 +400,33 @@ export const DitherShader: FC<DitherShaderProps> = ({
 
       context.imageSmoothingEnabled = false;
 
+      const ditherCacheKey = buildDitherCacheKey({
+        src,
+        targetWidth,
+        targetHeight,
+        maxResizeWidth,
+        maxResizeHeight,
+        processingWidth,
+        objectFit,
+        threshold,
+        brightness,
+        contrast,
+        invert,
+      });
+
+      const cachedBitmap = await getCachedDitherBitmap(ditherCacheKey);
+      if (cachedBitmap) {
+        if (didUnmount || controller.signal.aborted) {
+          cachedBitmap.close();
+          return;
+        }
+
+        context.clearRect(0, 0, targetWidth, targetHeight);
+        context.drawImage(cachedBitmap, 0, 0, targetWidth, targetHeight);
+        cachedBitmap.close();
+        return;
+      }
+
       const blob = await getCachedImageBlob(src, {
         maxNetworkWidth: maxResizeWidth,
         signal: controller.signal,
@@ -434,6 +466,9 @@ export const DitherShader: FC<DitherShaderProps> = ({
       context.clearRect(0, 0, targetWidth, targetHeight);
       context.drawImage(outputBitmap, 0, 0, targetWidth, targetHeight);
       outputBitmap.close();
+      void storeDitherCanvas(ditherCacheKey, canvas).catch(() => {
+        // Ignore cache write failures.
+      });
     };
 
     const maybeStart = () => {
