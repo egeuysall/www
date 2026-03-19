@@ -42,6 +42,7 @@ export const SOCIAL_LINKS: SocialLink[] = [
   { label: "GitHub", href: "https://github.com/egeuysall" },
   { label: "X", href: "https://x.com/egewrk" },
   { label: "LinkedIn", href: "https://www.linkedin.com/in/egeuysall" },
+  { label: "Contact", href: "mailto:hi@egeuysal.com" },
 ];
 
 export const PROJECTS: ProjectProofItem[] = [

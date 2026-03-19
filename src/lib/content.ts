@@ -4,7 +4,8 @@ import path from "node:path";
 import { readingTimeMinutes } from "@/lib/utils";
 
 function assertDiaryFilenameMatchesDate(entry: CollectionEntry<"diary">): void {
-  const fileName = path.basename(entry.id).replace(/\.mdx?$/, "");
+  const sourcePath = entry.filePath ?? entry.id;
+  const fileName = path.basename(sourcePath).replace(/\.[^/.]+$/, "");
   const frontmatterDate = entry.data.date.toISOString().slice(0, 10);
 
   if (fileName !== frontmatterDate) {
@@ -49,11 +50,11 @@ function assertUniquePhotoSlugs(entries: CollectionEntry<"photo">[]): void {
 }
 
 export function getDiaryEntrySlug(entry: CollectionEntry<"diary">): string {
-  return entry.data.slug ?? entry.slug;
+  return entry.id;
 }
 
 export function getPhotoEntrySlug(entry: CollectionEntry<"photo">): string {
-  return entry.slug;
+  return entry.id;
 }
 
 export async function getPublishedBlogPosts(): Promise<
@@ -64,7 +65,7 @@ export async function getPublishedBlogPosts(): Promise<
   return entries
     .map((entry) => ({
       ...entry,
-      readingTime: readingTimeMinutes(entry.body),
+      readingTime: readingTimeMinutes(entry.body ?? ""),
     }))
     .sort(
       (a, b) => b.data.publishedAt.getTime() - a.data.publishedAt.getTime(),

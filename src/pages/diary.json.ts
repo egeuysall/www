@@ -4,6 +4,7 @@ import {
   getDiaryEntrySlug,
   getPublishedDiaryEntries,
 } from "@/lib/content";
+import { toIsoDate, toLocalIsoDate } from "@/lib/utils";
 
 type GetContext = {
   site: URL | undefined;
@@ -21,10 +22,9 @@ export async function GET({ site }: GetContext): Promise<Response> {
 
     return {
       id: entry.id,
-      slug,
       url: new URL(`/diary/${slug}/`, baseUrl).toString(),
       day: dayMap.get(entry.id) ?? null,
-      date: entry.data.date.toISOString(),
+      date: toIsoDate(entry.data.date),
       summary: entry.data.summary,
       tags: entry.data.tags,
       body: entry.body,
@@ -34,7 +34,7 @@ export async function GET({ site }: GetContext): Promise<Response> {
   return new Response(
     JSON.stringify(
       {
-        generatedAt: new Date().toISOString(),
+        generatedAt: toLocalIsoDate(new Date()),
         count: items.length,
         items,
       },

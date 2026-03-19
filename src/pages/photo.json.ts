@@ -1,5 +1,6 @@
 import { SITE } from "@/config/site";
 import { getPhotoFeed } from "@/lib/photos";
+import { toIsoDate, toLocalIsoDate } from "@/lib/utils";
 
 type GetContext = {
   site: URL | undefined;
@@ -11,22 +12,20 @@ export async function GET({ site }: GetContext): Promise<Response> {
 
   const items = photos.map((photo) => ({
     id: photo.publicId,
-    slug: photo.slug,
     url: new URL(`/photo/${photo.slug}/`, baseUrl).toString(),
     title: photo.title,
     description: photo.description,
-    publishedAt: photo.publishedAt,
+    publishedAt: toIsoDate(photo.storyEntry.data.publishedAt),
     location: photo.location,
     tags: photo.tags,
-    image: photo.displaySrc,
-    fullImage: photo.fullSrc,
+    image: photo.sourceSrc,
     body: photo.storyEntry.body,
   }));
 
   return new Response(
     JSON.stringify(
       {
-        generatedAt: new Date().toISOString(),
+        generatedAt: toLocalIsoDate(new Date()),
         count: items.length,
         items,
       },

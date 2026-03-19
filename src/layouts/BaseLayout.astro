@@ -95,7 +95,12 @@ const isNavActive = (href: string): boolean => {
       <header class="pb-8">
         <div class="flex items-end justify-between gap-6">
           <div>
-            <a href="/" class="text-[15px] tracking-tight text-neutral-100 hover:text-neutral-200">{SITE.title}</a>
+            <a
+              href="/"
+              class="text-[15px] tracking-tight text-neutral-100 hover:text-neutral-300 focus-visible:text-neutral-300"
+            >
+              {SITE.title}
+            </a>
           </div>
           <nav class="flex items-center gap-4 text-xs text-neutral-400">
             {NAV_LINKS.map((item) => (
@@ -118,20 +123,21 @@ const isNavActive = (href: string): boolean => {
       <footer class="pt-8 text-xs text-neutral-400">
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
-            {SOCIAL_LINKS.map((link) => (
-              <a
-                href={link.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                class="hover:text-neutral-300"
-                aria-label={link.label === "X" ? "X (Twitter)" : link.label}
-              >
-                {link.label}
-              </a>
-            ))}
-            <a href="mailto:hi@egeuysal.com" class="hover:text-neutral-300">
-              Contact
-            </a>
+            {SOCIAL_LINKS.map((link) => {
+              const isExternal = link.href.startsWith("http");
+
+              return (
+                <a
+                  href={link.href}
+                  target={isExternal ? "_blank" : undefined}
+                  rel={isExternal ? "noopener noreferrer" : undefined}
+                  class="text-neutral-400 hover:text-neutral-100 focus-visible:text-neutral-100"
+                  aria-label={link.label === "X" ? "X (Twitter)" : link.label}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </div>
           <p>&copy; {new Date().getFullYear()}</p>
         </div>

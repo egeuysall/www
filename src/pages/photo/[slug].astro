@@ -1,6 +1,7 @@
 ---
 import MdxImage from "@/components/content/MdxImage.astro";
 import { mdxComponents } from "@/components/content/mdx-components";
+import { render } from "astro:content";
 import { SITE } from "@/config/site";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { formatDate } from "@/lib/utils";
@@ -30,7 +31,7 @@ if (!photo.storyEntry) {
   throw new Error(`Missing photo story entry for slug "${photo.slug}".`);
 }
 
-const { Content } = await photo.storyEntry.render();
+const { Content } = await render(photo.storyEntry);
 const storyDate = photo.publishedAt ? formatDate(new Date(photo.publishedAt)) : null;
 
 const jsonLd = {

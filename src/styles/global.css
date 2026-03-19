@@ -53,6 +53,7 @@ a {
 }
 
 .nav-link:hover,
+.nav-link:focus-visible,
 .nav-link[aria-current="page"] {
   color: var(--fg);
 }

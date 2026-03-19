@@ -1,5 +1,6 @@
 import { SITE } from "@/config/site";
 import { getPublishedBlogPosts } from "@/lib/content";
+import { toIsoDate, toLocalIsoDate } from "@/lib/utils";
 
 type GetContext = {
   site: URL | undefined;
@@ -11,12 +12,11 @@ export async function GET({ site }: GetContext): Promise<Response> {
 
   const items = posts.map((post) => ({
     id: post.id,
-    slug: post.slug,
-    url: new URL(`/blog/${post.slug}/`, baseUrl).toString(),
+    url: new URL(`/blog/${post.id}/`, baseUrl).toString(),
     title: post.data.title,
     description: post.data.description,
-    publishedAt: post.data.publishedAt.toISOString(),
-    updatedAt: post.data.updatedAt?.toISOString() ?? null,
+    publishedAt: toIsoDate(post.data.publishedAt),
+    updatedAt: post.data.updatedAt ? toIsoDate(post.data.updatedAt) : null,
     tags: post.data.tags,
     image: post.data.image ?? null,
     readingTime: post.readingTime,
@@ -26,7 +26,7 @@ export async function GET({ site }: GetContext): Promise<Response> {
   return new Response(
     JSON.stringify(
       {
-        generatedAt: new Date().toISOString(),
+        generatedAt: toLocalIsoDate(new Date()),
         count: items.length,
         items,
       },

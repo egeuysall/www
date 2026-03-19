@@ -1,5 +1,5 @@
 ---
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection, render, type CollectionEntry } from "astro:content";
 
 import MdxImage from "@/components/content/MdxImage.astro";
 import { mdxComponents } from "@/components/content/mdx-components";
@@ -33,7 +33,7 @@ export async function getStaticPaths() {
 }
 
 const { entry, dayNumber, slug } = Astro.props as Props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 const canonicalPath = `/diary/${slug}/`;
 const siteOrigin = Astro.site ?? new URL(SITE.url);
 const contentComponents = {

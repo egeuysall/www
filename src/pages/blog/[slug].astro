@@ -1,5 +1,5 @@
 ---
-import { getCollection, type CollectionEntry } from "astro:content";
+import { getCollection, render, type CollectionEntry } from "astro:content";
 
 import MdxImage from "@/components/content/MdxImage.astro";
 import { mdxComponents } from "@/components/content/mdx-components";
@@ -15,15 +15,15 @@ export async function getStaticPaths() {
   const posts = await getCollection("blog", ({ data }) => !data.draft);
 
   return posts.map((post) => ({
-    params: { slug: post.slug },
+    params: { slug: post.id },
     props: { post },
   }));
 }
 
 const { post } = Astro.props as Props;
-const { Content } = await post.render();
+const { Content } = await render(post);
 
-const canonicalPath = `/blog/${post.slug}/`;
+const canonicalPath = `/blog/${post.id}/`;
 const postImage = post.data.image;
 const siteOrigin = Astro.site ?? new URL(SITE.url);
 const contentComponents = {

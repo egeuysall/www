@@ -1,7 +1,9 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
+import { glob } from "astro/loaders";
+import { z } from "astro/zod";
 
 const blog = defineCollection({
-  type: "content",
+  loader: glob({ base: "./src/content/blog", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
     title: z.string().min(3),
     description: z.string().min(8),
@@ -9,12 +11,12 @@ const blog = defineCollection({
     updatedAt: z.coerce.date().optional(),
     tags: z.array(z.string().min(1)).default([]),
     draft: z.boolean().default(false),
-    image: z.string().url().optional(),
+    image: z.url().optional(),
   }),
 });
 
 const diary = defineCollection({
-  type: "content",
+  loader: glob({ base: "./src/content/diary", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
     date: z.coerce.date(),
     slug: z
@@ -29,10 +31,10 @@ const diary = defineCollection({
 });
 
 const photo = defineCollection({
-  type: "content",
+  loader: glob({ base: "./src/content/photo", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
     title: z.string().min(1),
-    imageUrl: z.string().url(),
+    imageUrl: z.url(),
     publishedAt: z.coerce.date(),
     description: z.string().optional(),
     location: z.string().optional(),
