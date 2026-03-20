@@ -1,0 +1,157 @@
+---
+date: 2026-03-19
+summary: "Security hardening, tighter early-usage strategy, and warm pilot traction."
+tags: ["ryva", "experiment"]
+---
+
+Today was a correction and traction day. I fixed a real security mistake in development, tightened Ryva's early-usage plan, and found a warm pilot path through CyberMinds. Output volume was still limited by school, but signal quality improved.
+
+The operating theme was clear: trigger the "this understands my team" moment before showing any demo.
+
+## What I shipped
+
+- Fixed Slack token handling in development immediately after spotting unsafe storage.
+- Reworked Ryva's early usage flow to move from generic demo-first outreach to insight-first outreach.
+- Continued LinkedIn ICP connections and follow-ups.
+- Published a new X post: [See the post](https://x.com/egewrk/status/2034700394342047917?s=20)
+- Published a new LinkedIn post: [Read the post](https://www.linkedin.com/posts/egeuysall_i-made-a-mistake-for-two-weeks-every-post-activity-7440466254299029505-PFk2?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- Continued Reddit replies using the updated outreach flow.
+- Published two additional Reddit posts (r/startups and r/webdev).
+- Tested Comet browser for iOS and Stitch AI by Google to benchmark workflow fit.
+- Got accepted into the Zero to Agent: Vercel x DeepMind Hackathon NYC.
+- Ran Ryva on CyberMinds and generated a high-signal decision-gap report.
+
+![Zero to Agent: Vercel x DeepMind Hackathon banner](https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/agent.png)
+
+## Security correction
+
+The main fix today was security-related.
+
+- Issue: Slack access tokens were not being stored safely in a development flow.
+- Action: fixed token handling immediately and verified the vulnerable path was not in production.
+- Risk note: token storage bugs are high severity even in development because leaked logs, backups, or local exports can still expose credentials.
+
+This did not affect production, but it was still an important correction and a reminder to treat credential handling as non-negotiable from day one.
+
+## School constraint and execution
+
+Today was still under final school-day constraints, so I kept product scope focused and execution selective:
+
+- Last study-heavy day before ramping output.
+- Kept shipping velocity moderate to avoid fragmented work.
+- Prioritized leverage tasks that improve tomorrow's conversion rate.
+
+## Early usage plan update
+
+I changed the sequence to make the "aha" happen before a link click.
+
+Bad flow:
+
+- Post
+- Demo
+- Confusion
+
+Updated flow:
+
+- Post
+- Insight
+- Personal micro-output
+- Pull question
+- Demo only after interest
+
+Example micro-output format:
+
+```text
+PR merged
+Decision: ship without X
+Missing: who owns rollout
+Blocker: unclear migration state
+```
+
+Rule: do not send demo links before the person says something like "that's accurate" or "interesting." First prove understanding, then expand.
+
+![Early usage plan visual](https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/diary/brain.png)
+
+## CyberMinds pilot signal
+
+CyberMinds is a strong first-user feedback path: warm context, real repo, real decisions, and immediate utility even if revenue is not the first goal.
+
+Current CyberMinds walkthrough:
+
+<YouTubeVideo
+  url="https://youtu.be/GBgRrRyamdc"
+  title="How CyberMinds currently works"
+/>
+
+What Ryva found on CyberMinds:
+
+Decisions already made:
+
+- CTF challenges now enforce sequential completion.
+- Terminal switcher layout improved and production deployment settings updated.
+- Scrollable file tabs added.
+- Codebase modularized and documented.
+- WCAG contrast fix shipped on March 15.
+
+Missing decisions nobody has made yet:
+
+- No production hosting decision for the Go backend terminal (Docker runs on port 3000, but no public target is defined).
+- No decision on challenge ownership, creation process, or target challenge count.
+- No decision on WCAG target standard (AA vs AAA), so current contrast work is not fully validated.
+- No CI pipeline or automated tests, so regressions can land on main.
+- No explicit security owner for Docker socket usage.
+- No clear student distribution strategy beyond GitHub Pages.
+
+Most urgent: Docker socket security. Mounting the Docker socket is a serious privilege-escalation risk for a platform teaching cybersecurity.
+
+<div className="not-prose my-6 grid grid-cols-1 gap-4 md:grid-cols-2">
+  <img
+    src="https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/diary/cyberminds.png"
+    alt="CyberMinds analysis snapshot"
+    loading="lazy"
+    decoding="async"
+    className="h-full w-full rounded-sm border border-neutral-800 object-cover"
+  />
+  <img
+    src="https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/diary/recent.png"
+    alt="Recent output snapshot"
+    loading="lazy"
+    decoding="async"
+    className="h-full w-full rounded-sm border border-neutral-800 object-cover"
+  />
+</div>
+
+## Friction and risk
+
+- School constraints still capped deep-work hours today.
+- Hackathon logistics are non-trivial (travel timing and budget constraints).
+- Nonprofit pilot users can accelerate feedback, but not immediate revenue.
+- Security mistakes in early infrastructure can silently compound if not audited aggressively.
+
+## Numbers
+
+- 1 security fix shipped (development token handling)
+- 1 X post published
+- 1 LinkedIn post published
+- 2 Reddit posts published
+- Reddit reply loop continued under the new plan
+- LinkedIn ICP outreach expanded
+- 1 major early-usage strategy revision completed
+- 1 CyberMinds repo analysis run completed
+- 1 hackathon acceptance received
+
+## Quotes of today
+
+> Multi-tool. It reads GitHub and Slack together because that's where the two halves live. GitHub tells you what happened, Slack tells you why decisions were made and what's still unresolved.
+>
+> For example on a recent run it surfaced:
+>
+> PR merged, no decision on endpoint deprecation. Rollout owner unclear. Migration state unconfirmed across services.
+>
+> None of that was in the commit messages. It was scattered across a Slack thread and a comment that never made it into a ticket.
+>
+> Sounds like your team already has the right signals in place. Want me to run it on one of your PRs and show you what it surfaces?
+
+> Never send the demo before they feel: this understands my team.
+
+Main progress today: I corrected a security gap, improved activation strategy quality, and validated a warm first-user path with concrete output from a real codebase.
