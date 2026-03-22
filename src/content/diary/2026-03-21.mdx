@@ -1,120 +1,133 @@
 ---
 date: 2026-03-21
-summary: "Note"
+summary: "Brain shipped, stronger outbound, and building momentum."
 tags: ["ryva", "experiment"]
 ---
 
-shipped the brain today, it is built to be used in ryva, its the knowledge base, created a apple shortcut so any article can be turned into markdown instantly and saved so that ryva can process it and help me decide. check it out at github.com/egeuysall/brain
+Today was one of the highest-output days so far. I shipped major infrastructure for decision quality, tightened the outbound playbook, and got fast signal from a high-value conversation.
 
-and here is a pic of it: https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/knowledge.png
+The core theme: reduce trust friction by showing value first, then asking for deeper access.
 
-besides i wrote the x post for the day regarding the brain: https://x.com/egewrk/status/2035368820546695607?s=20
+## What I shipped
 
-and also wrote the linkedin post: https://www.linkedin.com/posts/egeuysall_github-egeuysallbrain-the-knowledge-brain-share-7441134692944326656-wfJZ?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU
+- Shipped the `brain` repo as Ryva's knowledge base: [github.com/egeuysall/brain](https://github.com/egeuysall/brain)
+- Built an Apple Shortcut to convert articles into Markdown instantly so Ryva can process them.
+- Ran `brain` through Ryva to decide next priorities.
+- Published today's X post: [See the post](https://x.com/egewrk/status/2035368820546695607?s=20)
+- Published today's LinkedIn post: [Read the post](https://www.linkedin.com/posts/egeuysall_github-egeuysallbrain-the-knowledge-brain-share-7441134692944326656-wfJZ?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- Published a new blog post: [Read the post](/blog/status-is-not-state-most-teams-only-have-one/)
+- Published a strategy-driven Reddit post: [Read the post](https://www.reddit.com/r/SaaS/comments/1s04xl2/ive_been_noticing_something_while_building_for/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
+- Updated Ryva dependencies to latest to reduce vulnerability risk; next step is CI automation for dependency hygiene.
+- Updated the Ryva landing page and shipped a "run without signup" wedge demo.
 
-and i also wrote the blog post: /blog/status-is-not-state-most-teams-only-have-one/
+I recorded a quick walkthrough of the new no-signup flow:
 
----
+<YouTubeVideo
+  url="https://youtu.be/xWeu1LgIRu4"
+  title="Ryva landing page update and no-signup wedge demo"
+/>
 
-Ship this in one day. No redesigns, no extra features.
+This flow is designed to move users to the first aha moment before any setup friction.
 
-**Step 1 (2–3h): Build the wedge**
+![Brain knowledge base](https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/knowledge.png)
 
-**Landing page:**
-_Turn any GitHub repo into decisions, gaps, and next steps_
+## Daksh and Orcho momentum
 
-**Input:**
+Ryva's recommendation was clear: prioritize the Daksh call and arrive with concrete output.
 
-- Paste GitHub repo or PR link
-- CTA: **Analyze**
+- Since Orcho is not open source, I found an open-source repo Daksh is involved in and ran Ryva there first.
+- Sent him the findings link directly: [bridge.egeuysal.com/daksh--0bmJcA](https://bridge.egeuysal.com/daksh--0bmJcA)
+- Daksh replied almost immediately and asked me to share Ryva with his co-founder Daniel.
+- I followed up with output + offer to run Ryva on Orcho as well.
 
-**Output (even if rough):**
+This is a meaningful step because it moved from "cold pitch" to "requested introduction" based on real output.
 
-- **Decisions made**
-- **What’s missing**
-- **Next steps**
+![Ryva findings on Brain repo](https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/found.png)
 
-_Rules:_
+## Distribution and channel focus
 
-- No auth
-- No Slack
-- No team features
-- Just repo → output fast
+I kept distribution active across channels, but with tighter prioritization:
 
-**Step 2 (1–2h): Create proof**
+- Heavy channels: Reddit posts, Reddit DMs, LinkedIn DMs.
+- Light channel: Rands Leadership Slack (1-3 posts/week, discussion-first).
+- Support channel: targeted comments for lead capture and credibility.
 
-Pick:
+I also posted in Rands Leadership Slack and `ai-coding-tools` using a real Supabase-output example focused on:
 
-- **1 clean public repo**
-- **1 messy PR**
+- Decisions made
+- Missing decisions
+- Blockers
+- Next actions
 
-Run Ryva (manual is fine).  
-Format outputs cleanly.
+No hard promotion, just concrete signal and discussion.
 
-_These become:_
+## ICP and outreach playbook updates
 
-- Landing proof
-- Demo
-- Outbound replies
+Two strategy updates became clear today:
 
-**Step 3 (2–3h): Outbound loop (~25 convos)**
+- CTOs are currently a better ICP than engineering managers for 5-20 person teams because they are more technical and can enforce workflow changes.
+- "Run Ryva on their behalf" is the best bridge for outreach where identity is known (LinkedIn/GitHub). For anonymous Reddit, use simulation-style micro-outputs.
 
-Start:
+Micro-output pattern I will keep using:
 
-- _what do you use to understand project state without standups?_
+```text
+PR merged. Decision to ship without migration complete.
+Rollout owner missing. Migration state unclear.
+```
 
-Then:
+Then ask: "Is this the kind of thing your team deals with?" If yes, escalate to running on real data.
 
-- _do decisions ever get buried in PRs?_
+## Operating plan from today
 
-Then:
+- Build wedge, not full platform in the first step.
+- Offer repo/PR link -> return decisions, gaps, next actions quickly.
+- Run a 3-step funnel: start conversation -> create curiosity -> show output.
+- Hunt pain signals, not random volume.
+- Keep speed high and avoid polish loops.
 
-- _i can run this on one PR and show decisions, gaps, next steps, want me to try?_
+Priority order remains: **CyberMinds deal first, then Daksh**.
 
-_Goal:_ curiosity, not pitching
+## Next steps
 
-**Step 4 (critical): Convert 1 real user**
+- Prep for the Daksh call with one more high-signal output package and a clearer Orcho-ready walkthrough.
+- Run Ryva on more relevant public repos tied to warm leads, then send tailored micro-outputs before asking for access.
+- For each high-fit contact: find profile -> map GitHub/org repo -> run Ryva -> send concise output -> ask for private run only after interest.
+- Keep channel allocation strict:
+  - Reddit: posts, replies, and DMs for top-of-funnel volume.
+  - LinkedIn: DMs and targeted follow-ups for named ICPs.
+  - Rands Slack: 1-3 useful discussion posts per week, no heavy promotion.
+- Continue wedge-first messaging: decisions made, missing decisions, blockers, next actions.
+- Add CI automation for dependency/security updates in Ryva to reduce vulnerability drift.
+- Push toward the current milestone: **3 legit teams running Ryva by April 11**.
 
-If someone engages:
+## Friction and risk
 
-- Ask for repo or PR
-- Run it manually
-- Send clean output
+- Anonymous channels (Reddit) limit the "run-on-your-behalf" model.
+- Dependency drift can reopen security exposure without automated update checks.
+- Volume without funnel discipline can still create burnout.
 
-Then ask:
+## Numbers
 
-- _would you actually use this?_
+- 1 new repo shipped (`brain`)
+- 1 Apple Shortcut workflow shipped
+- 1 blog post published
+- 1 X post published
+- 1 LinkedIn post published
+- 1 Reddit post published
+- Multiple Reddit + LinkedIn DMs sent
+- 2 Slack communities engaged with real output
+- 1 high-value outbound conversion (Daksh -> intro to co-founder)
+- 1 landing-page wedge update shipped
 
-_You are validating pain, not selling._
+## Goal checkpoint
 
-**Step 5: CyberMinds signal**
+- Target: **3 legit teams running Ryva by April 11**.
+- Current direction is correct: output-first outreach is increasing response quality.
 
-- Run Ryva on their real workflow
-- Wait for a moment like:  
-  _“this is actually useful”_
+## Quotes of today
 
-Write down exact wording.  
-This becomes your messaging.
+> Documentation and conversation are two separate activities and people will always default to conversation. It's faster, you get a guaranteed answer from someone who knows, done.
 
-**Execution rules**
+> The teams I've seen actually solve this didn't get better at writing docs. They got better at capturing the answers that were already being given and making them findable in context.
 
-- No new features
-- No polish loops
-- No infra distractions
-- **Speed > correctness**
-
-**Positioning layer (important)**
-
-Lead with:
-
-- _feels like a PR review, but it tells you what decisions were made, what’s missing, and what to do next_
-
-Always offer:
-
-- _drop a PR, I’ll run it for you_
-
-**If this day works:**
-
-- You get a **wedge**
-- Real **user language**
-- A **repeatable loop**
+Main progress today: I shipped the knowledge foundation (`brain`), tightened the outreach operating system, and converted real output into high-trust conversation momentum.
