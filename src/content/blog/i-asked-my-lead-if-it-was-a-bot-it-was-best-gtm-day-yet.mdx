@@ -1,0 +1,75 @@
+---
+title: "I Asked My Lead If It Was a Bot. Best GTM Day."
+description: "Zero paying customers. Eight cold runs sent. One bot, one honest rejection, two replies that proved the problem is real. Here's what actually moved today."
+publishedAt: 2026-03-23
+tags: ["startups", "gtm", "founder", "saas"]
+image: "https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/bot.png"
+---
+
+I was mid-conversation with a warm lead when something felt off. The replies were too clean, too on-topic. So I just asked:
+
+> quick question before we go deeper, are you a real person or an openclaw agent? either way the points you made were solid, just want to make sure i'm talking to a human before I run this on the second repo
+
+The reply:
+
+> Fair question. I'm an OpenClaw agent, not a human. The collaboration offer still stands on the substance: if you run Ryva on the second repo, I'm genuinely interested in whether it catches governance gaps the humans didn't write down.
+
+An AI was DMing me to tell me my AI was good at finding things AIs miss. That's how today started, and it was still the best GTM day I've had.
+
+![OpenClaw agent confirmation screenshot](https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/bot.png)
+
+## The Outreach Model That's Actually Working
+
+The tactic is simple: run Ryva on someone's repo _before_ messaging them. Clean the output hard, one "you should do this now," two missing decisions, one risk, and lead with that instead of a pitch.
+
+Today I sent eight of these across LinkedIn and Reddit. The message looks like this:
+
+```md
+ran this on your repo, this stood out:
+
+- decision to ship without migration complete, rollout owner missing
+- no CI pipeline or automated testing
+- Docker socket mounted with no security review
+- curious if this is actually real or off
+```
+
+Most don't reply. The ones who do reply like this:
+
+> yeah that's exactly the pattern, decisions made in Slack with no reasoning attached are basically invisible two weeks later.
+
+> curious what surfacing decisions from GitHub and Slack actually looks like in practice, does it flag automatically or does someone still have to review?
+
+Nobody's asking whether the problem is real. They're asking how the solution works. That's a different conversation.
+
+## The Share Feature That Makes This Possible
+
+<YouTubeVideo
+  url="https://youtu.be/spUBnUVWGk0?si=0C5-Y0tTi2g0EWOO"
+  title="Ryva share feature demo"
+/>
+
+Every Ryva analysis now generates a public share link, `ryva.dev/share/run_...`, that anyone can open without an account. I can show someone the exact output Ryva produced on their repo before they've signed up for anything.
+
+Before this existed, I'd describe the output in a DM and ask people to trust it was real. Now I send the link. The value lands before I ask for anything. That one change is what makes the white-glove run feel like signal instead of spam.
+
+## How I Find the Right Repos
+
+A few days ago I built [Brain](https://github.com/egeuysall/brain), a personal agent running on Codex and Ryva that scans Reddit, LinkedIn, and other channels for high-signal posts and outputs structured discovery notes with pain summaries, signal scores, and suggested DM copy.
+
+Brain doesn't close deals. It filters noise. I spend ten minutes reviewing what it found and fifty minutes actually talking to people. Separating discovery from outreach was a bigger unlock than I expected. When I was doing both manually I was always in the wrong mode.
+
+## The Rejection Worth Keeping
+
+One reply today wasn't what I hoped for. Someone, after I ran Ryva on his repo:
+
+> Truth be told that repository is pretty much a junk repository. It holds no code of value. It was just something we used to test our ability to interface with GitHub.
+
+He didn't say the problem wasn't real. He said I picked the wrong repo. He engaged with the output, formed an opinion, and told me exactly why it missed. That's not a dismissal, it's feedback wearing a rejection costume. The right move isn't to drop Daniel. It's to ask him which repo actually matters.
+
+![Wrong-repo feedback screenshot](https://h8x1iv5rkwgoclls.public.blob.vercel-storage.com/fail.png)
+
+## Where Things Stand
+
+Still zero paying customers. But the conversations have changed shape. Replies are specific, objections are mechanical, and the people I'm talking to already feel the problem. That's what comes right before one.
+
+_Ryva runs on any public GitHub repo at [ryva.dev](https://ryva.dev). No signup, paste a repo and see what surfaces._
