@@ -23,6 +23,77 @@ File a tracked issue for fastapi-slim directory removal with a named owner and a
 Document in CONTRIBUTING.md who owns dependency-bound change approvals and what version-bump tier a lower-bound raise constitutes, owner: @tiangolo.
 Add a brief async written note to the repo (top-level comment or docs/en release policy page) clarifying patch vs minor criteria so contributors and downstream users have a shared reference.
 
+sent 8 hyper specific dms and replies on reddit, theyre all icps, i set up a chatgpt automation to find posts and write replys for me, all of them are present in github.com/egeuysall/brain
+
+the image is under /content/diary/outreach.jpg so link to that!
+
+today was mainly a technical day because i worked on the product based on the feedback i received from the discord guy. and also i realized the vercel egress fees are getting expensive, so i switched from vercel pro to r2, the migration took some time because i somehow locked myself down.
+
+here is the linkedin post of the day:
+https://www.linkedin.com/posts/egeuysall_engineeringmanagement-softwaredelivery-agile-share-7442341850084106240-FBk2?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU
+
+i wanted to share you the agentic workflow i follow to write posts, i use ai to analyze my day, then draft a post, based on drafted post i often make it sound more human and change a bit and post, here is the full version:
+
+https://youtu.be/1b9QKar5FOI
+
+Realization: credibility doesn’t come from sounding bigger than I am
+
+I felt the pull to say things like “I manage X engineers” or “we’ve done Y at scale” to be taken seriously faster.
+
+But that’s borrowed trust. It works for one message and breaks the moment someone looks closer.
+
+What actually gets responses is specificity:
+real outputs, real use, real problems I’ve seen.
+
+Instead of inflating the story, I need to sharpen the truth.
+
+If the truth isn’t compelling enough yet, that’s a product or distribution problem, not a messaging problem.
+
+I’d replace “borrowed authority” with **earned micro-proof** every time.
+
+On Reddit, no one cares who you are. They care if what you’re saying feels _real_.
+
+Here’s exactly how I’d do it.
+
+First, anchor everything in something you actually did:
+
+- “I ran this on a repo yesterday…”
+- “I tested this on a messy PR and it surfaced…”
+- “One team I’m working with tried this and…”
+
+Second, show the _artifact_, not the claim:
+
+- drop a 2–3 line output
+- highlight the sharp insight (“this PR is blocking CI right now”)
+- make it concrete enough they can imagine it on their code
+
+Third, stay small but precise instead of big and vague:
+
+- not “we’re replacing standups”
+- but “they skipped 2 standups this week because this already showed blockers”
+
+Fourth, tie it back to _their_ problem:
+
+- repeat something they said
+- show how your example maps to it
+
+Example Reddit reply:
+
+“this is exactly the pattern i keep seeing
+ran something on a PR yesterday and it immediately flagged: ‘this merge blocks CI until X is resolved’
+
+nothing in the PR explicitly said that, but that’s what actually mattered
+
+curious, when something breaks like that for you, is it usually missing ownership or just buried context?”
+
+No lie. Still authoritative.
+
+For your diary, the shift is simple:
+you’re not trying to sound bigger, you’re trying to feel undeniable.
+
+One thing to try today:
+take your best Ryva output and turn it into a 3-line proof you can reuse in replies. What’s the sharpest one you have right now?
+
 Exact Diff Summary
 
 convex/lib/decision_agent/actionsRuntime.ts: major recovery/robustness rewrite. Added reasoned-output types/schemas (\*\_reasoned), reasoning sanitization, actionable-decision filtering, recommendation-step extraction, model-candidate fallback chain, malformed-stream repair pass, deterministic emergency fallback output, deterministic recovery output from existing decision context, generationMode tracking, priority-focus reduction to top single recommendation, and persistence fallback for priority_focus.
@@ -43,3 +114,82 @@ src/components/project/run-share-view.tsx: replaced old critical-line heuristic 
 src/components/landing-repo-wedge.tsx: added reasoned display types, converted all key sections to “Action/Decision + Reason/Likely reasoning/Reason not clearly documented” presentation, and derived critical decision from reasoned output.
 src/components/project/agent-v2/agent-panel.tsx: normalized recommendation display text, refactored recent-runs card layout, tightened share API payload typing, and changed destructive/outline button variants for decline/revoke actions.
 src/components/project/project-run-config-dialog.tsx: refactored budget preview rendering to stable placeholder-based rows with refresh indicator and simplified directive placeholder text.
+
+| #   | Platform | Post                                                                                            | Age (days) | Link                                                                                                                   | Local File                                                                  |
+| --- | -------- | ----------------------------------------------------------------------------------------------- | ---------: | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| 1   | Reddit   | Why do ci pipeline failures keep blocking deployments when nobody can agree on who owns the fix |       0.13 | [Open](https://www.reddit.com/r/ExperiencedDevs/comments/1s28box/why_do_ci_pipeline_failures_keep_blocking/)           | [Open local](./2026-03-25-thread-1-ci-failures-ownership-gap.md)            |
+| 2   | Reddit   | Dev team action items from standups never actually get done, is this normal?                    |       6.95 | [Open](https://www.reddit.com/r/webdev/comments/1rw65cw/dev_team_action_items_from_standups_never/)                    | [Open local](./2026-03-25-thread-2-standup-action-items-fall-through.md)    |
+| 3   | Reddit   | been at this place for 8 weeks and their "agile" approach is confusing me                       |       3.95 | [Open](https://www.reddit.com/r/agile/comments/1ryvtiz/been_at_this_place_for_8_weeks_and_their_agile/)                | [Open local](./2026-03-25-thread-3-agile-standups-status-theater.md)        |
+| 4   | Reddit   | Why does everything take longer than it should?                                                 |       5.87 | [Open](https://www.reddit.com/r/ProductManagement/comments/1rx6kvh/why_does_everything_take_longer_than_it_should/)    | [Open local](./2026-03-25-thread-4-delivery-latency-decision-friction.md)   |
+| 5   | Reddit   | How are your teams documenting decision made? Especially to feed as context for AI              |       6.65 | [Open](https://www.reddit.com/r/ProductManagement/comments/1rwi4nr/how_are_your_teams_documenting_decision_made/)      | [Open local](./2026-03-25-thread-5-meeting-decisions-not-captured.md)       |
+| 6   | Reddit   | Team is doing agile on paper but not actually improving, how do you break that cycle?           |       6.02 | [Open](https://www.reddit.com/r/agile/comments/1rx1h8j/team_is_doing_agile_on_paper_but_not_actually/)                 | [Open local](./2026-03-25-thread-6-agile-on-paper-no-improvement.md)        |
+| 7   | Reddit   | How much of your (and your team's) time goes to answering the same questions over and over?     |       5.78 | [Open](https://www.reddit.com/r/EngineeringManagers/comments/1rx9yli/how_much_of_your_and_your_teams_time_goes_to/)    | [Open local](./2026-03-25-thread-7-repeat-questions-slack-context-loss.md)  |
+| 8   | Reddit   | Velocity charts look healthy… right up until the sprint fails. Why?                             |       0.52 | [Open](https://www.reddit.com/r/EngineeringManagers/comments/1s1x9cd/velocity_charts_look_healthy_right_up_until_the/) | [Open local](./2026-03-25-thread-8-sprint-looks-healthy-then-fails.md)      |
+| 9   | Reddit   | How do you handle “done” when a release can still break reporting?                              |       5.07 | [Open](https://www.reddit.com/r/agile/comments/1rxwi79/how_do_you_handle_done_when_a_release_can_still/)               | [Open local](./2026-03-25-thread-9-done-definition-reporting-breaks.md)     |
+| 10  | Reddit   | Does anyone else get status update fatigue? How do I make it less fatiguing?                    |      10.82 | [Open](https://www.reddit.com/r/ExperiencedDevs/comments/1rsrnew/does_anyone_else_get_status_update_fatigue_how_do/)   | [Open local](./2026-03-25-thread-10-status-update-fatigue-multi-project.md) |
+
+All links above were re-selected to avoid collisions with earlier thread folders and to stay within 14 days (favoring past-week posts where available).
+
+---
+
+type: note
+date: 2026-03-24
+author: Codex
+tags: [ryva, outreach, strategy, value-first, reddit, icp]
+source: internal-research
+
+---
+
+# 2026-03-24 Outreach Findings + Value-First Strategy Shift
+
+## What We Found Today
+
+- The highest-converting pain is not “too many tools”; it is missing project state despite tools.
+- Recurring ICP pattern: standups become status theater because state is fragmented across Slack, PRs, and ticket systems.
+- Frequent failure mode: ownership is unclear, so blockers and follow-ups quietly die after meetings.
+- Teams report heavy status-maintenance work (meta-work) that competes with real delivery.
+- “False green” execution appears often: dashboards look healthy until late-stage review/integration drift causes spillover.
+
+## Strongest Pain Buckets (from selected threads)
+
+- Standup action items discussed but not executed.
+- CI/pipeline failures with no clear owner.
+- Jira/ticket views stale vs what was actually decided in chat/meetings.
+- Decision rationale not captured in a reusable, execution-linked way.
+- Multi-project status fatigue from proving progress across systems.
+
+## Strategy Shift: Value First (Before Pitch)
+
+Previous tendency:
+
+- Ask for demo/run too early.
+
+Updated approach:
+
+- Start by naming the exact coordination failure in their language.
+- Give one useful diagnosis or framing they can apply immediately.
+- Offer a lightweight next step only after resonance (not upfront).
+
+## Value-First Messaging Model
+
+1. Mirror concrete pain from their post.
+2. Reframe root cause in one sharp line (ownership/state/decision gap).
+3. Give one practical micro-suggestion (owner + next step + visibility).
+4. Ask one low-friction follow-up.
+
+## Why This Shift Matters
+
+- Reduces “tool pitch” resistance in communities sensitive to self-promo.
+- Increases trust by delivering utility before asking for anything.
+- Matches how operators evaluate unknown products: “do you understand my workflow mess?”
+
+## Guardrails We Applied Today
+
+- Strict ICP filtering only: dev workflows, recurring pain, concrete context.
+- Recency gate: prefer last 7 days; allow up to 14 days max.
+- Collision avoidance: no source overlap with older thread folders.
+- Source exclusion: removed HiSimpy-linked sources per user request.
+
+## Practical Next Move
+
+- Use the new Reddit drafts under `/resources/posts` with value-first framing and collect response language for next-iteration message tuning.
