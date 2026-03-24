@@ -11,7 +11,12 @@ const blog = defineCollection({
     updatedAt: z.coerce.date().optional(),
     tags: z.array(z.string().min(1)).default([]),
     draft: z.boolean().default(false),
-    image: z.url().optional(),
+    image: z
+      .union([
+        z.url(),
+        z.string().regex(/^\/cdn\/[^\s?#]+$/),
+      ])
+      .optional(),
   }),
 });
 
