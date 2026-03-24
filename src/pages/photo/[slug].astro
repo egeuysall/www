@@ -39,7 +39,7 @@ const jsonLd = {
   "@type": "ImageObject",
   name: photo.title,
   description: photo.description,
-  contentUrl: photo.fullSrc,
+  contentUrl: new URL(photo.fullSrc, siteOrigin).toString(),
   url: new URL(canonicalPath, siteOrigin).toString(),
   datePublished: photo.publishedAt || undefined,
   creator: {

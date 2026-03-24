@@ -1,0 +1,45 @@
+---
+date: 2026-03-24
+summary: "Note"
+tags: ["ryva", "experiment"]
+---
+
+wrote this blog post at blog/the-real-reason-ryva-is-hard-to-copy
+
+hit Over 1500 views on personal website in 2 weeks which proves diary + blog works, this is also because my domain has authority and ranks well on google already
+
+hit Over 1k page views on ryva website which is amazing
+
+tried a new app called recordly, its a recording software, basically free screen studio. it is actually amazing and i think i will use that from now on instead, here is the link if you wanna check that out https://recordly.dev/
+
+watched the big short, great movie and wanted to watch it for some time now, the movie team is actually insane, ryan gosling christian bale, margot robbie etc.
+
+made a small update to include reasoning behind decisions (explicit vs inferred) in ryva agent because someone gave actual feedback on ryva today, which helped clarify how to distinguish between what the agent explicitly states and what it infers from context.
+
+Also I realized currently agent creates a decision block after the agent run but the decision block is just 1 decision block but it contians multiple decisions inside, make sure it creates multiple decisions and 1 decision in each of them: gent recommendation:
+
+Assign a reviewer to draft PR #15101 today, set a merge target of this sprint, and resolve the open question on whether to add a Pydantic 2.7.0 CI matrix run before merging.
+File a tracked issue for fastapi-slim directory removal with a named owner and a deadline no later than the next minor release, post the decision as a top-level repo update.
+Document in CONTRIBUTING.md who owns dependency-bound change approvals and what version-bump tier a lower-bound raise constitutes, owner: @tiangolo.
+Add a brief async written note to the repo (top-level comment or docs/en release policy page) clarifying patch vs minor criteria so contributors and downstream users have a shared reference.
+
+Exact Diff Summary
+
+convex/lib/decision_agent/actionsRuntime.ts: major recovery/robustness rewrite. Added reasoned-output types/schemas (\*\_reasoned), reasoning sanitization, actionable-decision filtering, recommendation-step extraction, model-candidate fallback chain, malformed-stream repair pass, deterministic emergency fallback output, deterministic recovery output from existing decision context, generationMode tracking, priority-focus reduction to top single recommendation, and persistence fallback for priority_focus.
+convex/decisionAgentInternal.ts: filtered non-actionable/broken decision text, excluded isAgentOutput context blocks, prioritized latest GitHub snapshot signal, filtered low-fidelity prior runs, split recommendations into per-step decision blocks, filtered missing decisions to actionable only, and returned recommendationDecisionBlockIds.
+convex/lib/decision_agent/constants.ts: expanded system prompt/examples to require grounded reasoning with explicit|likely|unknown plus decisions_made_reasoned, missing_decisions_reasoned, and recommended_actions_reasoned.
+src/app/api/landing-analyze/route.ts: added reasoned fields to output contract, reasoned schema/normalizers, weak-reason filtering, likely-reason inference for fallback mode, and normalized reasoned output injection into final analysis result.
+src/lib/landing-analyze.ts: schema extended with optional what_to_do_now_reasoned, decisions_made_reasoned, and missing_decisions_reasoned.
+src/lib/validation/project-agent.ts: agent payload schema extended for reasoned arrays and GitHub commit authorAvatarUrl.
+convex/lib/github/types.ts: GitHub commit response now includes author avatar data; snapshot commit type includes authorAvatarUrl.
+convex/lib/github/snapshot.ts: normalized snapshot commit objects now capture and preserve authorAvatarUrl.
+convex/projects.ts: snapshot block validator now accepts optional commit authorAvatarUrl; minor formatting of guard conditions.
+src/components/ai-elements/commit.tsx: commit avatar now supports image source via AvatarImage and src prop.
+src/components/project/project-page-content-sections.tsx: switched to shared priority badge class helper, wired commit avatar URL, normalized recommendation body rendering to clean action paragraphs, and updated decision card styling.
+src/components/project/project-page-shared.tsx: updated priority badge/accent palette and block card theme classes.
+src/components/project/project-graph-view.tsx: adjusted edge/node color mappings and selection-shadow intensity.
+src/components/project/project-page-content-helpers.tsx: added streaming error normalization + deduped toast reporting; upgraded agent-run detail sections to render reasoned decisions/actions instead of plain strings.
+src/components/project/run-share-view.tsx: replaced old critical-line heuristic with structured action+reasoning model; renders reasoned actions/decisions/missing decisions and inferred likely reasoning fallback.
+src/components/landing-repo-wedge.tsx: added reasoned display types, converted all key sections to “Action/Decision + Reason/Likely reasoning/Reason not clearly documented” presentation, and derived critical decision from reasoned output.
+src/components/project/agent-v2/agent-panel.tsx: normalized recommendation display text, refactored recent-runs card layout, tightened share API payload typing, and changed destructive/outline button variants for decline/revoke actions.
+src/components/project/project-run-config-dialog.tsx: refactored budget preview rendering to stable placeholder-based rows with refresh indicator and simplified directive placeholder text.

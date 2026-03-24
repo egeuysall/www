@@ -34,7 +34,10 @@ const photo = defineCollection({
   loader: glob({ base: "./src/content/photo", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
     title: z.string().min(1),
-    imageUrl: z.url(),
+    imageUrl: z.union([
+      z.url(),
+      z.string().regex(/^\/cdn\/[^\s?#]+$/),
+    ]),
     publishedAt: z.coerce.date(),
     description: z.string().optional(),
     location: z.string().optional(),

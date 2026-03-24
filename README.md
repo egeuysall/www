@@ -9,6 +9,16 @@ bun install
 bun run dev
 ```
 
+### Local `/cdn` proxy
+
+During local development and preview, `/cdn/*` is proxied to R2.
+
+Optional override in `.env.local`:
+
+```bash
+LOCAL_CDN_ORIGIN=https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev
+```
+
 ## Build
 
 ```bash

@@ -14,6 +14,10 @@ import {
 } from "./src/config/site";
 import remarkInlineShiki from "./src/plugins/remark-inline-shiki.mjs";
 
+const LOCAL_CDN_ORIGIN =
+  process.env.LOCAL_CDN_ORIGIN ??
+  "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev";
+
 // https://astro.build/config
 export default defineConfig({
   site: SITE.url,
@@ -28,6 +32,24 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      proxy: {
+        "/cdn": {
+          target: LOCAL_CDN_ORIGIN,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/cdn/, ""),
+        },
+      },
+    },
+    preview: {
+      proxy: {
+        "/cdn": {
+          target: LOCAL_CDN_ORIGIN,
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/cdn/, ""),
+        },
+      },
+    },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),

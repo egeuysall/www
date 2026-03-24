@@ -18,7 +18,7 @@ export async function GET({ site }: GetContext): Promise<Response> {
     publishedAt: toIsoDate(photo.storyEntry.data.publishedAt),
     location: photo.location,
     tags: photo.tags,
-    image: photo.sourceSrc,
+    image: new URL(photo.sourceSrc, baseUrl).toString(),
     body: photo.storyEntry.body,
   }));
 
