@@ -11,12 +11,7 @@ const blog = defineCollection({
     updatedAt: z.coerce.date().optional(),
     tags: z.array(z.string().min(1)).default([]),
     draft: z.boolean().default(false),
-    image: z
-      .union([
-        z.url(),
-        z.string().regex(/^\/cdn\/[^\s?#]+$/),
-      ])
-      .optional(),
+    image: z.url().optional(),
   }),
 });
 
@@ -39,10 +34,7 @@ const photo = defineCollection({
   loader: glob({ base: "./src/content/photo", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
     title: z.string().min(1),
-    imageUrl: z.union([
-      z.url(),
-      z.string().regex(/^\/cdn\/[^\s?#]+$/),
-    ]),
+    imageUrl: z.url(),
     publishedAt: z.coerce.date(),
     description: z.string().optional(),
     location: z.string().optional(),

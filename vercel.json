@@ -1,16 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/cdn/(.*)",
-      "has": [
-        {
-          "type": "host",
-          "value": "cdn.egeuysal.com"
-        }
-      ],
-      "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/$1"
-    },
-    {
       "source": "/(.*)",
       "has": [
         {
@@ -19,10 +9,6 @@
         }
       ],
       "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/$1"
-    },
-    {
-      "source": "/cdn/(.*)",
-      "destination": "https://cdn.egeuysal.com/$1"
     }
   ],
   "headers": [
