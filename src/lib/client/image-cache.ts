@@ -58,10 +58,6 @@ function touchLruKey(cacheKey: string): void {
   }
 }
 
-function isPublicVercelBlobHost(hostname: string): boolean {
-  return hostname.endsWith(".public.blob.vercel-storage.com");
-}
-
 function buildVercelImageUrl(sourceUrl: string, width: number): string {
   const proxyUrl = new URL("/_vercel/image", window.location.origin);
   proxyUrl.searchParams.set("url", sourceUrl);
@@ -71,19 +67,8 @@ function buildVercelImageUrl(sourceUrl: string, width: number): string {
 }
 
 function shouldAttemptVercelOptimizer(url: URL): boolean {
-  if (!isPublicVercelBlobHost(url.hostname)) {
-    return false;
-  }
-
-  if (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1") {
-    return false;
-  }
-
-  if (state.imageOptimizerAvailable === false) {
-    return false;
-  }
-
-  return true;
+  void url;
+  return false;
 }
 
 function buildRequestCandidates(sourceUrl: URL, maxNetworkWidth: number): string[] {

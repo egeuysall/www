@@ -13,9 +13,6 @@ const nextPage = hasNextPage
   ? paginateItems(photos, pagination.currentPage + 1, PHOTO_PAGE_SIZE)
   : null;
 const nextPageHref = nextPage ? `/photo/page/${nextPage.currentPage}/` : undefined;
-const nextPageImageUrls = nextPage
-  ? nextPage.items.flatMap((item) => [item.displaySrc, item.ditherSrc])
-  : [];
 ---
 
 <BaseLayout
@@ -30,6 +27,5 @@ const nextPageImageUrls = nextPage
     totalPages={pagination.totalPages}
     configured={configured}
     nextPageHref={nextPageHref}
-    nextPageImageUrls={nextPageImageUrls}
   />
 </BaseLayout>

@@ -1,12 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { prefetchImageSet } from "@/lib/client/image-cache";
 
 type Props = {
   nextPageHref?: string;
-  nextPageImageUrls?: string[];
-  maxNetworkWidth?: number;
 };
 
 function scheduleIdleTask(task: () => void): () => void {
@@ -26,7 +23,7 @@ function scheduleIdleTask(task: () => void): () => void {
       () => {
         task();
       },
-      { timeout: 1500 },
+      { timeout: 4000 },
     );
 
     return () => {
@@ -34,7 +31,7 @@ function scheduleIdleTask(task: () => void): () => void {
     };
   }
 
-  const timeoutId = setTimeout(task, 120);
+  const timeoutId = setTimeout(task, 1800);
   return () => {
     clearTimeout(timeoutId);
   };
@@ -42,11 +39,7 @@ function scheduleIdleTask(task: () => void): () => void {
 
 export default function PhotoGalleryPrefetch({
   nextPageHref,
-  nextPageImageUrls = [],
-  maxNetworkWidth = 1350,
 }: Props) {
-  const nextUrlsKey = nextPageImageUrls.join("|");
-
   useEffect(() => {
     const cleanup = scheduleIdleTask(() => {
       if (nextPageHref) {
@@ -61,16 +54,10 @@ export default function PhotoGalleryPrefetch({
           });
         }
       }
-
-      if (nextPageImageUrls.length > 0) {
-        void prefetchImageSet(nextPageImageUrls, {
-          maxNetworkWidth,
-        });
-      }
     });
 
     return cleanup;
-  }, [maxNetworkWidth, nextPageHref, nextUrlsKey, nextPageImageUrls]);
+  }, [nextPageHref]);
 
   return null;
 }

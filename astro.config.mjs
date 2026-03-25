@@ -28,6 +28,15 @@ export default defineConfig({
   },
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      proxy: {
+        "/cdn": {
+          target: "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev",
+          changeOrigin: true,
+          rewrite: (path) => path.replace(/^\/cdn/, ""),
+        },
+      },
+    },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),

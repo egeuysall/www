@@ -12,7 +12,7 @@
       "permanent": true
     },
     {
-      "source": "/:path((?!content/|photo/).*)",
+      "source": "/:path((?!content/|photo/|photo-1080/).*)",
       "has": [
         {
           "type": "host",
@@ -24,6 +24,10 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/cdn/(.*)",
+      "destination": "https://cdn.egeuysal.com/$1"
+    },
     {
       "source": "/content/(.*)",
       "has": [
@@ -43,9 +47,103 @@
         }
       ],
       "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/photo/$1"
+    },
+    {
+      "source": "/photo-1080/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "cdn.egeuysal.com"
+        }
+      ],
+      "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/photo-1080/$1"
     }
   ],
   "headers": [
+    {
+      "source": "/cdn/photo/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/cdn/photo-1080/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/cdn/content/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/photo/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "cdn.egeuysal.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/photo-1080/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "cdn.egeuysal.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
+    {
+      "source": "/content/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "cdn.egeuysal.com"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

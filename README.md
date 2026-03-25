@@ -11,7 +11,7 @@ bun run dev
 
 ### Local `/cdn` proxy
 
-Content images are referenced directly from `https://cdn.egeuysal.com/...`.
+In development, `/cdn/*` is proxied to the R2 public origin so image paths work locally.
 
 ## Build
 
@@ -19,6 +19,36 @@ Content images are referenced directly from `https://cdn.egeuysal.com/...`.
 bun run check
 bun run build
 ```
+
+## Photo Upload Workflow
+
+Photo assets are stored in two variants:
+
+- Production/content URL (use this): `https://cdn.egeuysal.com/photo-1080/<name>.jpg`
+- Archive/full-quality source: `https://cdn.egeuysal.com/photo/<name>.jpg`
+
+Use the upload script:
+
+```bash
+scripts/photo-upload.sh /absolute/path/to/image.jpg img-31
+```
+
+This uploads:
+
+- `r2:photos/photo/img-31.jpg` (full-quality source)
+- `r2:photos/photo-1080/img-31.jpg` (production/content image, max width 1080, max height 1350)
+
+Optional flags:
+
+```bash
+scripts/photo-upload.sh ./frame.png img-32 --quality 72 --overwrite
+```
+
+Notes:
+
+- Content frontmatter for photos should use `https://cdn.egeuysal.com/photo-1080/<name>.jpg`.
+- Keep `/photo` originals for full-quality display and future re-exports.
+- If immutable caching is enabled, prefer new names over overwriting existing objects.
 
 ## Content
 

@@ -376,6 +376,47 @@ export const DitherShader: FC<DitherShaderProps> = ({
     let didUnmount = false;
     const controller = new AbortController();
 
+    const getHostImage = (): HTMLImageElement | null => {
+      const host = container.closest("astro-island")?.parentElement ?? container.parentElement;
+      if (!host) {
+        return null;
+      }
+
+      const candidate = host.querySelector("img");
+      return candidate instanceof HTMLImageElement ? candidate : null;
+    };
+
+    const waitForImageReady = async (image: HTMLImageElement): Promise<void> => {
+      if (image.complete && image.naturalWidth > 0 && image.naturalHeight > 0) {
+        return;
+      }
+
+      await new Promise<void>((resolve, reject) => {
+        const onLoad = () => {
+          cleanup();
+          resolve();
+        };
+        const onError = () => {
+          cleanup();
+          reject(new Error("Failed to read source image for dither rendering."));
+        };
+        const onAbort = () => {
+          cleanup();
+          reject(new DOMException("Aborted", "AbortError"));
+        };
+
+        const cleanup = () => {
+          image.removeEventListener("load", onLoad);
+          image.removeEventListener("error", onError);
+          controller.signal.removeEventListener("abort", onAbort);
+        };
+
+        image.addEventListener("load", onLoad, { once: true });
+        image.addEventListener("error", onError, { once: true });
+        controller.signal.addEventListener("abort", onAbort, { once: true });
+      });
+    };
+
     const renderOnce = async () => {
       const rect = container.getBoundingClientRect();
       const cssWidth = Math.round(rect.width);
@@ -427,13 +468,20 @@ export const DitherShader: FC<DitherShaderProps> = ({
         return;
       }
 
-      const blob = await getCachedImageBlob(src, {
-        maxNetworkWidth: maxResizeWidth,
-        signal: controller.signal,
-      });
-
       const buildRequest = async (): Promise<DitherRequest> => ({
-        bitmap: await createImageBitmap(blob),
+        bitmap: await (async () => {
+          const hostImage = getHostImage();
+          if (hostImage) {
+            await waitForImageReady(hostImage);
+            return await createImageBitmap(hostImage);
+          }
+
+          const blob = await getCachedImageBlob(src, {
+            maxNetworkWidth: maxResizeWidth,
+            signal: controller.signal,
+          });
+          return await createImageBitmap(blob);
+        })(),
         targetWidth,
         targetHeight,
         maxResizeWidth,
