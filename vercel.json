@@ -1,14 +1,48 @@
 {
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/(.*)",
+      "source": "/",
       "has": [
         {
           "type": "host",
           "value": "cdn.egeuysal.com"
         }
       ],
-      "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/$1"
+      "destination": "https://egeuysal.com",
+      "permanent": true
+    },
+    {
+      "source": "/:path((?!content/|photo/).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "cdn.egeuysal.com"
+        }
+      ],
+      "destination": "https://egeuysal.com/:path",
+      "permanent": true
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/content/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "cdn.egeuysal.com"
+        }
+      ],
+      "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/content/$1"
+    },
+    {
+      "source": "/photo/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "cdn.egeuysal.com"
+        }
+      ],
+      "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/photo/$1"
     }
   ],
   "headers": [

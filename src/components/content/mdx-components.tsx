@@ -159,6 +159,7 @@ function YouTubeVideo({
         if (resolved) return;
         resolved = true;
         frame.classList.add("hidden");
+        fallbackOverlay.classList.add("flex");
         fallbackOverlay.classList.remove("hidden");
         cleanup();
       };
@@ -167,6 +168,7 @@ function YouTubeVideo({
         if (resolved) return;
         resolved = true;
         frame.classList.remove("hidden");
+        fallbackOverlay.classList.remove("flex");
         fallbackOverlay.classList.add("hidden");
         cleanup();
       };
@@ -282,7 +284,7 @@ function YouTubeVideo({
 
         <div
           data-yt-fallback-overlay
-          className="hidden absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-black/70 p-4 text-center"
+          className="hidden absolute inset-0 z-10 flex-col items-center justify-center gap-3 bg-black/70 p-4 text-center"
         >
           <p className="text-sm text-neutral-200">
             This video could not be loaded in your browser.

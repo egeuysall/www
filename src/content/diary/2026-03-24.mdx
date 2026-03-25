@@ -1,195 +1,169 @@
 ---
 date: 2026-03-24
-summary: "Note"
+summary: "Reasoning upgrades, stronger outreach ops, and first true inbound signal."
 tags: ["ryva", "experiment"]
 ---
 
-wrote this blog post at blog/the-real-reason-ryva-is-hard-to-copy
+Today was longer and more technical than yesterday. I split time between product-quality upgrades, distribution execution, and tightening the trust model in outreach.
 
-hit Over 1500 views on personal website in 2 weeks which proves diary + blog works, this is also because my domain has authority and ranks well on google already
+The core theme: make outputs more explainable, then move faster from insight to activation.
 
-hit Over 1k page views on ryva website which is amazing
+## What I shipped
 
-tried a new app called recordly, its a recording software, basically free screen studio. it is actually amazing and i think i will use that from now on instead, here is the link if you wanna check that out https://recordly.dev/
+- Published a new blog post: [Read the post](/blog/the-real-reason-ryva-is-hard-to-copy)
+- Published today's LinkedIn post: [Read the post](https://www.linkedin.com/posts/egeuysall_engineeringmanagement-softwaredelivery-agile-share-7442341850084106240-FBk2?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- Sent 8 hyper-specific Reddit DMs/replies to ICPs.
+- Set up a ChatGPT-assisted outreach workflow to find high-signal posts and draft replies; artifacts are stored in [Brain](https://github.com/egeuysall/brain).
+- Added first real inbound moment: someone reached out asking for access/testing without me prompting.
 
-watched the big short, great movie and wanted to watch it for some time now, the movie team is actually insane, ryan gosling christian bale, margot robbie etc.
+Outreach workflow snapshot:
 
-made a small update to include reasoning behind decisions (explicit vs inferred) in ryva agent because someone gave actual feedback on ryva today, which helped clarify how to distinguish between what the agent explicitly states and what it infers from context.
+![Outreach workflow snapshot](https://cdn.egeuysal.com/content/diary/outreach.jpg)
 
-Also I realized currently agent creates a decision block after the agent run but the decision block is just 1 decision block but it contians multiple decisions inside, make sure it creates multiple decisions and 1 decision in each of them: gent recommendation:
+## Product and infrastructure updates
 
-Assign a reviewer to draft PR #15101 today, set a merge target of this sprint, and resolve the open question on whether to add a Pydantic 2.7.0 CI matrix run before merging.
-File a tracked issue for fastapi-slim directory removal with a named owner and a deadline no later than the next minor release, post the decision as a top-level repo update.
-Document in CONTRIBUTING.md who owns dependency-bound change approvals and what version-bump tier a lower-bound raise constitutes, owner: @tiangolo.
-Add a brief async written note to the repo (top-level comment or docs/en release policy page) clarifying patch vs minor criteria so contributors and downstream users have a shared reference.
+I made a meaningful update to Ryva's reasoning loop based on direct user feedback:
 
-sent 8 hyper specific dms and replies on reddit, theyre all icps, i set up a chatgpt automation to find posts and write replys for me, all of them are present in github.com/egeuysall/brain
+- outputs now better distinguish **explicit** vs **inferred/likely** reasoning
+- improved clarity around why a decision appears in the analysis
 
-the image is under /content/diary/outreach.jpg so link to that!
+I also identified a key structure issue: one decision block was carrying multiple decisions. The next-step direction is clear and now prioritized:
 
-today was mainly a technical day because i worked on the product based on the feedback i received from the discord guy. and also i realized the vercel egress fees are getting expensive, so i switched from vercel pro to r2, the migration took some time because i somehow locked myself down.
+- one decision per block
+- recommendations split into actionable, owner-friendly units
 
-here is the linkedin post of the day:
-https://www.linkedin.com/posts/egeuysall_engineeringmanagement-softwaredelivery-agile-share-7442341850084106240-FBk2?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU
+Reasoning-loop update video:
 
-i wanted to share you the agentic workflow i follow to write posts, i use ai to analyze my day, then draft a post, based on drafted post i often make it sound more human and change a bit and post, here is the full version:
+<YouTubeVideo
+  url="https://youtu.be/CELI7bCFd64"
+  title="How Ryva reasoning works after the update"
+/>
 
-https://youtu.be/1b9QKar5FOI
+Technical and cost-side work today:
 
-Realization: credibility doesn’t come from sounding bigger than I am
+- migrated away from Vercel Pro egress-heavy path toward R2
+- migration took longer than expected because of an accidental lockout during setup
 
-I felt the pull to say things like “I manage X engineers” or “we’ve done Y at scale” to be taken seriously faster.
+## Growth and distribution signals
 
-But that’s borrowed trust. It works for one message and breaks the moment someone looks closer.
+- Personal site crossed **1500+ views** in 2 weeks.
+- Ryva site crossed **1000+ page views**.
+- Distribution + positioning is starting to convert into inbound, not only outbound.
 
-What actually gets responses is specificity:
-real outputs, real use, real problems I’ve seen.
+This is a stage shift:
 
-Instead of inflating the story, I need to sharpen the truth.
+- old flow: outreach -> explain -> convince
+- current flow: run -> show value -> if it hits -> set up immediately
 
-If the truth isn’t compelling enough yet, that’s a product or distribution problem, not a messaging problem.
+Agentic post-writing workflow video:
 
-I’d replace “borrowed authority” with **earned micro-proof** every time.
+<YouTubeVideo
+  url="https://youtu.be/1b9QKar5FOI"
+  title="Agentic workflow for writing and refining posts"
+/>
 
-On Reddit, no one cares who you are. They care if what you’re saying feels _real_.
+## Runs shared today
 
-Here’s exactly how I’d do it.
+<div className="not-prose my-6 grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3">
+  <a
+    href="https://ryva.dev/share/run_zgGX3Db_Jbmv"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="row-border no-underline! block text-xs text-neutral-200 hover:text-neutral-100"
+  >
+    Run 1
+  </a>
+  <a
+    href="https://ryva.dev/share/run_srzixDM12Uue"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="row-border no-underline! block text-xs text-neutral-200 hover:text-neutral-100"
+  >
+    Run 2
+  </a>
+  <a
+    href="https://ryva.dev/share/run_mtpUjSEmsCB5"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="row-border no-underline! block text-xs text-neutral-200 hover:text-neutral-100"
+  >
+    Run 3
+  </a>
+</div>
 
-First, anchor everything in something you actually did:
+## Credibility realization
 
-- “I ran this on a repo yesterday…”
-- “I tested this on a messy PR and it surfaced…”
-- “One team I’m working with tried this and…”
+A major strategic realization today: credibility does not come from sounding bigger than I am.
 
-Second, show the _artifact_, not the claim:
+What works better than borrowed authority:
 
-- drop a 2–3 line output
-- highlight the sharp insight (“this PR is blocking CI right now”)
-- make it concrete enough they can imagine it on their code
+- earned micro-proof
+- specific examples from real runs
+- concrete artifacts instead of broad claims
 
-Third, stay small but precise instead of big and vague:
+In practice, this means:
 
-- not “we’re replacing standups”
-- but “they skipped 2 standups this week because this already showed blockers”
+- "I ran this on a repo yesterday and it surfaced X"
+- short artifact snippets over big promises
+- map every claim back to the user's exact workflow pain
 
-Fourth, tie it back to _their_ problem:
+## Research and execution system
 
-- repeat something they said
-- show how your example maps to it
+I generated and filtered a high-signal Reddit pain list (10 threads, recent window) and used it for value-first outreach. The best patterns continue to be:
 
-Example Reddit reply:
+- ownership gaps hidden behind "green" status
+- standup/status theater with weak execution follow-through
+- decision context spread across tools with no reliable state ledger
 
-“this is exactly the pattern i keep seeing
-ran something on a PR yesterday and it immediately flagged: ‘this merge blocks CI until X is resolved’
+Execution discipline today:
 
-nothing in the PR explicitly said that, but that’s what actually mattered
+- closed active loops first
+- re-ran outputs with reasoning improvements and sent updates
+- used filtered top threads only (no broad spraying)
+- prioritized meaningful replies over volume theater
 
-curious, when something breaks like that for you, is it usually missing ownership or just buried context?”
+## Personal note
 
-No lie. Still authoritative.
+Watched _The Big Short_ (finally), had a great workout/run, and kept journaling consistent.
 
-For your diary, the shift is simple:
-you’re not trying to sound bigger, you’re trying to feel undeniable.
+Also tested [Recordly](https://recordly.dev/) for recording. It looks strong enough to replace current recording flow.
 
-One thing to try today:
-take your best Ryva output and turn it into a 3-line proof you can reuse in replies. What’s the sharpest one you have right now?
+## Next steps
 
-Exact Diff Summary
+- Finalize one-decision-per-block behavior in output structure.
+- Continue value-first outreach with strict ICP filtering.
+- Re-engage X selectively for inbound potential while keeping Reddit + LinkedIn as core.
+- Convert inbound/testing asks into immediate setup and fast feedback loops.
 
-convex/lib/decision_agent/actionsRuntime.ts: major recovery/robustness rewrite. Added reasoned-output types/schemas (\*\_reasoned), reasoning sanitization, actionable-decision filtering, recommendation-step extraction, model-candidate fallback chain, malformed-stream repair pass, deterministic emergency fallback output, deterministic recovery output from existing decision context, generationMode tracking, priority-focus reduction to top single recommendation, and persistence fallback for priority_focus.
-convex/decisionAgentInternal.ts: filtered non-actionable/broken decision text, excluded isAgentOutput context blocks, prioritized latest GitHub snapshot signal, filtered low-fidelity prior runs, split recommendations into per-step decision blocks, filtered missing decisions to actionable only, and returned recommendationDecisionBlockIds.
-convex/lib/decision_agent/constants.ts: expanded system prompt/examples to require grounded reasoning with explicit|likely|unknown plus decisions_made_reasoned, missing_decisions_reasoned, and recommended_actions_reasoned.
-src/app/api/landing-analyze/route.ts: added reasoned fields to output contract, reasoned schema/normalizers, weak-reason filtering, likely-reason inference for fallback mode, and normalized reasoned output injection into final analysis result.
-src/lib/landing-analyze.ts: schema extended with optional what_to_do_now_reasoned, decisions_made_reasoned, and missing_decisions_reasoned.
-src/lib/validation/project-agent.ts: agent payload schema extended for reasoned arrays and GitHub commit authorAvatarUrl.
-convex/lib/github/types.ts: GitHub commit response now includes author avatar data; snapshot commit type includes authorAvatarUrl.
-convex/lib/github/snapshot.ts: normalized snapshot commit objects now capture and preserve authorAvatarUrl.
-convex/projects.ts: snapshot block validator now accepts optional commit authorAvatarUrl; minor formatting of guard conditions.
-src/components/ai-elements/commit.tsx: commit avatar now supports image source via AvatarImage and src prop.
-src/components/project/project-page-content-sections.tsx: switched to shared priority badge class helper, wired commit avatar URL, normalized recommendation body rendering to clean action paragraphs, and updated decision card styling.
-src/components/project/project-page-shared.tsx: updated priority badge/accent palette and block card theme classes.
-src/components/project/project-graph-view.tsx: adjusted edge/node color mappings and selection-shadow intensity.
-src/components/project/project-page-content-helpers.tsx: added streaming error normalization + deduped toast reporting; upgraded agent-run detail sections to render reasoned decisions/actions instead of plain strings.
-src/components/project/run-share-view.tsx: replaced old critical-line heuristic with structured action+reasoning model; renders reasoned actions/decisions/missing decisions and inferred likely reasoning fallback.
-src/components/landing-repo-wedge.tsx: added reasoned display types, converted all key sections to “Action/Decision + Reason/Likely reasoning/Reason not clearly documented” presentation, and derived critical decision from reasoned output.
-src/components/project/agent-v2/agent-panel.tsx: normalized recommendation display text, refactored recent-runs card layout, tightened share API payload typing, and changed destructive/outline button variants for decline/revoke actions.
-src/components/project/project-run-config-dialog.tsx: refactored budget preview rendering to stable placeholder-based rows with refresh indicator and simplified directive placeholder text.
+## Friction and risk
 
-| #   | Platform | Post                                                                                            | Age (days) | Link                                                                                                                   | Local File                                                                  |
-| --- | -------- | ----------------------------------------------------------------------------------------------- | ---------: | ---------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| 1   | Reddit   | Why do ci pipeline failures keep blocking deployments when nobody can agree on who owns the fix |       0.13 | [Open](https://www.reddit.com/r/ExperiencedDevs/comments/1s28box/why_do_ci_pipeline_failures_keep_blocking/)           | [Open local](./2026-03-25-thread-1-ci-failures-ownership-gap.md)            |
-| 2   | Reddit   | Dev team action items from standups never actually get done, is this normal?                    |       6.95 | [Open](https://www.reddit.com/r/webdev/comments/1rw65cw/dev_team_action_items_from_standups_never/)                    | [Open local](./2026-03-25-thread-2-standup-action-items-fall-through.md)    |
-| 3   | Reddit   | been at this place for 8 weeks and their "agile" approach is confusing me                       |       3.95 | [Open](https://www.reddit.com/r/agile/comments/1ryvtiz/been_at_this_place_for_8_weeks_and_their_agile/)                | [Open local](./2026-03-25-thread-3-agile-standups-status-theater.md)        |
-| 4   | Reddit   | Why does everything take longer than it should?                                                 |       5.87 | [Open](https://www.reddit.com/r/ProductManagement/comments/1rx6kvh/why_does_everything_take_longer_than_it_should/)    | [Open local](./2026-03-25-thread-4-delivery-latency-decision-friction.md)   |
-| 5   | Reddit   | How are your teams documenting decision made? Especially to feed as context for AI              |       6.65 | [Open](https://www.reddit.com/r/ProductManagement/comments/1rwi4nr/how_are_your_teams_documenting_decision_made/)      | [Open local](./2026-03-25-thread-5-meeting-decisions-not-captured.md)       |
-| 6   | Reddit   | Team is doing agile on paper but not actually improving, how do you break that cycle?           |       6.02 | [Open](https://www.reddit.com/r/agile/comments/1rx1h8j/team_is_doing_agile_on_paper_but_not_actually/)                 | [Open local](./2026-03-25-thread-6-agile-on-paper-no-improvement.md)        |
-| 7   | Reddit   | How much of your (and your team's) time goes to answering the same questions over and over?     |       5.78 | [Open](https://www.reddit.com/r/EngineeringManagers/comments/1rx9yli/how_much_of_your_and_your_teams_time_goes_to/)    | [Open local](./2026-03-25-thread-7-repeat-questions-slack-context-loss.md)  |
-| 8   | Reddit   | Velocity charts look healthy… right up until the sprint fails. Why?                             |       0.52 | [Open](https://www.reddit.com/r/EngineeringManagers/comments/1s1x9cd/velocity_charts_look_healthy_right_up_until_the/) | [Open local](./2026-03-25-thread-8-sprint-looks-healthy-then-fails.md)      |
-| 9   | Reddit   | How do you handle “done” when a release can still break reporting?                              |       5.07 | [Open](https://www.reddit.com/r/agile/comments/1rxwi79/how_do_you_handle_done_when_a_release_can_still/)               | [Open local](./2026-03-25-thread-9-done-definition-reporting-breaks.md)     |
-| 10  | Reddit   | Does anyone else get status update fatigue? How do I make it less fatiguing?                    |      10.82 | [Open](https://www.reddit.com/r/ExperiencedDevs/comments/1rsrnew/does_anyone_else_get_status_update_fatigue_how_do/)   | [Open local](./2026-03-25-thread-10-status-update-fatigue-multi-project.md) |
+- Migration/cost changes can introduce lockout or stability risk if rushed.
+- If reasoning labels are ambiguous, trust can drop even when analysis is directionally correct.
+- Outreach automation can drift low-signal without hard manual filtering.
 
-All links above were re-selected to avoid collisions with earlier thread folders and to stay within 14 days (favoring past-week posts where available).
+## Numbers
 
----
+- 1 blog post published
+- 1 LinkedIn post published
+- 8 hyper-specific Reddit outreach messages sent
+- 3 Ryva share runs sent
+- 1500+ personal-site views in 2 weeks
+- 1000+ Ryva page views reached
+- 1 first real inbound access/testing request
+- 2 product videos published
 
-type: note
-date: 2026-03-24
-author: Codex
-tags: [ryva, outreach, strategy, value-first, reddit, icp]
-source: internal-research
+## Quotes of today
 
----
+> Need more info on how your feature/story breakdown looks and how these issues are popping up.
 
-# 2026-03-24 Outreach Findings + Value-First Strategy Shift
+This is a quality signal: people are not dismissing the premise, they are asking for diagnostic depth.
 
-## What We Found Today
+> Standups will almost always become status theatre unless you actively fight it.
 
-- The highest-converting pain is not “too many tools”; it is missing project state despite tools.
-- Recurring ICP pattern: standups become status theater because state is fragmented across Slack, PRs, and ticket systems.
-- Frequent failure mode: ownership is unclear, so blockers and follow-ups quietly die after meetings.
-- Teams report heavy status-maintenance work (meta-work) that competes with real delivery.
-- “False green” execution appears often: dashboards look healthy until late-stage review/integration drift causes spillover.
+This reinforces Ryva's core wedge: visibility has to come from work artifacts, not ritual performance.
 
-## Strongest Pain Buckets (from selected threads)
+> Biggest lesson so far: leading with the demo doesn't work. People need to feel understood before they click anything.
 
-- Standup action items discussed but not executed.
-- CI/pipeline failures with no clear owner.
-- Jira/ticket views stale vs what was actually decided in chat/meetings.
-- Decision rationale not captured in a reusable, execution-linked way.
-- Multi-project status fatigue from proving progress across systems.
+This remains the clearest GTM rule for current stage: understanding first, product second.
 
-## Strategy Shift: Value First (Before Pitch)
-
-Previous tendency:
-
-- Ask for demo/run too early.
-
-Updated approach:
-
-- Start by naming the exact coordination failure in their language.
-- Give one useful diagnosis or framing they can apply immediately.
-- Offer a lightweight next step only after resonance (not upfront).
-
-## Value-First Messaging Model
-
-1. Mirror concrete pain from their post.
-2. Reframe root cause in one sharp line (ownership/state/decision gap).
-3. Give one practical micro-suggestion (owner + next step + visibility).
-4. Ask one low-friction follow-up.
-
-## Why This Shift Matters
-
-- Reduces “tool pitch” resistance in communities sensitive to self-promo.
-- Increases trust by delivering utility before asking for anything.
-- Matches how operators evaluate unknown products: “do you understand my workflow mess?”
-
-## Guardrails We Applied Today
-
-- Strict ICP filtering only: dev workflows, recurring pain, concrete context.
-- Recency gate: prefer last 7 days; allow up to 14 days max.
-- Collision avoidance: no source overlap with older thread folders.
-- Source exclusion: removed HiSimpy-linked sources per user request.
-
-## Practical Next Move
-
-- Use the new Reddit drafts under `/resources/posts` with value-first framing and collect response language for next-iteration message tuning.
+Main progress today: I improved reasoning quality in the product, strengthened outbound execution systems, and got the first clear inbound signal that positioning is starting to compound.
