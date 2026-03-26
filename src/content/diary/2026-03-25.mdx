@@ -1,0 +1,131 @@
+---
+date: 2026-03-25
+summary: "Lookup UX, security hardening, and wedge validation"
+tags: ["ryva", "experiment"]
+---
+
+Today was a heavy build + GTM execution day. I shipped product improvements, tightened security posture in working changes, and got clearer market signal from real conversations.
+
+The core theme: keep the wedge tight (GitHub + Slack -> action), improve clarity, and avoid overbuilding.
+
+## What I shipped
+
+Committed today on `master`:
+
+- `75528e9` by Ege Uysal
+- Added submit-based public GitHub lookup with star-ranked results
+- Extended GitHub repo types to include star metadata
+- Improved project creation UX for public repo lookup and result handling
+
+Content and distribution shipped today:
+
+- Wrote and published today's blog post: [Read the post](/blog/the-real-reason-ryva-is-hard-to-copy)
+- Wrote today's LinkedIn post: [Read the post](https://www.linkedin.com/posts/egeuysall_ryva-kill-your-standups-share-7442726604142780416-iOOx?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- Wrote today's X post: [See the post](https://x.com/egewrk/status/2036961143558660373?s=20)
+
+High-impact working changes (in progress, not all committed earlier in the day):
+
+- stronger public share permission controls and expiry support
+- tighter canonical-origin handling and less forwarded-header trust
+- removed privileged token usage from public landing analysis
+- better public share gating in UI
+- safer delete confirmation and better submit/Enter behavior across forms
+
+## Product updates from direct feedback
+
+A direct user feedback loop led to two important improvements:
+
+- reasoning clarity: distinguish explicit vs inferred reasoning more clearly
+- output structure: avoid packing multiple decisions into one block
+
+The target output shape is now stricter:
+
+- 1 decision per block
+- recommendations split into actionable steps with clear ownership direction
+
+Public usage walkthrough:
+
+<YouTubeVideo
+  url="https://youtu.be/5Ib-HwpnGTY"
+  title="Ryva public GitHub lookup walkthrough"
+/>
+
+Here is how the lookup feature currently looks:
+
+![Ryva public lookup feature](https://cdn.egeuysal.com/content/lookup.jpg)
+
+## Daksh call and market signal
+
+Daksh call was useful and grounded:
+
+- Ryva output landed on a real repo with meaningful decisions/gaps/next steps
+- validation: GitHub + Slack is already enough to drive action in many cases
+- feedback: teams will still expect Jira and meeting data eventually, but do not overbuild integrations too early as a solo founder
+
+CyberMinds call update:
+
+- a CyberMinds call was supposed to happen today, but the leader canceled without notice
+
+He mentioned a competitor in the space (Devhawk). I tested it and saw onboarding friction (OAuth/setup confusion), weak time-to-value, and unclear immediate aha.
+
+Devhawk snapshot from my retry:
+
+![Devhawk onboarding friction screenshot](https://cdn.egeuysal.com/content/devhawk.jpg)
+
+Takeaway: the immediate gap is clarity + speed-to-insight, not integration breadth.
+
+## Outreach execution
+
+- Sent 8 hyper-specific Reddit DMs/replies to ICPs.
+- Continued LinkedIn connection requests, mostly to ICPs.
+- Ran the Brain workflow for post discovery + draft support, then manually filtered for quality.
+
+Outreach system snapshot:
+
+![Outreach system snapshot](https://cdn.egeuysal.com/content/diary/outreach.jpg)
+
+I also logged a practical lesson: "stealth startup" is often just a filler label for unnamed work. I ran Ryva for someone who was a poor-fit lead and lost that thread, but the signal quality was low anyway.
+
+## Conversion checklist result
+
+Completed today:
+
+- hot lead follow-ups and active DM loops
+- re-run with "why" improvements for deeper conversations
+- value-first Reddit responses using existing high-signal thread list
+- 2 targeted LinkedIn warm outreaches with repo-first insight
+
+Partially complete:
+
+- full close-to-setup conversion still in progress
+
+## Friction and risk
+
+- migration/cost changes can create temporary lockout risk
+- wrong lead qualification can waste high-effort manual runs
+- broader integrations are tempting, but can dilute wedge focus too early
+
+## Numbers
+
+- 1 core commit shipped (`75528e9`)
+- 1 public usage walkthrough video published
+- 1 blog post published
+- 8 hyper-specific Reddit outreach messages sent
+- 2 LinkedIn warm outreaches run repo-first
+- multiple security and origin-hardening changes progressed
+
+## Quotes of today
+
+> I wouldn’t want to send actual repo context yet, but I’d be curious to see a cleaner example of the output itself.
+
+This is a high-quality buying signal: trust is not there yet for access, but curiosity is high when output quality is clear.
+
+> Standups will almost always become status theatre unless you actively fight it.
+
+This reinforces the wedge: visibility must come from work artifacts and ownership signals, not ritual updates.
+
+> Biggest lesson so far: leading with the demo doesn't work. People need to feel understood before they click anything.
+
+Still true. Value-first context beats link-first outreach.
+
+Main progress today: I improved onboarding and reasoning clarity, validated the wedge in a real founder conversation, and kept execution disciplined without expanding scope too early.

@@ -1,0 +1,222 @@
+---
+title: "Convex, Multi-Tenancy, and AI for Ryva"
+description: "I picked Convex for Ryva expecting good DX. I didn't expect it to also be the most AI-friendly database I've ever worked with. Here's why."
+publishedAt: 2026-03-25
+tags: ["convex", "saas", "typescript", "architecture", "ai"]
+image: "https://cdn.egeuysal.com/content/convex.jpg"
+---
+
+Multi-tenancy is one of those things that sounds simple until you're three hours into a bug where one team's data leaked into another's dashboard. I've been there. Twice.
+
+When I started building [Ryva](https://ryva.dev) and a decision layer that reads your GitHub and Slack to surface structured project state for dev teams and I had to make a fundamental architectural choice early: how do I isolate data between teams in a way that's fast to build, hard to get wrong, and doesn't become a nightmare to maintain as the product grows?
+
+I ended up choosing Convex as my primary data layer. And it changed how I think about multi-tenancy entirely.
+
+![Convex and Ryva architecture context](https://cdn.egeuysal.com/content/convex.jpg)
+
+## The Problem With "Traditional" Multi-Tenancy
+
+The classic approach is row-level security in Postgres. You add an `org_id` column to every table, enable RLS policies, and pray you don't forget to filter somewhere.
+
+```sql
+-- Every table. Every query. Every time.
+ALTER TABLE decisions ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY tenant_isolation ON decisions
+  USING (org_id = current_setting('app.current_org')::uuid);
+```
+
+This works. Supabase makes it approachable. But there's a hidden cost: **you are always one missing filter away from a data leak.** And with RLS, the failure mode is silent. Your query just returns empty instead of throwing an error you can catch.
+
+I still use Supabase in Ryva and specifically for auth metadata and some relational heavy-lifting. But I moved my core application data into Convex, and here's why that changed everything.
+
+## How Convex Handles Isolation Differently
+
+Convex doesn't use RLS. Instead, isolation is enforced at the function boundary and in the server functions themselves.
+
+Every query and mutation in Convex is a TypeScript function that runs server-side. You get the authenticated user's identity at the top, and everything flows from there. There's no "forget to add the filter" because the filter _is_ the data access pattern.
+
+Here's a simplified version of how Ryva fetches decisions for a team:
+
+```typescript
+// convex/decisions.ts
+export const listByTeam = query({
+  args: { teamId: v.id("teams") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    // Verify membership before returning anything
+    const membership = await ctx.db
+      .query("memberships")
+      .withIndex("by_user_team", (q) =>
+        q.eq("userId", identity.subject).eq("teamId", args.teamId),
+      )
+      .unique();
+
+    if (!membership) throw new Error("Not a member of this team");
+
+    return ctx.db
+      .query("decisions")
+      .withIndex("by_team", (q) => q.eq("teamId", args.teamId))
+      .order("desc")
+      .collect();
+  },
+});
+```
+
+Notice what's happening: there's no global policy to configure, no session variable to set, no RLS to enable. The authorization check and the data query are in the same function. If you forget the membership check, TypeScript will complain and or in the worst case, you'll catch it immediately in development because the function throws.
+
+The failure mode is loud. That's the part that matters.
+
+## Real-Time as a First-Class Feature
+
+The other thing Convex gives you for free is reactivity. Every query is a live subscription. When Ryva's background agent processes a new GitHub push event and creates a decision record, every connected client on that team sees the update in under 100ms and with no WebSocket boilerplate, no pub/sub setup, no Redis.
+
+```typescript
+// In your React component and that's it.
+const decisions = useQuery(api.decisions.listByTeam, { teamId });
+```
+
+For a product like Ryva, where multiple engineers on a team might be looking at the same project state simultaneously, this was a massive unlock. I didn't have to build a real-time layer. It was just... there.
+
+Compare that to building this on top of Supabase Realtime + Postgres + RLS. Doable and but you're managing subscriptions, handling reconnects, and carefully crafting RLS policies that don't accidentally broadcast data across tenants.
+
+![Ryva real-time graph view](https://cdn.egeuysal.com/content/ryva-blog/graph.png)
+
+## Where It Gets Interesting: Cross-Tenant Indexing
+
+Ryva's agent needs to do something a standard multi-tenant app doesn't: it has to run background jobs that process data _across_ teams (for system-level analytics, not user-facing data) while never mixing team context in user-facing queries.
+
+The way I solved this was by separating agent functions from user-facing functions entirely:
+
+```typescript
+// convex/agent.ts and runs as internal action, not exposed to clients
+export const processGithubEvent = internalAction({
+  args: { installationId: v.string(), payload: v.any() },
+  handler: async (ctx, args) => {
+    // Map installation, team inside the function
+    const team = await ctx.runQuery(internal.teams.byInstallation, {
+      installationId: args.installationId,
+    });
+
+    // All mutations scoped to that team's ID from this point on
+    await ctx.runMutation(internal.decisions.create, {
+      teamId: team._id,
+      ...extractDecision(args.payload),
+    });
+  },
+});
+```
+
+`internalAction` means it's never callable from the client and only from your backend or scheduled jobs. Convex's function visibility model (`internal` vs `public`) gives you a clean separation between what agents can do and what users can do, without needing a separate service.
+
+## The Unexpected Bonus: AI Never Fails With Convex
+
+Here's something I didn't expect when I picked Convex: it's the most AI-friendly database I've ever worked with.
+
+I build Ryva almost entirely with Claude as my coding partner. And I noticed early on that whenever I'm working in Convex, the AI just... doesn't make mistakes. No hallucinated column names. No invalid query shapes. No broken RLS policies that silently return wrong data. Compare that to working with raw SQL or even Prisma and the AI regularly generates queries against tables that don't exist, or forgets a join condition, or gets an enum value slightly wrong.
+
+I've been thinking about why, and I think it comes down to four things.
+
+![Ryva GitHub decision context panel](https://cdn.egeuysal.com/content/ryva-blog/git.png)
+
+**1. The schema is co-located and explicit.**
+
+In Convex, your entire data model lives in one `schema.ts` file. Every table, every field, every index and declared in TypeScript with full types. When an AI reads that file, it has a complete, unambiguous map of your data model. There's nothing hidden in a migration file from six months ago, no implicit column added by an ORM, no RLS policy defined in a SQL editor somewhere.
+
+```typescript
+// convex/schema.ts and the AI reads this once and knows everything
+export default defineSchema({
+  decisions: defineTable({
+    teamId: v.id("teams"),
+    title: v.string(),
+    status: v.union(v.literal("open"), v.literal("made"), v.literal("blocked")),
+    confidence: v.number(),
+    madeAt: v.optional(v.number()),
+  })
+    .index("by_team", ["teamId"])
+    .index("by_status", ["teamId", "status"]),
+});
+```
+
+When the AI writes a query against `decisions`, it knows exactly which fields exist, what types they are, and which indexes are available. It can't hallucinate a `priority` column because there is no `priority` column and and TypeScript will immediately error if it tries.
+
+**2. There's no SQL to generate.**
+
+SQL is where AI coding assistants fall apart the hardest. Natural language maps loosely to SQL and there are a dozen ways to express the same query, subtle differences in join semantics, and edge cases around NULLs that trip up models constantly. Convex's query builder is TypeScript all the way down:
+
+```typescript
+// The AI writes this and no SQL, no ambiguity
+const blocked = await ctx.db
+  .query("decisions")
+  .withIndex("by_status", (q) =>
+    q.eq("teamId", args.teamId).eq("status", "blocked"),
+  )
+  .collect();
+```
+
+There's only one way to filter by index. There's only one way to order results. The API surface is small, typed, and predictable and which means the AI's output is small, typed, and predictable.
+
+**3. Functions are self-contained contracts.**
+
+In a traditional stack, understanding what a piece of code does requires tracing through middleware, RLS policies, ORM hooks, and sometimes multiple config files. An AI working in that environment has to hold a lot of implicit context in mind, and it frequently drops something.
+
+In Convex, a function is the whole story. The args are declared. The auth check is in the function body. The query is in the function body. The return type is inferred. There's no hidden layer the AI needs to know about. When I ask Claude to add a new query to Ryva, it reads one file and writes one function and and it's correct on the first try almost every time.
+
+**4. Validators double as documentation.**
+
+Every argument to a Convex function is validated with `v.` and Convex's runtime validator. This is primarily a safety feature, but it's also the best inline documentation you can give an AI:
+
+```typescript
+export const createDecision = mutation({
+  args: {
+    teamId: v.id("teams"), // must be a valid teams document ID
+    title: v.string(),
+    status: v.literal("open"), // only "open" on creation
+    confidence: v.number(),
+  },
+  handler: async (ctx, args) => { ... },
+});
+```
+
+When an AI reads this signature, it knows not just the types but the _semantics_. `v.id("teams")` tells it this isn't a raw string and it's a reference to the teams table. `v.literal("open")` tells it new decisions always start open. That's context that would normally live in a comment, a README, or nowhere at all.
+
+I don't think Convex designed itself to be LLM-friendly. It was designed to be _developer_-friendly and explicit, typed, co-located, minimal surface area. But those happen to be exactly the properties that make a codebase legible to an AI.
+
+As we move into a world where most production code is written with AI assistance, I think this matters more than people realize. A database that makes it easy for _humans_ to understand the data model will make it easy for _AI_ to understand the data model too. And a database that hides complexity in config files, global policies, and implicit conventions will cause AI to make subtle, hard-to-catch mistakes.
+
+Convex accidentally solved a problem that didn't fully exist yet when it was built.
+
+## What I'd Do Differently
+
+Convex isn't perfect. A few honest notes:
+
+**Schema migrations are manual.** There's no `ALTER TABLE` equivalent. When I changed the shape of Ryva's `decisions` table, I had to write a one-off migration script and run it against production. Not painful, but not elegant either.
+
+**Relational queries require thinking differently.** Convex doesn't have joins. If you're used to writing `SELECT * FROM decisions JOIN projects ON ...`, you'll need to restructure that into two indexed queries and merge in application code. Once you internalize it, it's fine and but there's a learning curve.
+
+**It's not the right tool for everything.** Ryva still uses Supabase for user billing metadata and team invite links because that data has complex relational requirements and I want SQL for it. Convex handles everything that's real-time, agent-written, or user-facing. The split is intentional.
+
+## Quick Build Proof
+
+AI helped me build this decision workflow on top of Convex much faster than I could have alone. Without Convex's typed function model and explicit schema, this would have been significantly harder to ship correctly at speed.
+
+Here is a concrete run where Ryva surfaced decisions for the Supabase repo:
+
+<YouTubeVideo
+  url="https://youtu.be/DDAu4A7ytKM?si=2iRrxbgw6SM1_sV4"
+  title="How Ryva surfaced decisions for Supabase"
+/>
+
+## The Takeaway
+
+Multi-tenancy isn't about having the most sophisticated isolation mechanism. It's about making the _wrong thing hard to do_.
+
+RLS in Postgres is powerful, but it puts the burden on the developer to remember to enable it everywhere. Convex flips that: isolation is structural, because your authorization logic lives in the same place as your data access logic.
+
+For a solo founder shipping fast, that trade-off is worth everything.
+
+If you're building a B2B SaaS and you're tired of RLS anxiety, give Convex a serious look. It won't solve your product problems and but it'll stop your data layer from being the source of your 2am panic.
+
+If you want to see what Ryva actually does, go to **ryva.dev**, paste any public GitHub repo, and it'll surface the decisions your team is missing. No account. No signup. If it finds something useful, reply and tell me. I read everything.
