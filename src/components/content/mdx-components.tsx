@@ -6,6 +6,7 @@ const ALLOWED_EXTERNAL_PROTOCOLS = new Set([
   "mailto:",
   "tel:",
 ]);
+const ALLOWED_IMAGE_PROTOCOLS = new Set(["http:", "https:"]);
 
 const YOUTUBE_HOSTS = new Set([
   "youtube.com",
@@ -71,6 +72,37 @@ function getSafeEmbedUrl(
     return parsed.toString();
   } catch {
     return null;
+  }
+}
+
+function getSafeImageSrc(input: string): string {
+  const src = input.trim();
+
+  if (!src) {
+    return "";
+  }
+
+  if (src.startsWith("//")) {
+    return "";
+  }
+
+  if (src.startsWith("/") || src.startsWith("./") || src.startsWith("../")) {
+    return src;
+  }
+
+  const hasProtocol = /^[a-zA-Z][a-zA-Z\d+.-]*:/.test(src);
+
+  if (!hasProtocol) {
+    return src;
+  }
+
+  try {
+    const parsed = new URL(src);
+    return ALLOWED_IMAGE_PROTOCOLS.has(parsed.protocol)
+      ? parsed.toString()
+      : "";
+  } catch {
+    return "";
   }
 }
 
@@ -321,15 +353,82 @@ export const mdxComponents: MDXComponents = {
       />
     );
   },
-  img: ({ src = "", alt = "", className, ...props }) => (
-    <img
-      src={String(src)}
-      alt={String(alt)}
-      loading="lazy"
-      decoding="async"
-      className="not-prose my-6 overflow-hidden rounded-sm border border-neutral-800"
-      {...props}
-    />
-  ),
+  img: ({ src = "", alt = "", className, ...props }) => {
+    const safeSrc = getSafeImageSrc(String(src));
+    const normalizedAlt = String(alt);
+    const mergedClassName = [
+      "not-prose my-6 overflow-hidden rounded-sm border border-neutral-800",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    if (!safeSrc) {
+      return (
+        <p className="not-prose my-4 rounded-sm border border-neutral-800 px-3 py-2 text-xs text-neutral-400">
+          Image could not be rendered due to an invalid URL.
+        </p>
+      );
+    }
+
+    if (className) {
+      return (
+        <img
+          src={safeSrc}
+          alt={normalizedAlt}
+          loading="lazy"
+          decoding="async"
+          className={mergedClassName}
+          {...props}
+        />
+      );
+    }
+
+    return (
+      <figure className="not-prose my-6 aspect-video overflow-hidden border border-neutral-700 bg-[#F5EAD6] p-8 rounded-sm">
+        <img
+          src={safeSrc}
+          alt={normalizedAlt}
+          loading="lazy"
+          decoding="async"
+          className="block h-full w-full max-w-none origin-top-left scale-150 rounded-md object-cover object-top-left"
+          {...props}
+        />
+      </figure>
+    );
+  },
   YouTubeVideo,
+};
+
+export const mdxComponentsPlainImage: MDXComponents = {
+  ...mdxComponents,
+  img: ({ src = "", alt = "", className, ...props }) => {
+    const safeSrc = getSafeImageSrc(String(src));
+    const normalizedAlt = String(alt);
+    const mergedClassName = [
+      "not-prose my-6 overflow-hidden rounded-sm border border-neutral-800",
+      className,
+    ]
+      .filter(Boolean)
+      .join(" ");
+
+    if (!safeSrc) {
+      return (
+        <p className="not-prose my-4 rounded-sm border border-neutral-800 px-3 py-2 text-xs text-neutral-400">
+          Image could not be rendered due to an invalid URL.
+        </p>
+      );
+    }
+
+    return (
+      <img
+        src={safeSrc}
+        alt={normalizedAlt}
+        loading="lazy"
+        decoding="async"
+        className={mergedClassName}
+        {...props}
+      />
+    );
+  },
 };

@@ -1,6 +1,6 @@
 ---
 import MdxImage from "@/components/content/MdxImage.astro";
-import { mdxComponents } from "@/components/content/mdx-components";
+import { mdxComponentsPlainImage } from "@/components/content/mdx-components";
 import { render } from "astro:content";
 import { SITE } from "@/config/site";
 import BaseLayout from "@/layouts/BaseLayout.astro";
@@ -24,7 +24,7 @@ const { photo } = Astro.props as Props;
 const canonicalPath = `/photo/${photo.slug}/`;
 const siteOrigin = Astro.site ?? new URL(SITE.url);
 const contentComponents = {
-  ...mdxComponents,
+  ...mdxComponentsPlainImage,
   Image: MdxImage,
 };
 if (!photo.storyEntry) {
@@ -78,7 +78,7 @@ const jsonLd = {
       loading="eager"
       decoding="async"
       fetchpriority="high"
-      class="not-prose mb-6 overflow-hidden rounded-sm border border-neutral-800 aspect-[4/5] w-full object-cover"
+      class="not-prose mb-6 aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800 object-cover"
     />
 
     <Content components={contentComponents} />
