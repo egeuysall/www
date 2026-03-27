@@ -385,13 +385,13 @@ export const mdxComponents: MDXComponents = {
     }
 
     return (
-      <figure className="not-prose my-6 aspect-video overflow-hidden border border-neutral-700 bg-[#F5EAD6] p-8 rounded-sm">
+      <figure className="not-prose my-6 aspect-video overflow-hidden border border-neutral-700 bg-[#F5EAD6] p-6 md:p-8 rounded-sm">
         <img
           src={safeSrc}
           alt={normalizedAlt}
           loading="lazy"
           decoding="async"
-          className="block h-full w-full max-w-none origin-top-left scale-150 rounded-md object-cover object-top-left"
+          className="block h-full w-full max-w-none origin-top-left scale-150 rounded-sm md:rounded-md object-cover object-top-left"
           {...props}
         />
       </figure>
