@@ -51,7 +51,6 @@ function borderOverlaySvg(): Buffer {
 
   const svg = `
     <svg width="${OG_WIDTH}" height="${OG_HEIGHT}" viewBox="0 0 ${OG_WIDTH} ${OG_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${OG_WIDTH}" height="${OG_HEIGHT}" fill="#F5EAD6" />
       <rect
         x="${frameX}"
         y="${frameY}"
