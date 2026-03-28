@@ -2,11 +2,14 @@ import sharp from "sharp";
 
 const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
+const R2_PUBLIC_ORIGIN = "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev";
 
-const FRAME_INSET = 0;
-const FRAME_PADDING = 24;
-const IMAGE_RADIUS = 6;
-const ZOOM_SCALE = 1.08;
+const FRAME_INSET = 32;
+const FRAME_PADDING = 36;
+const IMAGE_RADIUS = 16;
+const ZOOM_SCALE = 1.5;
+const IMAGE_OVERFLOW_X = 96;
+const IMAGE_OVERFLOW_Y = 88;
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 10_000;
 
@@ -21,6 +24,32 @@ function isSafeRemoteUrl(value: string): boolean {
   }
 }
 
+function resolveOgFetchUrl(value: string): string {
+  try {
+    const parsed = new URL(value);
+
+    if (parsed.hostname !== "cdn.egeuysal.com") {
+      return value;
+    }
+
+    if (
+      parsed.pathname.startsWith("/content/") ||
+      parsed.pathname.startsWith("/photo/") ||
+      parsed.pathname.startsWith("/photo-1080/")
+    ) {
+      const rewritten = new URL(
+        parsed.pathname + parsed.search,
+        R2_PUBLIC_ORIGIN,
+      );
+      return rewritten.toString();
+    }
+
+    return value;
+  } catch {
+    return value;
+  }
+}
+
 function getLayout() {
   const frameX = FRAME_INSET;
   const frameY = FRAME_INSET;
@@ -29,8 +58,14 @@ function getLayout() {
 
   const viewportX = frameX + FRAME_PADDING;
   const viewportY = frameY + FRAME_PADDING;
-  const viewportWidth = frameWidth - FRAME_PADDING * 2;
-  const viewportHeight = frameHeight - FRAME_PADDING * 2;
+  const viewportWidth = Math.max(
+    1,
+    frameWidth - FRAME_PADDING * 2 + IMAGE_OVERFLOW_X,
+  );
+  const viewportHeight = Math.max(
+    1,
+    frameHeight - FRAME_PADDING * 2 + IMAGE_OVERFLOW_Y,
+  );
 
   return {
     frameX,
@@ -68,7 +103,9 @@ function placeholderSvg(): Buffer {
 }
 
 async function fetchImageBuffer(url: string): Promise<Buffer> {
-  if (!isSafeRemoteUrl(url)) {
+  const fetchUrl = resolveOgFetchUrl(url);
+
+  if (!isSafeRemoteUrl(fetchUrl)) {
     throw new Error("Unsupported OG source image URL.");
   }
 
@@ -76,7 +113,7 @@ async function fetchImageBuffer(url: string): Promise<Buffer> {
   const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   try {
-    const response = await fetch(url, {
+    const response = await fetch(fetchUrl, {
       signal: controller.signal,
       headers: { Accept: "image/*" },
     });
@@ -110,17 +147,23 @@ async function fetchImageBuffer(url: string): Promise<Buffer> {
 
 async function buildCreamStyleOgImage(sourceBuffer: Buffer): Promise<Buffer> {
   const { viewportX, viewportY, viewportWidth, viewportHeight } = getLayout();
-  const scaledWidth = Math.ceil(viewportWidth * ZOOM_SCALE);
-  const scaledHeight = Math.ceil(viewportHeight * ZOOM_SCALE);
+  const scaledWidth = Math.max(
+    viewportWidth,
+    Math.ceil(viewportWidth * ZOOM_SCALE),
+  );
+  const scaledHeight = Math.max(
+    viewportHeight,
+    Math.ceil(viewportHeight * ZOOM_SCALE),
+  );
 
   const positioned = await sharp(sourceBuffer)
     .resize(scaledWidth, scaledHeight, {
       fit: "cover",
-      position: "southeast",
+      position: "northwest",
     })
     .extract({
-      left: Math.max(0, scaledWidth - viewportWidth),
-      top: Math.max(0, scaledHeight - viewportHeight),
+      left: 0,
+      top: 0,
       width: viewportWidth,
       height: viewportHeight,
     })
@@ -145,14 +188,14 @@ async function buildCreamStyleOgImage(sourceBuffer: Buffer): Promise<Buffer> {
       background: "#F5EAD6",
     },
   })
-    .composite([
-      { input: cropped, left: viewportX, top: viewportY },
-    ])
+    .composite([{ input: cropped, left: viewportX, top: viewportY }])
     .png()
     .toBuffer();
 }
 
-export async function buildCreamCardOgImage(sourceUrl: string): Promise<Buffer> {
+export async function buildCreamCardOgImage(
+  sourceUrl: string,
+): Promise<Buffer> {
   try {
     const sourceBuffer = await fetchImageBuffer(sourceUrl);
     return await buildCreamStyleOgImage(sourceBuffer);
