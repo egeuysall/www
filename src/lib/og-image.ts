@@ -3,9 +3,9 @@ import sharp from "sharp";
 const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
 
-const FRAME_INSET = 24;
+const FRAME_INSET = 0;
 const FRAME_BORDER_WIDTH = 2;
-const FRAME_PADDING = 32;
+const FRAME_PADDING = 24;
 const FRAME_RADIUS = 4;
 const IMAGE_RADIUS = 4;
 const ZOOM_SCALE = 1.5;
@@ -24,10 +24,10 @@ function isSafeRemoteUrl(value: string): boolean {
 }
 
 function getLayout() {
-  const frameX = FRAME_INSET;
-  const frameY = FRAME_INSET;
-  const frameWidth = OG_WIDTH - FRAME_INSET * 2;
-  const frameHeight = OG_HEIGHT - FRAME_INSET * 2;
+  const frameX = FRAME_INSET + FRAME_BORDER_WIDTH / 2;
+  const frameY = FRAME_INSET + FRAME_BORDER_WIDTH / 2;
+  const frameWidth = OG_WIDTH - FRAME_INSET * 2 - FRAME_BORDER_WIDTH;
+  const frameHeight = OG_HEIGHT - FRAME_INSET * 2 - FRAME_BORDER_WIDTH;
 
   const viewportX = frameX + FRAME_BORDER_WIDTH + FRAME_PADDING;
   const viewportY = frameY + FRAME_BORDER_WIDTH + FRAME_PADDING;

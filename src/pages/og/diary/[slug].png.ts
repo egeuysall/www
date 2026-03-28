@@ -34,7 +34,7 @@ export async function GET({ props }: GetContext): Promise<Response> {
   return new Response(new Uint8Array(image), {
     headers: {
       "Content-Type": "image/png",
-      "Cache-Control": "public, max-age=31536000, immutable",
+      "Cache-Control": "public, max-age=0, s-maxage=86400, must-revalidate",
     },
   });
 }
