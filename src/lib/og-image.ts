@@ -4,11 +4,9 @@ const OG_WIDTH = 1200;
 const OG_HEIGHT = 630;
 
 const FRAME_INSET = 0;
-const FRAME_BORDER_WIDTH = 2;
 const FRAME_PADDING = 24;
-const FRAME_RADIUS = 4;
-const IMAGE_RADIUS = 4;
-const ZOOM_SCALE = 1.5;
+const IMAGE_RADIUS = 6;
+const ZOOM_SCALE = 1.08;
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 10_000;
 
@@ -24,15 +22,15 @@ function isSafeRemoteUrl(value: string): boolean {
 }
 
 function getLayout() {
-  const frameX = FRAME_INSET + FRAME_BORDER_WIDTH / 2;
-  const frameY = FRAME_INSET + FRAME_BORDER_WIDTH / 2;
-  const frameWidth = OG_WIDTH - FRAME_INSET * 2 - FRAME_BORDER_WIDTH;
-  const frameHeight = OG_HEIGHT - FRAME_INSET * 2 - FRAME_BORDER_WIDTH;
+  const frameX = FRAME_INSET;
+  const frameY = FRAME_INSET;
+  const frameWidth = OG_WIDTH - FRAME_INSET * 2;
+  const frameHeight = OG_HEIGHT - FRAME_INSET * 2;
 
-  const viewportX = frameX + FRAME_BORDER_WIDTH + FRAME_PADDING;
-  const viewportY = frameY + FRAME_BORDER_WIDTH + FRAME_PADDING;
-  const viewportWidth = frameWidth - (FRAME_BORDER_WIDTH + FRAME_PADDING) * 2;
-  const viewportHeight = frameHeight - (FRAME_BORDER_WIDTH + FRAME_PADDING) * 2;
+  const viewportX = frameX + FRAME_PADDING;
+  const viewportY = frameY + FRAME_PADDING;
+  const viewportWidth = frameWidth - FRAME_PADDING * 2;
+  const viewportHeight = frameHeight - FRAME_PADDING * 2;
 
   return {
     frameX,
@@ -44,28 +42,6 @@ function getLayout() {
     viewportWidth,
     viewportHeight,
   };
-}
-
-function borderOverlaySvg(): Buffer {
-  const { frameX, frameY, frameWidth, frameHeight } = getLayout();
-
-  const svg = `
-    <svg width="${OG_WIDTH}" height="${OG_HEIGHT}" viewBox="0 0 ${OG_WIDTH} ${OG_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-      <rect
-        x="${frameX}"
-        y="${frameY}"
-        width="${frameWidth}"
-        height="${frameHeight}"
-        rx="${FRAME_RADIUS}"
-        ry="${FRAME_RADIUS}"
-        fill="none"
-        stroke="#404040"
-        stroke-width="${FRAME_BORDER_WIDTH}"
-      />
-    </svg>
-  `;
-
-  return Buffer.from(svg);
 }
 
 function roundedMaskSvg(width: number, height: number, radius: number): Buffer {
@@ -137,20 +113,20 @@ async function buildCreamStyleOgImage(sourceBuffer: Buffer): Promise<Buffer> {
   const scaledWidth = Math.ceil(viewportWidth * ZOOM_SCALE);
   const scaledHeight = Math.ceil(viewportHeight * ZOOM_SCALE);
 
-  const covered = await sharp(sourceBuffer)
+  const positioned = await sharp(sourceBuffer)
     .resize(scaledWidth, scaledHeight, {
       fit: "cover",
-      position: "northwest",
+      position: "southeast",
     })
-    .toBuffer();
-
-  const cropped = await sharp(covered)
     .extract({
-      left: 0,
-      top: 0,
+      left: Math.max(0, scaledWidth - viewportWidth),
+      top: Math.max(0, scaledHeight - viewportHeight),
       width: viewportWidth,
       height: viewportHeight,
     })
+    .toBuffer();
+
+  const cropped = await sharp(positioned)
     .ensureAlpha()
     .composite([
       {
@@ -171,7 +147,6 @@ async function buildCreamStyleOgImage(sourceBuffer: Buffer): Promise<Buffer> {
   })
     .composite([
       { input: cropped, left: viewportX, top: viewportY },
-      { input: borderOverlaySvg(), left: 0, top: 0 },
     ])
     .png()
     .toBuffer();
