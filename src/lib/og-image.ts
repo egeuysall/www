@@ -6,7 +6,7 @@ const R2_PUBLIC_ORIGIN = "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev";
 
 const FRAME_INSET = 32;
 const FRAME_PADDING = 36;
-const IMAGE_RADIUS = 24;
+const IMAGE_RADIUS = 16;
 const ZOOM_SCALE = 1.5;
 const IMAGE_OVERFLOW_X = 96;
 const IMAGE_OVERFLOW_Y = 88;
