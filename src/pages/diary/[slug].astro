@@ -5,6 +5,7 @@ import MdxImage from "@/components/content/MdxImage.astro";
 import { mdxComponents } from "@/components/content/mdx-components";
 import { SITE } from "@/config/site";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { resolveContentCdnShorthand } from "@/lib/content-cdn";
 import { getDiaryDayMap, getDiaryEntrySlug } from "@/lib/content";
 import { formatDate } from "@/lib/utils";
 
@@ -35,6 +36,10 @@ export async function getStaticPaths() {
 const { entry, dayNumber, slug } = Astro.props as Props;
 const { Content } = await render(entry);
 const canonicalPath = `/diary/${slug}/`;
+const entryImageSource = entry.data.image
+  ? resolveContentCdnShorthand(entry.data.image)
+  : undefined;
+const entryOgImage = entryImageSource ? `/og/diary/${slug}.png` : undefined;
 const siteOrigin = Astro.site ?? new URL(SITE.url);
 const contentComponents = {
   ...mdxComponents,
@@ -49,6 +54,11 @@ const jsonLd = {
   datePublished: entry.data.date.toISOString(),
   dateModified: entry.data.date.toISOString(),
   mainEntityOfPage: new URL(canonicalPath, siteOrigin).toString(),
+  ...(entryImageSource
+    ? {
+        image: [new URL(entryImageSource, siteOrigin).toString()],
+      }
+    : {}),
   author: {
     "@type": "Person",
     name: SITE.author.name,
@@ -60,6 +70,7 @@ const jsonLd = {
   title={entry.data.summary}
   description={entry.data.summary}
   pathname={canonicalPath}
+  image={entryOgImage ?? entryImageSource}
   type="article"
   publishedTime={entry.data.date.toISOString()}
   updatedTime={entry.data.date.toISOString()}

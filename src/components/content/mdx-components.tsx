@@ -1,5 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 
+import { resolveContentCdnShorthand } from "@/lib/content-cdn";
+
 const ALLOWED_EXTERNAL_PROTOCOLS = new Set([
   "http:",
   "https:",
@@ -15,6 +17,10 @@ const YOUTUBE_HOSTS = new Set([
   "youtu.be",
   "www.youtu.be",
 ]);
+
+type GetSafeImageSrcOptions = {
+  resolveContentCdnShorthandUrl?: boolean;
+};
 
 function getSafeHref(input: string): string {
   const href = input.trim();
@@ -75,8 +81,14 @@ function getSafeEmbedUrl(
   }
 }
 
-function getSafeImageSrc(input: string): string {
-  const src = input.trim();
+function getSafeImageSrc(
+  input: string,
+  options: GetSafeImageSrcOptions = {},
+): string {
+  const rawSrc = input.trim();
+  const src = options.resolveContentCdnShorthandUrl
+    ? resolveContentCdnShorthand(rawSrc)
+    : rawSrc;
 
   if (!src) {
     return "";
@@ -354,7 +366,9 @@ export const mdxComponents: MDXComponents = {
     );
   },
   img: ({ src = "", alt = "", className, ...props }) => {
-    const safeSrc = getSafeImageSrc(String(src));
+    const safeSrc = getSafeImageSrc(String(src), {
+      resolveContentCdnShorthandUrl: true,
+    });
     const normalizedAlt = String(alt);
     const mergedClassName = [
       "not-prose my-6 overflow-hidden rounded-sm border border-neutral-800",

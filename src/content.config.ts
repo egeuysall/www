@@ -2,6 +2,8 @@ import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
 
+import { resolveContentCdnShorthand } from "@/lib/content-cdn";
+
 const blog = defineCollection({
   loader: glob({ base: "./src/content/blog", pattern: "**/*.{md,mdx}" }),
   schema: z.object({
@@ -11,7 +13,14 @@ const blog = defineCollection({
     updatedAt: z.coerce.date().optional(),
     tags: z.array(z.string().min(1)).default([]),
     draft: z.boolean().default(false),
-    image: z.url().optional(),
+    image: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value) =>
+        value ? resolveContentCdnShorthand(value) : undefined,
+      )
+      .pipe(z.url().optional()),
   }),
 });
 
@@ -25,6 +34,14 @@ const diary = defineCollection({
       .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
       .optional(),
     summary: z.string().min(4),
+    image: z
+      .string()
+      .trim()
+      .optional()
+      .transform((value) =>
+        value ? resolveContentCdnShorthand(value) : undefined,
+      )
+      .pipe(z.url().optional()),
     tags: z.array(z.string().min(1)).default([]),
     draft: z.boolean().default(false),
   }),

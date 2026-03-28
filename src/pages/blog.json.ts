@@ -1,5 +1,6 @@
 import { SITE } from "@/config/site";
 import { getPublishedBlogPosts } from "@/lib/content";
+import { resolveContentCdnShorthand } from "@/lib/content-cdn";
 import { toIsoDate, toLocalIsoDate } from "@/lib/utils";
 
 type GetContext = {
@@ -18,7 +19,9 @@ export async function GET({ site }: GetContext): Promise<Response> {
     publishedAt: toIsoDate(post.data.publishedAt),
     updatedAt: post.data.updatedAt ? toIsoDate(post.data.updatedAt) : null,
     tags: post.data.tags,
-    image: post.data.image ?? null,
+    image: post.data.image
+      ? resolveContentCdnShorthand(post.data.image)
+      : null,
     readingTime: post.readingTime,
     body: post.body,
   }));

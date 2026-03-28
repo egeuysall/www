@@ -4,6 +4,7 @@ import {
   getDiaryEntrySlug,
   getPublishedDiaryEntries,
 } from "@/lib/content";
+import { resolveContentCdnShorthand } from "@/lib/content-cdn";
 import { toIsoDate, toLocalIsoDate } from "@/lib/utils";
 
 type GetContext = {
@@ -26,6 +27,9 @@ export async function GET({ site }: GetContext): Promise<Response> {
       day: dayMap.get(entry.id) ?? null,
       date: toIsoDate(entry.data.date),
       summary: entry.data.summary,
+      image: entry.data.image
+        ? resolveContentCdnShorthand(entry.data.image)
+        : null,
       tags: entry.data.tags,
       body: entry.body,
     };

@@ -4,6 +4,7 @@ import { getCollection, render, type CollectionEntry } from "astro:content";
 import MdxImage from "@/components/content/MdxImage.astro";
 import { mdxComponents } from "@/components/content/mdx-components";
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import { resolveContentCdnShorthand } from "@/lib/content-cdn";
 import { formatDate } from "@/lib/utils";
 import { SITE } from "@/config/site";
 
@@ -24,7 +25,10 @@ const { post } = Astro.props as Props;
 const { Content } = await render(post);
 
 const canonicalPath = `/blog/${post.id}/`;
-const postImage = post.data.image;
+const postImageSource = post.data.image
+  ? resolveContentCdnShorthand(post.data.image)
+  : undefined;
+const postOgImage = postImageSource ? `/og/blog/${post.id}.png` : undefined;
 const siteOrigin = Astro.site ?? new URL(SITE.url);
 const contentComponents = {
   ...mdxComponents,
@@ -39,9 +43,9 @@ const jsonLd = {
   datePublished: post.data.publishedAt.toISOString(),
   dateModified: (post.data.updatedAt ?? post.data.publishedAt).toISOString(),
   mainEntityOfPage: new URL(canonicalPath, siteOrigin).toString(),
-  ...(postImage
+  ...(postImageSource
     ? {
-        image: [new URL(postImage, siteOrigin).toString()],
+        image: [new URL(postImageSource, siteOrigin).toString()],
       }
     : {}),
   author: {
@@ -55,7 +59,7 @@ const jsonLd = {
   title={post.data.title}
   description={post.data.description}
   pathname={canonicalPath}
-  image={postImage}
+  image={postOgImage ?? postImageSource}
   type="article"
   publishedTime={post.data.publishedAt.toISOString()}
   updatedTime={(post.data.updatedAt ?? post.data.publishedAt).toISOString()}

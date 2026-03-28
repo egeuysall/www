@@ -12,6 +12,7 @@ import {
   ALLOWED_IMAGE_PATTERNS,
   SITE,
 } from "./src/config/site";
+import remarkContentCdnShorthand from "./src/plugins/remark-content-cdn-shorthand.mjs";
 import remarkInlineShiki from "./src/plugins/remark-inline-shiki.mjs";
 
 // https://astro.build/config
@@ -24,7 +25,7 @@ export default defineConfig({
   },
   markdown: {
     syntaxHighlight: "shiki",
-    remarkPlugins: [remarkInlineShiki],
+    remarkPlugins: [remarkContentCdnShorthand, remarkInlineShiki],
   },
   vite: {
     plugins: [tailwindcss()],
