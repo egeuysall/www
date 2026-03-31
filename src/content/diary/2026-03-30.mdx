@@ -1,0 +1,228 @@
+---
+date: 2026-03-30
+image: "https://cdn.egeuysal.com/content/post-17.png"
+summary: "Code-heavy day: decision-agent reliability, output quality, and safer defaults"
+tags: ["ryva", "execution", "pmf", "engineering"]
+---
+
+Today was primarily a code day, not a content day. The main objective was to make Ryva runs more reliable, less noisy, and more defensible under real project conditions.
+
+The core theme: better agent internals first, then distribution.
+
+## What I shipped
+
+Content and distribution still shipped today:
+
+- Wrote today's X post: [See the post](https://x.com/egewrk/status/2038793585777107243?s=20)
+- Wrote today's LinkedIn post: [Read the post](https://www.linkedin.com/posts/egeuysall_yesterdays-diary-theme-for-me-was-specific-share-7444559565821677568-QtcT?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- Wrote today's Reddit post (non-product, builder-first question): [Read the post](https://www.reddit.com/r/SaaS/comments/1s8a4aj/how_do_you_share_coordination_problems_without/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
+
+Customer-facing execution shipped today:
+
+- ran Ryva for a fresh repo conversation: [Open run](https://ryva.dev/share/run_Ueft0cdaAZ1I)
+- reran CyberMinds after analytics updates: [Open run](https://ryva.dev/share/run_0RaRpmAwKw6b)
+- closed all pending X/LinkedIn/Reddit DMs and reply threads from yesterday
+- worked 10 targeted Reddit ICP replies/DMs and 10 targeted X replies/DMs
+
+![CyberMinds run after analytics update](https://cdn.egeuysal.com/content/post-17.png)
+
+## Engineering deep dive
+
+This was the highest-leverage part of the day.
+
+### 1) Decision-agent pipeline refactor
+
+I refactored the decision-agent run path to reduce brittleness and improve deterministic behavior:
+
+- moved to **staged source compression** instead of one-shot compression
+- added **source-cache reuse** where valid artifacts already exist
+- replaced streamed raw JSON parsing with **AI SDK structured output**
+
+Why this matters:
+
+- streamed raw JSON parsing was fragile under partial/invalid token streams
+- structured output reduces parser errors and makes failures explicit at schema boundaries
+- staged compression improves recovery paths when one stage fails
+
+### 2) Output quality hardening
+
+I tightened recommendation quality so outputs are tied to concrete repo evidence:
+
+- recommendations now prioritize exact commit/file/line references
+- missing-decision detection now rejects generic standup/checklist filler
+- low-signal evidence anchors were filtered so fallback output stops over-focusing on imports/frontmatter noise
+
+Why this matters:
+
+- generic insights create "agree but ignore" behavior
+- commit/file/line anchors increase operator trust and actionability
+- fallback quality is now less repetitive and less cosmetic
+
+### 3) Timeline noise reduction and write discipline
+
+I reduced recommendation spam and balanced persistence behavior:
+
+- collapsed repetitive recommendation writes
+- rebalanced persistence to keep:
+- one recommendation block
+- up to two missing-decision blocks
+
+Why this matters:
+
+- timeline spam dilutes urgency and makes first-screen comprehension worse
+- fewer, stronger blocks improve scan speed and conversion to follow-up action
+
+### 4) Snapshot/bootstrap reliability fixes
+
+I improved how project state is initialized and loaded:
+
+- added GitHub snapshot auto-load on project creation
+- added auto-load on first project view
+- fixed race condition causing duplicate snapshot/context blocks
+
+Why this matters:
+
+- duplicate blocks erode trust and create avoidable confusion
+- first-load reliability is a direct conversion factor in first-run experience
+
+### 5) Failure handling and observability
+
+I added more useful internal telemetry while keeping logs safe:
+
+- per-attempt Convex logging for synthesis/compression failures
+- logging includes model names + failure messages only (no secrets, no raw provider payload dumps)
+- stopped caching deterministic fallback compressions
+- added retry flow across stronger models when first pass fails
+
+Why this matters:
+
+- observability makes failure modes debuggable without leaking sensitive content
+- stronger-model retry improves completion rate on difficult contexts
+- not caching deterministic fallback reduces stale/low-quality repeat output
+
+### 6) Primary files touched
+
+- `convex/lib/decision_agent/actionsRuntime.ts`
+- `convex/decisionAgentInternal.ts`
+- `convex/githubInternal.ts`
+- `src/components/project/project-page-container.tsx`
+
+### 7) Validation and checks
+
+All targeted checks passed:
+
+```bash
+pnpm exec eslint convex/lib/decision_agent/actionsRuntime.ts convex/decisionAgentInternal.ts convex/githubInternal.ts src/components/project/project-page-container.tsx
+pnpm exec tsc --noEmit
+npx convex codegen
+```
+
+## Security review and risk posture
+
+Security status on today's code changes:
+
+- no new authentication or authorization regression found in touched paths
+- no new input-validation regression found in touched paths
+- new logging is constrained to operational metadata and error messages
+
+Critical existing repo-level risk (not introduced today):
+
+- real secrets are still present in tracked `.env` and `.env.production` files
+- `.gitignore` helps only for future files; it does not protect already tracked secrets
+
+Required remediation (not auto-applied because operationally destructive):
+
+- rotate exposed credentials
+- remove secrets from git index/history in a coordinated rollout
+- update deployment/runtime secrets in lockstep
+
+## Product updates from direct feedback
+
+Two major product-level insights became clearer:
+
+- white-glove first runs now generate replies reliably
+- the larger retention problem is **second-run inevitability**, not first-run acquisition
+
+This reframes product direction:
+
+- first run = snapshot
+- second run = delta story ("what changed vs last run")
+- stickiness comes from continuity, not one-time insight quality
+
+CyberMinds remained the strongest behavior-change proof:
+
+- workflow moved toward GitHub Issues
+- Ryva outputs are now part of recurring review flow
+- Slack migration from WhatsApp increased operational fit for repo-linked execution context
+
+Strategic signal today:
+
+- inbound from Composio co-founder context indicates Ryva is visible in agent-infra-adjacent circles
+- this is useful mainly as failure-mode learning leverage, not vanity validation
+
+## Execution and channel signal
+
+Outreach execution today:
+
+- replied across all pending channels from yesterday before opening new loops
+- sent 10 high-context Reddit replies/DMs
+- sent 10 high-context X replies/DMs
+- connected with many operators on LinkedIn and crossed 600 connections
+
+Signal quality today:
+
+- X reply loops continue to convert better than top-level posting
+- Reddit remains strong for pain articulation but can throttle deep thread scanning
+- best-performing ask remains repo-specific and binary: run now vs schedule short review
+
+Analytics snapshot today:
+
+- Ryva: 1500+ monthly views and 400+ unique visitors
+- egeuysal.com: 2k+ views and ~600 unique visitors in under 25 days
+
+![Traffic snapshot](https://cdn.egeuysal.com/content/post-16.png)
+
+## Personal context and consistency
+
+After the lighter travel-day cadence, today was a full deep-work reset focused on shipping core reliability improvements. Energy was directed to internal quality, not just output volume.
+
+The main win was treating engineering stability as the immediate PMF multiplier.
+
+## Conversion checklist result
+
+Completed today:
+
+- closed warm loops across X/LinkedIn/Reddit with value-first follow-up
+- shipped core decision-agent reliability and output-quality improvements
+- reran CyberMinds after analytics implementation and captured fresh evidence
+- enforced outbound safety guardrails (public repos only, sensitive-context avoidance)
+- shipped one X, one LinkedIn, and one Reddit post for continuity
+
+Partially complete:
+
+- "3 public repos run today" target landed at 2 completed runs
+- second-run conversion sequencing needs explicit productized follow-up template
+
+## Friction and risk
+
+- first-run quality is improving faster than second-run conversion mechanics
+- wide channel scanning can still steal time from high-intent thread follow-up
+- fallback compression can regress quality without strict evidence filtering (partially mitigated today)
+- tracked secret exposure remains a serious operational risk until rotated/removed
+
+## Numbers
+
+- 2 Ryva runs shared (`run_Ueft0cdaAZ1I`, `run_0RaRpmAwKw6b`)
+- 20 targeted replies/DMs total (10 Reddit + 10 X)
+- 3 posts published (X, LinkedIn, Reddit)
+- 600+ LinkedIn connections reached
+- 3 engineering checks passed (`eslint`, `tsc --noEmit`, `convex codegen`)
+- 4 core engineering files updated in critical run/snapshot path
+
+## Quotes of today
+
+> "Indeed, that ownership part is where it gets messy fast."
+
+> "Logs tell you something happened, but not always who was responsible for the decision path."
+
+Main progress today: Ryva became materially more reliable and actionable at the code path level, and that directly supports the next PMF objective, which is converting first-run curiosity into second-run expectation. Ryva actually works now.
