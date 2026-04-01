@@ -55,7 +55,9 @@ const isNavActive = (href: string): boolean => {
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="theme-color" content={SITE.themeColor} />
-    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#050505" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="color-scheme" content="dark light" />
     <meta name="description" content={description} />
     <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
 

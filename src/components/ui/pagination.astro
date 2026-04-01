@@ -37,7 +37,7 @@ const tokens = getPaginationTokens(currentPage, totalPages);
               href={getPageHref(currentPage - 1)}
               aria-label="Go to previous page"
               data-astro-prefetch
-              class="inline-flex h-8 items-center rounded-md px-3 hover:bg-neutral-900 hover:text-neutral-100"
+              class="inline-flex h-8 items-center rounded-sm px-3 hover:bg-neutral-900 hover:text-neutral-100"
             >
               <span class="hidden sm:block">{previousText}</span>
               <span class="sm:hidden">Prev</span>
@@ -46,7 +46,7 @@ const tokens = getPaginationTokens(currentPage, totalPages);
             <span
               aria-disabled="true"
               aria-hidden="true"
-              class="inline-flex h-8 cursor-not-allowed items-center rounded-md px-3 text-neutral-700"
+              class="inline-flex h-8 cursor-not-allowed items-center rounded-sm px-3 text-neutral-700"
             >
               <span class="hidden sm:block">{previousText}</span>
               <span class="sm:hidden">Prev</span>
@@ -66,7 +66,7 @@ const tokens = getPaginationTokens(currentPage, totalPages);
             ) : token === currentPage ? (
               <span
                 aria-current="page"
-                class="inline-flex h-8 min-w-8 cursor-default items-center justify-center rounded-md px-2 tabular-nums text-neutral-100"
+                class="inline-flex h-8 min-w-8 cursor-default items-center justify-center rounded-sm px-2 tabular-nums text-neutral-100"
               >
                 {token}
               </span>
@@ -75,7 +75,7 @@ const tokens = getPaginationTokens(currentPage, totalPages);
                 href={getPageHref(token)}
                 data-astro-prefetch
                 class:list={[
-                  "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2 tabular-nums transition-colors",
+                  "inline-flex h-8 min-w-8 items-center justify-center rounded-sm px-2 tabular-nums transition-colors",
                   "hover:bg-neutral-900 hover:text-neutral-100",
                 ]}
               >
@@ -91,7 +91,7 @@ const tokens = getPaginationTokens(currentPage, totalPages);
               href={getPageHref(currentPage + 1)}
               aria-label="Go to next page"
               data-astro-prefetch
-              class="inline-flex h-8 items-center rounded-md px-3 hover:bg-neutral-900 hover:text-neutral-100"
+              class="inline-flex h-8 items-center rounded-sm px-3 hover:bg-neutral-900 hover:text-neutral-100"
             >
               <span class="hidden sm:block">{nextText}</span>
               <span class="sm:hidden">Next</span>
@@ -100,7 +100,7 @@ const tokens = getPaginationTokens(currentPage, totalPages);
             <span
               aria-disabled="true"
               aria-hidden="true"
-              class="inline-flex h-8 cursor-not-allowed items-center rounded-md px-3 text-neutral-700"
+              class="inline-flex h-8 cursor-not-allowed items-center rounded-sm px-3 text-neutral-700"
             >
               <span class="hidden sm:block">{nextText}</span>
               <span class="sm:hidden">Next</span>

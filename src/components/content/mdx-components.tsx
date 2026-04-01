@@ -303,10 +303,13 @@ function YouTubeVideo({
   return (
     <div
       id={instanceId}
-      className="not-prose my-6 overflow-hidden rounded-sm border border-neutral-800 bg-neutral-950"
+      className="not-prose my-6 overflow-hidden rounded-sm border border-neutral-800 bg-[#fafafa] dark:bg-neutral-900"
     >
       <div className="relative aspect-video w-full">
-        <div className="absolute inset-0 bg-black/35" aria-hidden="true" />
+        <div
+          className="absolute inset-0 bg-[#fafafa]/40 dark:bg-neutral-900/35"
+          aria-hidden="true"
+        />
         <img
           src={thumbnailUrl}
           alt=""
@@ -328,7 +331,7 @@ function YouTubeVideo({
 
         <div
           data-yt-fallback-overlay
-          className="hidden absolute inset-0 z-10 flex-col items-center justify-center gap-3 bg-black/70 p-4 text-center"
+          className="hidden absolute inset-0 z-10 flex-col items-center justify-center gap-3 bg-[#fafafa]/90 p-4 text-center dark:bg-neutral-900/80"
         >
           <p className="text-sm text-neutral-200">
             This video could not be loaded in your browser.
@@ -399,13 +402,13 @@ export const mdxComponents: MDXComponents = {
     }
 
     return (
-      <figure className="not-prose my-6 aspect-video overflow-hidden border border-neutral-800 bg-neutral-900 p-6 md:p-8 rounded-sm">
+      <figure className="not-prose my-6 aspect-video overflow-hidden rounded-sm border border-neutral-800 bg-[#fafafa] p-6 md:p-8 dark:bg-neutral-900">
         <img
           src={safeSrc}
           alt={normalizedAlt}
           loading="lazy"
           decoding="async"
-          className="block h-full w-full max-w-none origin-top-left scale-150 rounded-sm md:rounded-md object-cover object-top-left grayscale"
+          className="block h-full w-full max-w-none origin-top-left scale-150 rounded-sm md:rounded-md object-cover object-top-left grayscale shadow-[0_6px_16px_-10px_rgba(0,0,0,0.22)] dark:shadow-[0_8px_16px_-12px_rgba(0,0,0,0.3)]"
           {...props}
         />
       </figure>

@@ -69,8 +69,17 @@ function resolveInlineLanguage(rawValue, defaultLang) {
 }
 
 export default function remarkInlineShiki(options = {}) {
-  const theme = options.theme ?? "github-dark";
+  const theme = options.theme ?? "github-dark-high-contrast";
+  const themes = options.themes;
+  const defaultColor = options.defaultColor ?? false;
   const defaultLang = options.defaultLang ?? "txt";
+  const hasThemeVariants =
+    themes && typeof themes === "object" && Object.keys(themes).length > 0;
+
+  const getHighlightOptions = (lang) =>
+    hasThemeVariants
+      ? { lang, themes, defaultColor }
+      : { lang, theme };
 
   return async function transformer(tree) {
     const replacements = [];
@@ -91,12 +100,15 @@ export default function remarkInlineShiki(options = {}) {
           highlighted = escapeHtml(code);
         } else {
           try {
-            const html = await codeToHtml(code, { lang, theme });
+            const html = await codeToHtml(code, getHighlightOptions(lang));
             highlighted = extractInlineCodeFromShiki(html) ?? "";
           } catch {
             renderedLang = defaultLang;
             try {
-              const html = await codeToHtml(code, { lang: defaultLang, theme });
+              const html = await codeToHtml(
+                code,
+                getHighlightOptions(defaultLang),
+              );
               highlighted = extractInlineCodeFromShiki(html) ?? "";
             } catch {
               highlighted = escapeHtml(code);
