@@ -199,6 +199,11 @@ a {
 
 .prose pre.astro-code {
   background-color: transparent !important;
+  filter: grayscale(1);
+}
+
+.prose code.shiki-inline {
+  filter: grayscale(1);
 }
 
 .prose :where(h2, h3, h4) {

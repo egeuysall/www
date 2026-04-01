@@ -320,7 +320,7 @@ function YouTubeVideo({
           src={source}
           title={title}
           loading="lazy"
-          className="absolute inset-0 h-full w-full bg-transparent"
+          className="absolute inset-0 h-full w-full bg-transparent grayscale"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
           allowFullScreen
           referrerPolicy="strict-origin-when-cross-origin"
@@ -371,7 +371,7 @@ export const mdxComponents: MDXComponents = {
     });
     const normalizedAlt = String(alt);
     const mergedClassName = [
-      "not-prose my-6 overflow-hidden rounded-sm border border-neutral-800",
+      "not-prose my-6 overflow-hidden rounded-sm border border-neutral-800 grayscale",
       className,
     ]
       .filter(Boolean)
@@ -392,20 +392,20 @@ export const mdxComponents: MDXComponents = {
           alt={normalizedAlt}
           loading="lazy"
           decoding="async"
-          className={mergedClassName}
+          className={`grayscale ${mergedClassName}`}
           {...props}
         />
       );
     }
 
     return (
-      <figure className="not-prose my-6 aspect-video overflow-hidden border border-neutral-700 bg-[#F5EAD6] p-6 md:p-8 rounded-sm">
+      <figure className="not-prose my-6 aspect-video overflow-hidden border border-neutral-800 bg-neutral-900 p-6 md:p-8 rounded-sm">
         <img
           src={safeSrc}
           alt={normalizedAlt}
           loading="lazy"
           decoding="async"
-          className="block h-full w-full max-w-none origin-top-left scale-150 rounded-sm md:rounded-md object-cover object-top-left"
+          className="block h-full w-full max-w-none origin-top-left scale-150 rounded-sm md:rounded-md object-cover object-top-left grayscale"
           {...props}
         />
       </figure>
@@ -420,7 +420,7 @@ export const mdxComponentsPlainImage: MDXComponents = {
     const safeSrc = getSafeImageSrc(String(src));
     const normalizedAlt = String(alt);
     const mergedClassName = [
-      "not-prose my-6 overflow-hidden rounded-sm border border-neutral-800",
+      "not-prose my-6 overflow-hidden rounded-sm border border-neutral-800 grayscale",
       className,
     ]
       .filter(Boolean)

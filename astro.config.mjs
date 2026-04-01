@@ -15,6 +15,8 @@ import {
 import remarkContentCdnShorthand from "./src/plugins/remark-content-cdn-shorthand.mjs";
 import remarkInlineShiki from "./src/plugins/remark-inline-shiki.mjs";
 
+const SHIKI_BASE_THEME = "github-dark-high-contrast";
+
 // https://astro.build/config
 export default defineConfig({
   site: SITE.url,
@@ -25,7 +27,13 @@ export default defineConfig({
   },
   markdown: {
     syntaxHighlight: "shiki",
-    remarkPlugins: [remarkContentCdnShorthand, remarkInlineShiki],
+    shikiConfig: {
+      theme: SHIKI_BASE_THEME,
+    },
+    remarkPlugins: [
+      remarkContentCdnShorthand,
+      [remarkInlineShiki, { theme: SHIKI_BASE_THEME }],
+    ],
   },
   vite: {
     plugins: [tailwindcss()],

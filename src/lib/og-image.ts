@@ -12,6 +12,8 @@ const IMAGE_OVERFLOW_X = 96;
 const IMAGE_OVERFLOW_Y = 88;
 const MAX_IMAGE_BYTES = 15 * 1024 * 1024;
 const FETCH_TIMEOUT_MS = 10_000;
+const OG_BG_COLOR = "#171717"; // neutral-900
+const OG_TEXT_COLOR = "#a3a3a3"; // neutral-400
 
 const SAFE_PROTOCOLS = new Set(["http:", "https:"]);
 
@@ -92,8 +94,8 @@ function roundedMaskSvg(width: number, height: number, radius: number): Buffer {
 function placeholderSvg(): Buffer {
   const svg = `
     <svg width="${OG_WIDTH}" height="${OG_HEIGHT}" viewBox="0 0 ${OG_WIDTH} ${OG_HEIGHT}" xmlns="http://www.w3.org/2000/svg">
-      <rect width="${OG_WIDTH}" height="${OG_HEIGHT}" fill="#F5EAD6" />
-      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="#525252" font-size="42" font-family="ui-monospace, Menlo, Monaco, 'Courier New', monospace">
+      <rect width="${OG_WIDTH}" height="${OG_HEIGHT}" fill="${OG_BG_COLOR}" />
+      <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle" fill="${OG_TEXT_COLOR}" font-size="42" font-family="ui-monospace, Menlo, Monaco, 'Courier New', monospace">
         egeuysal.com
       </text>
     </svg>
@@ -157,6 +159,7 @@ async function buildCreamStyleOgImage(sourceBuffer: Buffer): Promise<Buffer> {
   );
 
   const positioned = await sharp(sourceBuffer)
+    .grayscale()
     .resize(scaledWidth, scaledHeight, {
       fit: "cover",
       position: "northwest",
@@ -185,7 +188,7 @@ async function buildCreamStyleOgImage(sourceBuffer: Buffer): Promise<Buffer> {
       width: OG_WIDTH,
       height: OG_HEIGHT,
       channels: 4,
-      background: "#F5EAD6",
+      background: OG_BG_COLOR,
     },
   })
     .composite([{ input: cropped, left: viewportX, top: viewportY }])
