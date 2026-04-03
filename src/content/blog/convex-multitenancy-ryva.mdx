@@ -3,7 +3,7 @@ title: "Convex, Multi-Tenancy, and AI for Ryva"
 description: "I picked Convex for Ryva expecting good DX. I didn't expect it to also be the most AI-friendly database I've ever worked with. Here's why."
 publishedAt: 2026-03-25
 tags: ["convex", "saas", "typescript", "architecture", "ai"]
-image: "https://cdn.egeuysal.com/content/convex.jpg"
+image: "https://cdn.egeuysal.com/content/2026/03/25/asset-01.jpg"
 ---
 
 Multi-tenancy is one of those things that sounds simple until you're three hours into a bug where one team's data leaked into another's dashboard. I've been there. Twice.
@@ -12,7 +12,7 @@ When I started building [Ryva](https://ryva.dev) and a decision layer that reads
 
 I ended up choosing Convex as my primary data layer. And it changed how I think about multi-tenancy entirely.
 
-![Convex and Ryva architecture context](https://cdn.egeuysal.com/content/convex.jpg)
+![Convex and Ryva architecture context](https://cdn.egeuysal.com/content/2026/03/25/asset-01.jpg)
 
 ## The Problem With "Traditional" Multi-Tenancy
 
@@ -82,7 +82,7 @@ For a product like Ryva, where multiple engineers on a team might be looking at 
 
 Compare that to building this on top of Supabase Realtime + Postgres + RLS. Doable and but you're managing subscriptions, handling reconnects, and carefully crafting RLS policies that don't accidentally broadcast data across tenants.
 
-![Ryva real-time graph view](https://cdn.egeuysal.com/content/ryva-blog/graph.png)
+![Ryva real-time graph view](https://cdn.egeuysal.com/content/2026/03/15/asset-04.png)
 
 ## Where It Gets Interesting: Cross-Tenant Indexing
 
@@ -119,7 +119,7 @@ I build Ryva almost entirely with Claude as my coding partner. And I noticed ear
 
 I've been thinking about why, and I think it comes down to four things.
 
-![Ryva GitHub decision context panel](https://cdn.egeuysal.com/content/ryva-blog/git.png)
+![Ryva GitHub decision context panel](https://cdn.egeuysal.com/content/2026/03/15/asset-03.png)
 
 **1. The schema is co-located and explicit.**
 

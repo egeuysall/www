@@ -3,7 +3,7 @@ title: "How Ryva works under the hood"
 description: "A transparent look at the agent architecture, memory system, priority scoring, and data model powering Ryva. How we read GitHub and Slack without storing sensitive data, and how the agent gets smarter over time."
 publishedAt: 2026-03-15
 tags: ["startups", "coding", "saas"]
-image: "https://cdn.egeuysal.com/content/banner-img.png"
+image: "https://cdn.egeuysal.com/content/2026/03/15/asset-01.png"
 ---
 
 I want to be transparent about how Ryva actually works. Not just what it does, but how it does it. What data we store, what we do not store, how the agent thinks, and why it gets more accurate over time.
@@ -153,7 +153,7 @@ Decisions have three states:
 
 The GitHub panel shows structured context from your repo without requiring you to leave Ryva.
 
-![Ryva GitHub panel](https://cdn.egeuysal.com/content/ryva-blog/git.png)
+![Ryva GitHub panel](https://cdn.egeuysal.com/content/2026/03/15/asset-03.png)
 
 For each open PR the panel shows:
 
@@ -185,7 +185,7 @@ A snapshot looks like this:
 
 Slack is handled completely differently from GitHub. We do not store Slack message content in the database at all.
 
-![Ryva Slack panel](https://cdn.egeuysal.com/content/ryva-blog/slack.png)
+![Ryva Slack panel](https://cdn.egeuysal.com/content/2026/03/15/asset-05.png)
 
 Every time the Slack panel is used, it fetches directly from the Slack API using the stored OAuth token. Messages are categorized by channel and sorted by recency. DMs are supported too, which matters for teams routing Sentry alerts or Claude notifications through a shared admin account.
 
@@ -225,7 +225,7 @@ Over time the agent starts to think more like the team using it. It learns what 
 
 Every block in Ryva is connected to the blocks that informed it or that it recommended. The graph view makes those connections visible.
 
-![Ryva graph view](https://cdn.egeuysal.com/content/ryva-blog/graph.png)
+![Ryva graph view](https://cdn.egeuysal.com/content/2026/03/15/asset-04.png)
 
 You can filter by time range, block type, top priority only, or search by keyword. When you click a node you see the full block content, its priority score and reason, its domain, its status, and all of its connections.
 
