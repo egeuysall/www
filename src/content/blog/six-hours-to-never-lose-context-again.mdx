@@ -1,0 +1,109 @@
+---
+title: "Six Hours to never Lose Context Again"
+description: "ibx, www, and brain: three open-source repos that document my startup journey automatically so I never lose context again."
+publishedAt: 2026-04-05
+tags: ["building", "tooling", "saas", "ibx"]
+image: "https://cdn.egeuysal.com/content/2026/04/05/asset-02.png"
+---
+
+Most people document after they succeed. They write the retrospective once there is something worth explaining. I wanted the documentation to happen while I was still in it, every decision, every thought, every task, without me having to remember to do it.
+
+So I built an OS for it. Three repos, all open source under my GitHub handle. The whole thing took six hours to ship to production.
+
+**ibx** is the execution layer. **www** is the public output layer. **brain** is the GTM and knowledge engine. Together they form a loop: I capture intent, ibx structures it, agents act on it, www publishes it, brain feeds context back in. Nothing breaks the chain. Nothing gets lost.
+
+## Ibx is not a todo app
+
+Every todo app starts from the same wrong assumption: that you know what you need to do. You open it, type a task, pick a due date, assign a priority. The cognitive overhead is the whole problem.
+
+!["Screenshot 2026-04-05"](https://cdn.egeuysal.com/content/2026/04/05/asset-01.png)
+
+ibx works differently. You dump a thought. A subagent reads it, expands it into up to 30 hyper-specific tasks, prioritizes them, assigns recurrence and dates, and writes them back. The thinking is not yours to do.
+
+The interface is four things at once: a web app, a PWA that works offline, a CLI with short aliases for every action, and an Apple Shortcut that captures from anywhere on iOS. All four write to the same data layer. You never lose a thought because you did not have the right app open.
+
+The offline piece is more important than it sounds. My school's internet is unreliable. I needed something that queues locally in IndexedDB, retries on reconnect, and executes remote steps when it can. ibx has a full offline queue with retry logic and partial execution: local steps run immediately, remote steps wait. It is closer to how production infrastructure works than how most todo apps work.
+
+!["Screenshot 2026-04-05"](https://cdn.egeuysal.com/content/2026/04/05/asset-02.png)
+
+The API is what makes ibx different from every other personal task system. It ships with API keys formatted `iak_...` and proper auth: SHA-256 hashed tokens, CSRF protection, rate limiting. The routes are designed for agents to call. Codex reads my tasks through the CLI. Scripts create, complete, and list todos without a human in the loop. My entire system treats ibx not as a place I visit but as a service everything else depends on.
+
+```ts
+import { createHash, randomBytes } from "node:crypto";
+
+export const API_KEY_PREFIX = "iak_";
+const API_KEY_BYTES = 24;
+
+export function createApiKey() {
+  const token = randomBytes(API_KEY_BYTES).toString("base64url");
+  const rawKey = `${API_KEY_PREFIX}${token}`;
+  const keyHash = createHash("sha256").update(rawKey).digest("hex");
+
+  // Persist only hash + preview metadata.
+  return { rawKey, keyHash, last4: rawKey.slice(-4) };
+}
+```
+
+That is the right mental model. Your task system should be infrastructure, not an app.
+
+## Www is the public layer, but it is also a protocol
+
+My personal site at egeuysal.com is three things: a blog, a diary, and a photo archive. But there is a fourth thing most personal sites do not have: [agents.json](/agents.json).
+
+!["Screenshot 2026-04-05"](https://cdn.egeuysal.com/content/2026/04/05/asset-03.png)
+
+`agents.json` is a machine-readable feed that tells any agent running in my context who I am, what I am building, what my GTM strategy is, and what I am trying to do today. It updates automatically. Agents that pull it before acting on my behalf have real context. They do not start from zero.
+
+The blog and diary are also JSON-accessible at `/blog.json` and `/diary.json`. Every entry has its full body. This is not for SEO. It is so that my brain repo can sync them into a knowledge index, so that any agent I run can answer questions about what I wrote six weeks ago, what I was thinking about, what I tried and stopped doing.
+
+Most build-in-public content is performative. You post an update because you want people to see you working. The www layer makes documentation structural instead. Publishing happens as a byproduct of writing, which already happens. The feed updates automatically. The agents read it. Nothing is manual.
+
+## Brain is the engine underneath
+
+!["Screenshot 2026-04-05"](https://cdn.egeuysal.com/content/2026/04/05/asset-04.png)
+
+The brain repo is where GTM happens. It holds outreach scripts, Reddit and X discovery tooling, a knowledge sync that pulls from www automatically, and an agent playbook split across eight files that defines how I find leads, write messages, and follow up.
+
+The knowledge sync runs on a schedule. It pulls my blog and diary from the JSON feeds, validates the schema, writes per-entry files, and rebuilds a compact index at `context/latest/knowledge.json`. Every agent I run reads this index first. They know what I have written. They know what I have tried.
+
+```py
+def fetch_feed(url: str, timeout_seconds: int, max_bytes: int) -> bytes:
+    ensure_https_url(url)  # fail closed on non-HTTPS sources
+    req = urllib.request.Request(
+        url,
+        headers={"Accept": "application/json", "User-Agent": "ryva-knowledge-sync/1.0"},
+        method="GET",
+    )
+
+    with urllib.request.urlopen(req, timeout=timeout_seconds) as response:
+        body = response.read(max_bytes + 1)
+        if len(body) > max_bytes:
+            raise SyncError(f"Payload exceeds max-bytes ({max_bytes}) for {url}")
+        return body
+```
+
+The outreach scripts are real tooling: Reddit harvest with first-person pain scoring, X post discovery via Jina, an orchestrator with a 170-second runtime budget and fallback flows. Before I built this, finding ICP leads and preparing context for outreach took me thirty minutes per run. After brain, it takes four.
+
+That 30 to 4 minute reduction is the point. The time did not disappear. It moved from me to the system.
+
+## Why six hours
+
+Six hours for a CLI, a web app, a PWA with offline queueing and retry logic, Apple Shortcuts, API keys, agent-ready routes, and production deployment is not a speed record. It is a measurement of what happens when your tooling, your taste, and your mental model of the problem are all dialed in before you start.
+
+I did not build ibx by writing code. I built it by directing an agent that understood the structure I already had in my head. I knew the schema. I knew the auth model. I knew the CLI commands I wanted. The agent executed. I reviewed.
+
+This is the shift most developers have not made yet. Before: you write code and tools assist. Now: you define intent and agents execute. The gap between those two modes is not about which model you use. It is about whether you have structured your thinking clearly enough that a machine can act on it.
+
+If you are still writing every line yourself, you are not moving slow because you are careful. You are moving slow because you have not built the system yet.
+
+## What this is actually for
+
+I am 16. I am building a B2B SaaS product called Ryva that reads GitHub and Slack to surface project state for engineering teams. I have one strong pilot. I want more.
+
+!["Screenshot 2026-04-05"](https://cdn.egeuysal.com/content/2026/04/05/asset-05.png)
+
+The OS I built is not separate from that work. It is the infrastructure that makes the work visible. Every task I complete moves through ibx. Every thought I publish lands in www. Every outreach run pulls from brain. If Ryva reaches a billion in revenue one day, the entire journey from here to there will be documented, timestamped, and searchable. Not because I was disciplined about journaling. Because I built a system where documentation is the default output.
+
+That is what build in public should mean. Not posting updates. Building infrastructure where the updates are inevitable.
+
+The three repos are all open source under my GitHub handle, egeuysall. [ibx](https://github.com/egeuysall/ibx), [www](https://github.com/egeuysall/www), [brain](https://github.com/egeuysall/brain). Take whatever is useful.
