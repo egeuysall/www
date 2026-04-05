@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-04-04T18:47:15.996Z",
+  "source": "local-diary-files",
+  "previousFile": "2026-04-02.mdx",
+  "latestFile": "2026-04-03.mdx",
+  "summary": {
+    "previous": {
+      "checkedCount": 0,
+      "uncheckedCount": 0
+    },
+    "latest": {
+      "checkedCount": 0,
+      "uncheckedCount": 8
+    },
+    "unresolvedCarryCount": 0
+  },
+  "unresolvedCarry": [],
+  "latestUnchecked": [
+    "Lock the 3 active-team loop before noon (CyberMinds + NoNu_u + zereban): send second-run delta to each thread with 1 unresolved decision, 1 risk, 1 next action, and 1 binary question. Outcome: 3 sends, 2 confirmed next-run times, at least 2 meaningful replies.",
+    "Follow up yesterday's warm thread list before any broad posting: message Arbaaz and 2 other warm responders with \"what changed since last run\" plus \"blocked or resolved?\". Outcome: 3 follow-ups sent, 1 same-day rerun booked.",
+    "Run Ryva on 3 real public repos from warm leads and send only the highest-leverage insight instead of full report dumps. Outcome: 3 repo runs, 3 targeted outbound messages, at least 1 tester conversion call.",
+    "Reddit execution block (secondary channel): reply to 5 fresh ICP posts from `r/startups`, `r/SaaS`, and `r/ExperiencedDevs` with pain-first comments and no pitch, then DM 2 authors after public replies. Outcome: 5 comments, 2 DMs, 2 replies.",
+    "X execution block (primary channel): ship 8 targeted replies tied to today's ICP conversations and include one forced question in each. Outcome: 8 replies, 3 back-and-forth conversations.",
+    "Tighten output clarity on first screen: add explicit owner line to every run output (`Decision`, `Why now`, `Next action + owner`) and test on today's 3 runs. Outcome: 3 outputs sent in new format, collect \"clear/unclear\" feedback from each recipient.",
+    "Content from real proof: post 1 X post and 1 LinkedIn post using one concrete run artifact from today, with decision-first framing and a CTA to share a repo link. Outcome: 2 posts published, 2 inbound repo links.",
+    "Trust and safety guardrail: keep all outreach and runs to public repos only, avoid private code/log requests, and remove any secret-like tokens from screenshots or snippets. Outcome: 0 trust violations and cleaner tester onboarding."
+  ],
+  "latestChecked": []
+}
