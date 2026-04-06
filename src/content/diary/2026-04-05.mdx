@@ -1,29 +1,139 @@
 ---
 date: 2026-04-05
-summary: "Converted yesterday momentum into a concrete second-run execution plan"
+summary: "Content engine, IBX updates, and second-run conversions"
 tags: ["ryva", "outreach", "pmf", "execution", "daily"]
+image: "https://cdn.egeuysal.com/content/2026/04/05/asset-03.png"
 ---
 
-## Progress Delta
+Very heavy day today.
 
-- Completed: All 8 tasks planned on 2026-04-03 were executed on 2026-04-04, including active-team loop lock, second runs for CyberMinds, Syad, and Stoneforge, and full outreach plus content distribution.
-- Unresolved: X channel instability, follow-up depth getting diluted by broad outreach, and feature requests competing with team-lock and repeat-usage priority.
-- New risks: Snapshot carry-over is currently zero-checklist based, so unresolved work can be undercounted if tasks are not tracked as checkboxes.
+I got way more done than expected, and most of it was high-leverage work, not just random busy output.
 
-## Task List
+## What I shipped
 
-- [ ] Send second-run delta updates to CyberMinds, Syad, and Stoneforge before noon with one binary question and a locked next-run time.
-- [ ] Follow up 5 warm responders from yesterday first and secure at least 2 same-day rerun bookings with explicit time anchors.
-- [ ] Run Ryva on 3 fresh public repos from warm leads and deliver decision-first outputs with owner-tagged next actions.
-- [ ] Complete outreach maintenance with 10 targeted X touches and 10 targeted Reddit touches, each ending with one binary question.
-- [ ] Quality-check the 8 highest-leverage outbound messages and rewrite any message missing the 5-item second-run contract.
-- [ ] Publish 1 short proof post showing one missed decision caught in rerun and the immediate corrective action.
-- [ ] Log day-end metrics: runs sent, second runs completed, follow-ups scheduled, meaningful replies, and teams kept or dropped.
+Content side was huge today:
 
-## Diary
+- published new blog on egeuysal.com: [Six Hours to Never Lose Context Again](/blog/six-hours-to-never-lose-context-again)
+- published new blog on ryva.dev: [How to Run Engineering Standups Async](https://ryva.dev/blog/how-to-run-engineering-standups-async)
+- wrote and published CyberMinds case study: [How CyberMinds Built a Living Project Brain in 3 Runs](https://ryva.dev/case-studies/how-cyberminds-built-a-living-project-brain-in-3-runs)
 
-Yesterday was the first clean day in a while where plan and execution matched. The strongest signal was CyberMinds running Ryva without direct founder push, which is behavior change instead of one-off curiosity.
+![CyberMinds case study and proof stack](https://cdn.egeuysal.com/content/2026/04/05/asset-11.png)
 
-Today has one job: protect that momentum with sequence discipline. Active-team second runs and warm follow-ups come before broad sourcing. Repo runs must stay decision-first and tied to one unresolved item, one risk, and one next action with owner.
+Distribution shipped from that content:
 
-The main failure mode is looking busy again by spreading effort too wide. If I keep depth first, lock next-run timing in thread, and publish proof from a real rerun, today compounds yesterday instead of resetting.
+- LinkedIn repurpose from async standup post: [Read post](https://www.linkedin.com/posts/egeuysall_how-to-run-engineering-standups-async-ryva-activity-7446614041474772992-aw83?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- X repurpose from async standup post: [See post](https://x.com/egewrk/status/2040848470211182855?s=20)
+- X diary/proof post: [See post](https://x.com/egewrk/status/2040852504238301204?s=20)
+- LinkedIn diary/proof post: [Read post](https://www.linkedin.com/posts/egeuysall_yesterdays-diary-entry-for-me-was-about-activity-7446618427894591488-bG7C?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- Reddit post: [Read post](https://www.reddit.com/r/ProductManagement/comments/1sdai07/pms_did_weekly_decision_logs_reduce_roadmap/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
+
+Also did a bigger platform move for Ryva content:
+
+- added MDX support on Ryva site using `@next/mdx`
+- this will make future publishing faster and lower friction
+
+## Product and tooling work
+
+IBX got real upgrades today:
+
+- fixed multiple bugs
+- implemented API privilege levels with read vs write tokens
+- updated [agents.json](/agents.json) access so agents can read task context
+
+I know the key visibility concern exists. Right now it is read-only and no sensitive data is stored, but this still needs tighter production hardening later.
+
+Main objective remains: no `.env` committed and cleaner key handling.
+
+## Second-run and conversion movement
+
+I replied to all open DMs/replies from yesterday and kept the second-run pressure active.
+
+Concrete movement:
+
+- 3 people said they want to try Ryva
+- sent a second run here: [Open run](https://ryva.dev/share/run_k6lW1NbXU6d6)
+- this user gave critical feedback earlier, especially around adding reasons to decisions, so this loop is high value
+
+![Second-run conversation proof](https://cdn.egeuysal.com/content/2026/04/05/asset-10.png)
+
+## Strategic changes from today
+
+I made two important strategic decisions:
+
+- reduce post volume on [egeuysal.com](https://egeuysal.com) to 1 post/week
+- increase Ryva blog to 1 post/week from 0 post/week and push depth there
+
+So instead of writing everywhere with high frequency, I will keep cadence stable and let distribution + second-run conversion do the heavy work.
+
+I also tried a cleaner repurposing flow:
+
+- one core blog
+- adapt to X and LinkedIn
+- use diary context as proof follow-up
+
+This felt efficient and should compound.
+
+## Learning and market perspective
+
+I listened to two episodes from Startups for the Rest of Us today and got a useful mental reset.
+
+One point hit hard:
+
+- founder-led marketing is not automatically right for every company stage or personality
+
+That made me think more seriously about adding video channels later, like YouTube and short-form repurposing, but only if it supports conversion loops instead of becoming another distraction.
+
+Also got a nice distribution signal:
+
+- someone with 58k LinkedIn followers liked one of my posts
+- former Google Head of Sales
+
+Not PMF by itself, but still useful reach signal.
+
+## Execution stats from today
+
+Warm forcing activity:
+
+- around 40 Reddit DMs focused on second-run follow-up
+- around 15 X DMs focused on second-run follow-up
+
+Fresh ICP touches:
+
+- 10 X replies + 10 X DMs
+- 10 Reddit replies + 10 Reddit DMs
+
+This is heavy outbound volume, so quality discipline matters even more.
+
+## Friction and risk
+
+Still watching these:
+
+- X instability can still distort sourcing pace
+- broad outreach can dilute follow-up depth if I do not protect sequence
+- key exposure, even read-only, still needs stronger long-term handling
+
+Main operational rule stays the same:
+
+- active teams first
+- second runs in-thread
+- broad outreach after
+
+## Tomorrow focus
+
+Tomorrow needs to stay execution-focused, not content-first.
+
+Priority:
+
+- lock next-run timing in active threads
+- convert warm responders before opening wide outbound
+- keep outputs short, decision-first, and owner-explicit
+
+The biggest thing now is turning interest into repeated usage, not just collecting replies.
+
+## Quotes of today
+
+> Mostly capturing, actually, though the line gets blurry fast.
+
+> state drifts unless someone keeps reconstructing it. Different layer, same problem.
+
+Main result today: strong output across content, tooling, and second-run conversion. If I keep sequence discipline, this day should compound instead of just looking busy in hindsight.
