@@ -1,0 +1,29 @@
+---
+import IbxReadonlyView from "@/components/ibx/IbxReadonlyView.astro";
+import { SITE } from "@/config/site";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import {
+  IBX_TODOS_PAGE_SIZE,
+  getTodayIbxTodos,
+  loadIbxReadonlyPageState,
+} from "@/lib/ibx-readonly";
+import { paginateItems } from "@/lib/pagination";
+
+const { snapshot, error } = await loadIbxReadonlyPageState(SITE.timezone);
+const todayTodos = snapshot ? getTodayIbxTodos(snapshot) : [];
+const pagination = paginateItems(todayTodos, 1, IBX_TODOS_PAGE_SIZE);
+---
+
+<BaseLayout
+  title="Tasks"
+  pathname="/tasks/"
+  description="Public, read-only task feed."
+>
+  <IbxReadonlyView
+    todos={pagination.items}
+    error={error}
+    currentPage={pagination.currentPage}
+    totalPages={pagination.totalPages}
+    basePath="/tasks"
+  />
+</BaseLayout>
