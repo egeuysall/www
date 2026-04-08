@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-04-06T22:28:35.022Z",
+  "generatedAt": "2026-04-07T23:00:55.076Z",
   "source": "local-diary-files",
-  "previousFile": "2026-04-04.mdx",
-  "latestFile": "2026-04-05.mdx",
+  "previousFile": "2026-04-06.mdx",
+  "latestFile": "2026-04-07.mdx",
   "summary": {
     "previous": {
       "checkedCount": 0,
@@ -10,11 +10,18 @@
     },
     "latest": {
       "checkedCount": 0,
-      "uncheckedCount": 0
+      "uncheckedCount": 6
     },
     "unresolvedCarryCount": 0
   },
   "unresolvedCarry": [],
-  "latestUnchecked": [],
+  "latestUnchecked": [
+    "Send second-run delta follow-ups to 3 active teams and lock an exact next-run time in each thread.",
+    "Clear 10 warm follow-ups from yesterday's X/Reddit responders and tag each thread as `resolved`, `blocked`, or `no-reply` in IBX.",
+    "Run Ryva on 1 high-signal repo today and send a decision-first output with `changed`, `unresolved`, `risk`, `owner`, and `next action`.",
+    "Execute the fallback outreach queue from 2026-04-05 and 2026-04-06 posts, then send 10 targeted messages with the replacement-sync proof line.",
+    "Publish 1 short proof post today showing one missed decision, one immediate fix, and one concrete run link.",
+    "Do a final output quality pass on all outbound messages so each one contains a binary question and a time anchor for the next run."
+  ],
   "latestChecked": []
 }
