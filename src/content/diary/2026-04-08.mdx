@@ -1,0 +1,175 @@
+---
+date: 2026-04-08
+summary: "Stall diagnosis, stronger rerun proof, and IBX execution"
+tags: ["ryva", "outreach", "pmf", "execution", "daily"]
+image: "https://cdn.egeuysal.com/content/2026/04/08/asset-02.png"
+---
+
+Today was a heavy technical day and one of the most valuable days so far.
+
+Build velocity was high, outreach stayed active, and the product direction got sharper because the feedback quality was actually serious.
+
+## What I shipped
+
+Execution + outreach stayed on:
+
+- replied to 10 fresh X ICP posts and 10 fresh Reddit ICP posts
+- sent DMs on both channels after those replies
+- converted at least one responder
+- runs/shares today: **14**
+
+Key runs from today:
+
+- Cal.com follow-up run after feature update: [Open run](https://ryva.dev/share/run_7JqJ9O5ABipJ)
+- Ryva archive repo run: [Open run](https://ryva.dev/share/run_kPX_35LG72eo)
+- CyberMinds run: [Open run](https://ryva.dev/share/run_bp02-_tWCynD)
+
+Also opened three threads across three Slack channels to test signal and build familiarity inside real workflow context.
+
+Content and distribution shipped today:
+
+- X post: [See post](https://x.com/egewrk/status/2041964253037449514?s=20)
+- LinkedIn post: [Read post](https://www.linkedin.com/posts/egeuysall_i-think-we-are-measuring-the-wrong-thing-share-7447730421322317824-HlC1?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFda6AoBWeBRayAxVaKD8PG_quWkedzkvlU)
+- Reddit post: [Read post](https://www.reddit.com/r/webdev/comments/1sg3iyi/what_metric_actually_tells_you_ai_is_helping_your/?utm_source=share&utm_medium=web3x&utm_name=web3xcss&utm_term=1&utm_content=share_button)
+
+![Execution and task snapshot](https://cdn.egeuysal.com/content/2026/04/08/asset-02.png)
+
+## Technical improvements that mattered
+
+This part was the biggest value today.
+
+I built and shipped the new stall-diagnosis layer end to end.
+
+### Core diagnosis model
+
+Added a shared `stall_items` contract across product agent and landing analyzer with fields for:
+
+- item identity and type
+- stall category + confidence
+- evidence and action
+- reasoning and optional forced choice for limbo decisions
+
+### Classification engine
+
+Implemented concrete stall categories with scoring:
+
+- `blocked_dependency`
+- `blocked_person`
+- `deferral_limbo`
+- `context_lost`
+
+with thresholds and confidence logic.
+
+### Pipeline integration
+
+Product pipeline now has a stall pre-pass using:
+
+- open PRs
+- decision blocks
+- blocker signals from issues/context/notes
+- semantic extraction from PR comments/reviews/timeline
+- Slack corpus where available
+
+Landing pipeline now has parity using the same stall contract but GitHub-only behavior.
+
+### UX and behavior layer
+
+For `deferral_limbo`, I added forced-choice resolution behavior:
+
+- resolve
+- close with reason
+- defer formally with required trigger
+
+This also now renders in run details/share views and in the landing wedge under “Why it’s stalled.”
+
+### Reliability + quality fixes
+
+Shipped major robustness improvements:
+
+- structured-output fallback before emergency mode
+- partial JSON coercion to reduce recovery-mode runs
+- fallback recommendation now derived from top concrete stall item
+- dedupe/phantom stall filtering
+- auto-fetch live GitHub snapshot when snapshot is missing
+- promote `mergeable: false` as first-class stall signal
+- branch-to-issue dependency inference like `fix-12345` -> `issue #12345`
+
+### Security hardening
+
+Applied guardrails in this same pass:
+
+- strict text sanitization before prompt assembly/output
+- no raw Slack quotes in shared/public evidence
+- bounded corpus/comment sizes and top-N trimming for abuse/cost control
+- trusted origin handling with allowed-origin + safe same-host fallback for share page security
+
+![New stall detection output](https://cdn.egeuysal.com/content/2026/04/08/asset-03.png)
+
+## Why this is high-value
+
+The strongest part today was not just that the model found stalls. It found **actionable stall types** that change behavior.
+
+User feedback basically confirmed:
+
+- “blocked vs deprioritized” is a real operational distinction
+- “deferral limbo” with specific PR IDs/day counts is actionable
+- this can change what they do the same day
+
+After sending analysis, the response was basically: yes, this is exactly the problem.
+
+That is direct behavior-change signal, not abstract praise.
+
+One person from X even shared the output with their clients through word of mouth, which is early trust distribution signal.
+
+![Word-of-mouth signal](https://cdn.egeuysal.com/content/2026/04/08/asset-01.png)
+
+## IBX task progress snapshot
+
+Used IBX CLI JSON to track what actually moved today.
+
+Done highlights included:
+
+- diagnosis scoring pattern implementation
+- output type + evidence signal mapping
+- real PR validation pass
+- no-one-decided detection
+- evidence attachment per diagnosis
+- outreach line updates and second-run usage push
+- IBX reliability/sign-in/sidebar/view-only/time-block improvements
+
+Open at check time via `ibx t -json` was a very short list:
+
+- recommend decision-maker by last-touch on related code
+- read English task
+- leg day task
+
+So the day was mostly closure, not backlog growth.
+
+## Friction and risks
+
+Still need to protect:
+
+- thread-level next-run time locking, otherwise warm interest decays
+- strict sequence: follow-up depth before broad outbound
+- token handling hygiene in runtime contexts
+
+Also, if X/Reddit conversion flattens by April 10, channel weighting should shift faster to CTO Craft / Rands lanes.
+
+## Tomorrow focus
+
+Tomorrow should stay tight:
+
+- close 3 active second-run threads with explicit next-run time
+- clear warm responders before opening fresh outbound
+- ship one proof post from today’s stall-evidence output
+- test “suggest decision-maker by last-touch” direction as next feature step
+
+## Quotes of today
+
+> this is the format that actually changes behavior.
+
+> blocked vs deprioritized is huge because the fix is different.
+
+> yes, this changes what I would do today.
+
+Main result today: serious technical progress plus real user behavior signal. This is one of those days where product quality and GTM quality actually moved together.
