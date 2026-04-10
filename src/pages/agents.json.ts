@@ -707,7 +707,6 @@ export async function GET({ site }: GetContext): Promise<Response> {
           diaryJson: new URL("/diary.json", baseUrl).toString(),
           ibx: IBX_PUBLIC_URL,
           ibxApi: IBX_API_URL,
-          ibxApiKey: IBX_API_KEY,
         },
         context: {
           latest: {

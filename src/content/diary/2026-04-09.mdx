@@ -1,0 +1,106 @@
+---
+date: 2026-04-09
+summary: "Owner inference stabilized, IBX cleanup, and outbound"
+tags: ["ryva", "outreach", "pmf", "execution", "daily"]
+image: "https://cdn.egeuysal.com/content/2026/04/09/asset-01.png"
+---
+
+Today was lighter on outbound because it was a study-heavy day, but still high-value on product quality.
+
+I got back to training too after the mild wrist injury, which helped reset focus.
+
+## What I shipped
+
+I still closed the core loop:
+
+- replied to yesterday's replies across X, LinkedIn, Reddit, and Slack
+- no broad outbound push today by design
+- kept follow-up momentum alive for tomorrow's heavier push
+
+Runs shipped:
+
+- ownership + stall-items run: [Open run](https://ryva.dev/share/run_EW_N48OTLIiK)
+- run for a new lead who shared repo access and looks close to customer fit: [Open run](https://ryva.dev/share/run_xOwhqZKiwCwz)
+
+![Today snapshot](https://cdn.egeuysal.com/content/2026/04/09/asset-01.png)
+
+## Technical improvements that mattered
+
+This was the highest-value part of the day.
+
+Owner system upgrades:
+
+- standardized owner metadata across outputs: `missing_decisions_owners[]`, `recommended_actions_owners[]`, `stall_items[].owner`
+- enriched owner object with `login`, `avatar_url`, `confidence`, `score`, `reasoning`, `source`, `signal_scores`
+
+Inference and reliability:
+
+- owner inference now uses GitHub-first signals with scored fallback
+- combines last touch, review history, authorship frequency, optional Slack recency
+- if model output misses owners, backfill now enforces coverage from stall ownership and repo fallback
+- latest `facebook/react-native` live run completed without recovery mode and without owner-missing gaps
+
+Security hardening:
+
+- avatar URL sanitization with trusted GitHub host rules
+- reasoning sanitization with length bounds
+- no raw Slack message body stored in owner metadata
+
+Runtime flow cleanup:
+
+- GPT-5.4 kept as primary decision model
+- removed extra full retry loop
+- deterministic fallback path instead of hard failures
+
+## IBX JSON block summary (used directly)
+
+From today’s embedded `today-done` JSON block:
+
+- done tasks: **24**
+- priority split: **13** priority-1, **6** priority-2, **5** priority-3
+- total estimated effort completed: **21.25 hours**
+
+High-impact completed items from that JSON:
+
+- implement decision-maker recommendation by last-touch on related code
+- require API key for tasks access on `egeuysal.com`
+- shorten cache/TTL for tasks visibility
+- fix IBX task creation reliability
+- improve IBX sidebar/settings rendering issues
+- complete school workload block and keep second-run usage task moving
+
+So even on a lighter GTM day, execution volume was still real and mostly high-priority.
+
+## PMF signal
+
+The repo-access lead is a strong signal because this is still rare and trust-heavy.
+
+Also got useful feedback around the same core angle:
+
+- internal clarity is valuable
+- next step is connecting internal stall clarity to user impact metrics
+
+That feedback is right, and it helps shape what I should surface in future reruns.
+
+## Tomorrow focus
+
+Tomorrow and the weekend are Ryva-heavy.
+
+Plan:
+
+- scan older warm DMs and re-open threads
+- push second-run follow-ups first
+- keep outputs short and decision-first
+- lock next-run timing in-thread wherever possible
+
+Today was not a noisy day, but it was still a compounding day.
+
+## Quotes of today
+
+> this is a solid concept tbh.
+
+> surfacing floating decisions is where things break in the long run.
+
+> it would be interesting to connect this internal clarity to real user impact too.
+
+Main result today: lower channel volume, higher technical quality, and stronger foundation for a heavy conversion weekend.

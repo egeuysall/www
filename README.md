@@ -57,7 +57,7 @@ Notes:
 
 ## Production
 
-Set `PUBLIC_SITE_URL` in Vercel (or your host), for example:
+Set these environment variables in Vercel (or your host):
 
 ```bash
 PUBLIC_SITE_URL=https://egeuysal.com
