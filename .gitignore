@@ -24,3 +24,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# diary runtime artifacts
+src/content/diary/_runtime/
