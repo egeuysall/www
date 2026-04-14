@@ -1,0 +1,135 @@
+---
+date: 2026-04-13
+summary: "Stronger proof, product cleanup, and real second-run momentum"
+tags: ["ryva", "outreach", "pmf", "execution", "daily"]
+image: "https://cdn.egeuysal.com/content/2026/04/13/asset-02.png"
+---
+
+Today was one of those days where a lot got done across outreach, runs, and product quality at the same time.
+
+I replied to everyone from yesterday, sent DMs, replied on X and Reddit, and kept the focus on actual ICP threads. Not every lead is peak-fit, but they clearly live the coordination problem, so the signal is real.
+
+## Proof and distribution
+
+I posted one proof-focused X post:
+
+- [X proof post](https://x.com/egewrk/status/2043850278886121654?s=20)
+
+I’m keeping X to 3 times per week and using it mostly for proof instead of generic content.
+
+## Runs shipped today
+
+High-value runs:
+
+- [21st.dev run](https://ryva.dev/share/run_6SPCg-mO-8Dx)
+- [s2.dev run](https://ryva.dev/share/run_4xnXT9FX5jZF)
+- [Ryva-on-Ryva run](https://ryva.dev/share/run_JEsjqoYGTUgJ)
+- [Ryva-on-IBX run](https://ryva.dev/share/run_uk_VBkDEjqeR)
+- [Klayan rerun](https://ryva.dev/share/run_zB0Zp_JS1tb1)
+
+The 21st.dev thread replied back, which is exactly the kind of response that can turn into a sticky loop.
+
+![Reply signal from run](https://cdn.egeuysal.com/content/2026/04/13/asset-03.png)
+
+## Strong signals from running Ryva on itself and IBX
+
+Running Ryva on Ryva gave me a useful reality check:
+
+- strong claims in a recent blog commit need better visible evidence
+- low visible review checkpoints can let positioning mistakes ship too fast
+
+Running Ryva on IBX surfaced a concrete product issue I had already felt but had not fully prioritized:
+
+- sidebar default/open behavior became ambiguous after removing `defaultOpen={false}` in `src/components/layout/app-shell.tsx:2263` and `src/components/layout/settings-view.tsx:462`
+- Dependabot PR #1 was green but stale for days with no reviews, meaning decision deferral, not technical blockage
+
+This is the exact type of insight I want Ryva to keep surfacing: not just status, but missing ownership and unattended decisions.
+
+## Product work and fixes
+
+I also had to handle real product issues today.
+
+Bug fixed:
+
+- `Uncaught Error: Slack conversations were found, but no readable messages were available.`
+
+UI and reliability improvements:
+
+- live-feeling agent response instead of delayed dump
+- cleaner run setup modal
+- less visual clutter in context budgeting flow
+- chain-of-thought panel removed from user-facing run view
+- fewer dead-end failures when project state or Slack readability is incomplete
+
+![UI issue snapshot](https://cdn.egeuysal.com/content/2026/04/13/asset-01.png)
+
+Net result: runs feel faster, setup is simpler, and reliability is better.
+
+![Updated UI after cleanup](https://cdn.egeuysal.com/content/2026/04/13/asset-02.png)
+
+## GTM and relationship signal
+
+Two things stood out:
+
+- Akshay Chalana connected with me on LinkedIn today, which is a strong credibility signal
+- George Rios gave a thumbs-up yesterday, and I intentionally did not push too hard right away; I’ll send a reminder Wednesday
+
+I also sent Klayan a scheduling link so I can onboard him directly and move from manual runs to self-serve usage, likely with a short trial.
+
+## Weekly execution frame
+
+This week’s target stays the same:
+
+Get one team to run Ryva three times and expect the next run without me prompting it.
+
+The sequencing that matters:
+
+- warm intros first
+- active pain threads second
+- white-glove cold third
+- always lock the next rerun trigger in-thread
+
+## IBX parsed snapshot
+
+Parsed from the embedded `today-done` JSON in this diary:
+
+- done tasks: **18**
+- priority split: **10** priority-1, **5** priority-2, **3** priority-3
+- estimated effort completed: **15.75 hours**
+
+High-impact completions from that done list:
+
+- ran and sent gap messages for `21st.dev` and `s2.dev`
+- asked CyberMinds for warm intro
+- completed 10 outreach messages
+- pushed second-run usage execution
+- shipped weekly Ryva playbook
+- sent George Rios one-question update
+- published first Rands/CTO Craft post
+- reran Ryva for Klayan
+
+This is the strongest “done” block in a while, and it matches the day feeling heavy and productive.
+
+## Risks and what to protect
+
+Main execution risks now:
+
+- warm intent still decays if rerun date and time are not locked immediately
+- too many parallel threads can drift if follow-up ownership is not explicit
+- never let bearer/API keys appear in notes or shared logs
+
+The next step is not “more activity.” It is preserving the loop quality by forcing timing anchors and keeping each thread decision-based.
+
+## Tomorrow focus
+
+Tomorrow should be clean:
+
+- close warm threads with explicit rerun timing
+- keep repo-run deltas sharp and short
+- expand outbound only after warm anchors are locked
+
+If that sequence holds, this week can still produce a true sticky team outcome.
+
+## Quote of the day
+
+> You actually hit the nail on the head. A few months ago I started writing daily updates on Slack and I saw great positive results. After a few weeks though I came to the same conclusion: Slack is not ideal for this, and a dedicated async tool would be better.
