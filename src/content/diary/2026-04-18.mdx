@@ -1,88 +1,63 @@
 ---
 date: 2026-04-18
-summary: "Hackathon day at HS Hacks, shipped Momentum, and learned a lot"
+summary: "HS Hacks ship day plus Ryva run surfaced concrete repo and deploy blockers"
 tags: ["ryva", "outreach", "pmf", "execution", "daily"]
-image: "https://cdn.egeuysal.com/content/2026/04/18/asset-02.png"
+image: "https://cdn.egeuysal.com/content/2026/04/18/asset-03.png"
 ---
 
 Progress Delta:
-- Completed: We shipped a working Momentum build at HS Hacks, validated the end-to-end flow in live conditions, and kept continuity with runtime snapshot plus IBX refresh on `/api/todos`, `/api/todos?today=2026-04-18`, `/api/thoughts`, and thought-level todo routes.
-- Unresolved: Core Ryva second-run pressure is still open, follow-up-only block is still open, and repo-run backlog (`Kernel`, `Moss`, `Notte`, `Trigger.dev`, `Signadot`, `Inngest`) still needs explicit closure.
-- New risks: Duplicate IBX task states can overstate progress, and hackathon momentum can decay if not converted into measurable second-run outcomes.
+
+- Completed: Shipped Momentum at HS Hacks, validated core realtime workout flow live, and ran a full Ryva analysis pass on the hackathon repo.
+- Unresolved: Repo hygiene and deployment readiness still need closure before treating this as production-ready.
+- New risks: Small governance gaps can compound quickly after fast merges if they are not resolved in the next commit cycle.
 
 Diary:
-Today was a real shipping day. We went to HS Hacks, built Momentum under time pressure, and learned where the product is strong versus where it still needs engineering hardening.
+Today turned into both a shipping day and a review day. We built and demoed Momentum at the hackathon, then I ran Ryva immediately on the project to avoid blind spots after merge velocity.
+
+Ryva run:
+
+- [run_KlrBytlgVvvQ](https://ryva.dev/share/run_KlrBytlgVvvQ)
+
+![Screenshot 2026-04-18](https://cdn.egeuysal.com/content/2026/04/18/asset-03.png)
+
+Additional snapshots:
 
 ![Screenshot 2026-04-18](https://cdn.egeuysal.com/content/2026/04/18/asset-01.png)
+![Screenshot 2026-04-18](https://cdn.egeuysal.com/content/2026/04/18/asset-02.png)
 
 Project links:
+
 - GitHub: [HSHacks](https://github.com/shinkensen/HSHacks)
 - App: [momentum.dev7.xyz](https://momentum.dev7.xyz/)
 
-The best part was validating the architecture with real users instead of private assumptions. The realtime loop held up: client CV inference, room updates, signal polling, leaderboard persistence, and session tracking all worked together without major breakage.
+Most important Ryva findings with direct follow-up value:
 
-Technical notes from today:
+1. Critical repo hygiene decision
 
-1. Input normalization and bounded writes carried a lot of reliability.
-- `normalizeRoomId`, `normalizeDeviceId`, `normalizeUsername`, `normalizeDayKey` reduced malformed state before DB writes.
-- Hard caps (`MAX_REPS`, landmark limits, signal limits) made payload behavior predictable under noisy webcam streams.
+- Action: Remove or ignore `.DS_Store` introduced in commit `4fcadee`.
+- Why it matters: It creates avoidable diff noise and signals weak repo controls.
+- Immediate check: verify `.gitignore` rules at lines `1-3` block recurrence.
 
-2. Monotonic rep updates prevented visible regressions.
-- Using `Math.max` for session and leaderboard counters avoided scoreboard drops when frame detection temporarily undercounted reps.
-- This mattered in live demo conditions where tracking confidence fluctuated by angle and lighting.
+2. High-confidence backend deploy blocker
 
-3. Stale-state pruning kept realtime rooms healthy.
-- `pruneStaleDevices` and `pruneStaleSignals` prevented ghost participants and old signaling artifacts from polluting active sessions.
-- TTL-based cleanup improved room continuity and reduced confusing stale peers.
+- Action: Validate `hs-ai/src/app/api/agora/token/route.ts` with both `AGORA_APP_ID` and `AGORA_APP_CERTIFICATE` set.
+- Why it matters: Missing server envs breaks voice-token issuance and silently degrades workout room experience.
+- Confidence signal from Ryva: high (`94%`).
 
-4. Analytics layer is becoming decision-grade.
-- Calendar insights aggregate daily sessions, streaks, rep totals, and calorie estimates from normalized day keys.
-- Filtering by meaningful sessions avoids counting room-presence noise as workouts.
+3. Coordination decision
 
-Code slice from today:
+- Action: Post one top-level async repo update referencing PR `#1` and commit `4fcadee`, listing only immediate follow-ups.
+- Why it matters: There are no open PRs or issues, so written coordination is the fastest low-friction control point.
 
-```ts
-const STALE_MS = 12_000;
-const SIGNAL_TTL_MS = 30_000;
-const MAX_REPS = 100_000;
-const CALORIES_PER_REP = 0.42;
+4. Medium governance scope call
 
-function normalizeRoomId(roomId: string): string {
-  return roomId.trim().slice(0, ROOM_ID_MAX);
-}
+- Action: Decide whether `hs-ai/.agents/skills/ai-sdk/*` belongs in this app repo or should move to isolated ownership.
+- Why it matters: Scope creep here increases maintenance and review load with unclear ownership boundaries.
 
-function normalizeDeviceId(deviceId: string): string {
-  return deviceId.trim().slice(0, DEVICE_ID_MAX);
-}
+Technical reflection:
 
-function caloriesFromReps(reps: number): number {
-  return Number((Math.max(0, reps) * CALORIES_PER_REP).toFixed(1));
-}
+The strongest part of the implementation is still the defensive mutation pipeline. Identity fields are normalized, numeric values are clamped, payload sizes are bounded, and stale cleanup is explicit. Combined with monotonic rep updates, this prevented regressions during noisy CV frames and kept leaderboard/session state stable in live conditions.
 
-export const upsertDevice = mutation({
-  args: {
-    roomId: v.string(),
-    deviceId: v.string(),
-    userId: v.union(v.string(), v.null()),
-    username: v.string(),
-    reps: v.number(),
-    poseLandmarks: v.array(wireLandmarkValidator),
-    handLandmarks: v.array(v.array(wireLandmarkValidator)),
-  },
-  handler: async (ctx, args) => {
-    const roomId = normalizeRoomId(args.roomId);
-    const deviceId = normalizeDeviceId(args.deviceId);
-    if (!roomId || !deviceId) throw new ConvexError("Invalid identifiers.");
+The main risk is no longer feature viability. The risk is operational discipline after rapid merges. The Ryva pass was useful because it converted vague post-hackathon uncertainty into concrete decisions tied to exact files, env vars, and commits.
 
-    // sanitize payloads, keep reps monotonic, upsert room state,
-    // update leaderboard, and prune stale rows
-  },
-});
-```
-
-Security and hardening read:
-- Good: strict validators, normalization, explicit clamping, stale cleanup, and bounded list sizes.
-- Risk: abuse control is still thin for high-frequency realtime routes.
-- Next hardening pass should include rate limiting, full API auth audit, payload size ceilings, and better observability around fallback paths.
-
-Bottom line from this hackathon run: the product loop is real, and the technical foundation is good enough to compound if we keep execution tied to measurable second-run outcomes.
+Next execution quality bar is simple: close the `.DS_Store` hygiene issue, validate Agora env policy end to end, and publish one async repo update with explicit owners and due times so this momentum compounds instead of drifting.
