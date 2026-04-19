@@ -1,0 +1,88 @@
+---
+date: 2026-04-18
+summary: "Hackathon day at HS Hacks, shipped Momentum, and learned a lot"
+tags: ["ryva", "outreach", "pmf", "execution", "daily"]
+image: "https://cdn.egeuysal.com/content/2026/04/18/asset-02.png"
+---
+
+Progress Delta:
+- Completed: We shipped a working Momentum build at HS Hacks, validated the end-to-end flow in live conditions, and kept continuity with runtime snapshot plus IBX refresh on `/api/todos`, `/api/todos?today=2026-04-18`, `/api/thoughts`, and thought-level todo routes.
+- Unresolved: Core Ryva second-run pressure is still open, follow-up-only block is still open, and repo-run backlog (`Kernel`, `Moss`, `Notte`, `Trigger.dev`, `Signadot`, `Inngest`) still needs explicit closure.
+- New risks: Duplicate IBX task states can overstate progress, and hackathon momentum can decay if not converted into measurable second-run outcomes.
+
+Diary:
+Today was a real shipping day. We went to HS Hacks, built Momentum under time pressure, and learned where the product is strong versus where it still needs engineering hardening.
+
+![Screenshot 2026-04-18](https://cdn.egeuysal.com/content/2026/04/18/asset-01.png)
+
+Project links:
+- GitHub: [HSHacks](https://github.com/shinkensen/HSHacks)
+- App: [momentum.dev7.xyz](https://momentum.dev7.xyz/)
+
+The best part was validating the architecture with real users instead of private assumptions. The realtime loop held up: client CV inference, room updates, signal polling, leaderboard persistence, and session tracking all worked together without major breakage.
+
+Technical notes from today:
+
+1. Input normalization and bounded writes carried a lot of reliability.
+- `normalizeRoomId`, `normalizeDeviceId`, `normalizeUsername`, `normalizeDayKey` reduced malformed state before DB writes.
+- Hard caps (`MAX_REPS`, landmark limits, signal limits) made payload behavior predictable under noisy webcam streams.
+
+2. Monotonic rep updates prevented visible regressions.
+- Using `Math.max` for session and leaderboard counters avoided scoreboard drops when frame detection temporarily undercounted reps.
+- This mattered in live demo conditions where tracking confidence fluctuated by angle and lighting.
+
+3. Stale-state pruning kept realtime rooms healthy.
+- `pruneStaleDevices` and `pruneStaleSignals` prevented ghost participants and old signaling artifacts from polluting active sessions.
+- TTL-based cleanup improved room continuity and reduced confusing stale peers.
+
+4. Analytics layer is becoming decision-grade.
+- Calendar insights aggregate daily sessions, streaks, rep totals, and calorie estimates from normalized day keys.
+- Filtering by meaningful sessions avoids counting room-presence noise as workouts.
+
+Code slice from today:
+
+```ts
+const STALE_MS = 12_000;
+const SIGNAL_TTL_MS = 30_000;
+const MAX_REPS = 100_000;
+const CALORIES_PER_REP = 0.42;
+
+function normalizeRoomId(roomId: string): string {
+  return roomId.trim().slice(0, ROOM_ID_MAX);
+}
+
+function normalizeDeviceId(deviceId: string): string {
+  return deviceId.trim().slice(0, DEVICE_ID_MAX);
+}
+
+function caloriesFromReps(reps: number): number {
+  return Number((Math.max(0, reps) * CALORIES_PER_REP).toFixed(1));
+}
+
+export const upsertDevice = mutation({
+  args: {
+    roomId: v.string(),
+    deviceId: v.string(),
+    userId: v.union(v.string(), v.null()),
+    username: v.string(),
+    reps: v.number(),
+    poseLandmarks: v.array(wireLandmarkValidator),
+    handLandmarks: v.array(v.array(wireLandmarkValidator)),
+  },
+  handler: async (ctx, args) => {
+    const roomId = normalizeRoomId(args.roomId);
+    const deviceId = normalizeDeviceId(args.deviceId);
+    if (!roomId || !deviceId) throw new ConvexError("Invalid identifiers.");
+
+    // sanitize payloads, keep reps monotonic, upsert room state,
+    // update leaderboard, and prune stale rows
+  },
+});
+```
+
+Security and hardening read:
+- Good: strict validators, normalization, explicit clamping, stale cleanup, and bounded list sizes.
+- Risk: abuse control is still thin for high-frequency realtime routes.
+- Next hardening pass should include rate limiting, full API auth audit, payload size ceilings, and better observability around fallback paths.
+
+Bottom line from this hackathon run: the product loop is real, and the technical foundation is good enough to compound if we keep execution tied to measurable second-run outcomes.
