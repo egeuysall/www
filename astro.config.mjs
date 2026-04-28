@@ -12,6 +12,7 @@ import {
   ALLOWED_IMAGE_PATTERNS,
   SITE,
 } from "./src/config/site";
+import { handleMcpDevRequest } from "./src/mcp/dev-middleware";
 import remarkContentCdnShorthand from "./src/plugins/remark-content-cdn-shorthand.mjs";
 import remarkInlineShiki from "./src/plugins/remark-inline-shiki.mjs";
 
@@ -128,7 +129,21 @@ export default defineConfig({
     ],
   },
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [
+      tailwindcss(),
+      {
+        name: "www-mcp-dev-server",
+        configureServer(server) {
+          server.middlewares.use("/mcp", async (request, response, next) => {
+            try {
+              await handleMcpDevRequest(request, response);
+            } catch (error) {
+              next(error);
+            }
+          });
+        },
+      },
+    ],
     server: {
       proxy: {
         "/cdn": {
