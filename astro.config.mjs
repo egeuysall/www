@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
 import sitemap from "@astrojs/sitemap";
+import vercel from "@astrojs/vercel";
 import tailwindcss from "@tailwindcss/vite";
 
 import {
@@ -112,6 +113,7 @@ const SHIKI_THEMES = {
 // https://astro.build/config
 export default defineConfig({
   site: SITE.url,
+  adapter: vercel(),
   integrations: [react(), mdx(), sitemap()],
   image: {
     domains: ALLOWED_IMAGE_HOSTS,
