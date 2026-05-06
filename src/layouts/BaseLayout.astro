@@ -1,5 +1,6 @@
 ---
 import JsonLd from "@/components/seo/JsonLd.astro";
+import CodeBlockCopyOnClick from "@/components/content/CodeBlockCopyOnClick";
 import { NAV_LINKS, SEO_DEFAULTS, SITE, SOCIAL_LINKS } from "@/config/site";
 import Analytics from "@vercel/analytics/astro";
 import { ClientRouter } from "astro:transitions";
@@ -145,6 +146,7 @@ const isNavActive = (href: string): boolean => {
         </div>
       </footer>
     </div>
+    <CodeBlockCopyOnClick client:load />
     <Analytics />
   </body>
 </html>

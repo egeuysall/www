@@ -241,6 +241,16 @@ a {
   border-radius: 0.25rem;
 }
 
+.prose pre[data-copyable-code-block="true"] {
+  cursor: copy;
+  transition: border-color 140ms ease;
+}
+
+.prose pre[data-copyable-code-block="true"]:hover,
+.prose pre[data-copyable-code-block="true"]:focus-visible {
+  border-color: var(--color-neutral-600);
+}
+
 .prose pre code {
   background: transparent;
   padding: 0;
