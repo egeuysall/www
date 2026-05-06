@@ -60,11 +60,6 @@ export default function CodeBlockCopyOnClick() {
     };
 
     const onCopy = async (pre: HTMLPreElement) => {
-      const selection = window.getSelection();
-      if (selection && selection.type === "Range" && selection.toString().trim()) {
-        return;
-      }
-
       const text = getCodeText(pre);
       if (!text) {
         return;
@@ -73,9 +68,9 @@ export default function CodeBlockCopyOnClick() {
       const copied = await copyText(text);
 
       if (copied) {
-        toast.success("Code copied to clipboard");
+        toast("Copied code block");
       } else {
-        toast.error("Could not copy code");
+        toast("Could not copy code");
       }
     };
 
@@ -123,5 +118,5 @@ export default function CodeBlockCopyOnClick() {
     };
   }, []);
 
-  return <Toaster position="bottom-right" richColors />;
+  return <Toaster position="bottom-right" />;
 }
