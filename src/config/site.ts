@@ -47,20 +47,20 @@ export const SOCIAL_LINKS: SocialLink[] = [
 
 export const PROJECTS: ProjectProofItem[] = [
   {
+    title: "Bri",
+    summary: "Publish anything.",
+    url: "https://bri.fyi",
+    linkLabel: "bri.fyi",
+  },
+  {
     title: "Ryva",
     summary: "Kill your standups.",
     url: "https://ryva.dev",
     linkLabel: "ryva.dev",
   },
   {
-    title: "Shipr",
-    summary: "Ship Your SaaS This Weekend.",
-    url: "https://shipr.egeuysal.com",
-    linkLabel: "shipr.egeuysal.com",
-  },
-  {
     title: "Huesly",
-    summary: "Generate beautiful, accessible brands in seconds.",
+    summary: "Generate beautiful brands.",
     url: "https://huesly.app",
     linkLabel: "huesly.app",
   },
