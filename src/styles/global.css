@@ -1,5 +1,8 @@
 @import "tailwindcss";
+@import "katex/dist/katex.min.css";
 @plugin "@tailwindcss/typography";
+@source "../../node_modules/streamdown/dist/*.js";
+@source "../../node_modules/@streamdown/math/dist/*.js";
 
 @font-face {
   font-family: "Geist Mono";
@@ -246,8 +249,18 @@ a {
   transition: border-color 140ms ease;
 }
 
+.ai-page-code pre[data-ai-copyable-code-block="true"],
+.ai-page-markdown pre[data-ai-copyable-code-block="true"] {
+  cursor: copy;
+  transition: border-color 140ms ease;
+}
+
 .prose pre[data-copyable-code-block="true"]:hover,
-.prose pre[data-copyable-code-block="true"]:focus-visible {
+.prose pre[data-copyable-code-block="true"]:focus-visible,
+.ai-page-code pre[data-ai-copyable-code-block="true"]:hover,
+.ai-page-code pre[data-ai-copyable-code-block="true"]:focus-visible,
+.ai-page-markdown pre[data-ai-copyable-code-block="true"]:hover,
+.ai-page-markdown pre[data-ai-copyable-code-block="true"]:focus-visible {
   border-color: var(--color-neutral-600);
 }
 
@@ -256,6 +269,150 @@ a {
   padding: 0;
   border-radius: 0;
   color: inherit;
+}
+
+.ai-page-code pre.astro-code,
+.ai-page-markdown pre {
+  margin: 0.375rem 0;
+  border: 1px solid var(--code-block-border);
+  background-color: var(--code-block-bg);
+  color: var(--color-neutral-200);
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  padding: 0.8572em 1.1429em;
+  font-size: 0.7875rem;
+  line-height: 1.7143;
+}
+
+.ai-page-code pre.astro-code code,
+.ai-page-markdown pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+.ai-page-markdown [data-streamdown="code-block"] {
+  margin: 0.375rem 0;
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  gap: 0;
+  border-radius: 0;
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+}
+
+.ai-page-markdown [data-streamdown="table-wrapper"] {
+  margin: 0.375rem 0;
+  display: block;
+  max-height: min(16rem, 38vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--code-block-border);
+  background-color: var(--bg);
+  padding: 0;
+  gap: 0;
+  border-radius: 0.25rem;
+}
+
+.ai-page-markdown [data-streamdown="code-block-header"],
+.ai-page-markdown [data-streamdown="code-block-actions"],
+.ai-page-markdown [data-streamdown="table-wrapper"] > :first-child {
+  display: none;
+}
+
+.ai-page-markdown [data-streamdown="table-wrapper"] > div {
+  overflow-x: visible;
+  overflow-y: visible;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+.ai-page-markdown [data-streamdown="code-block-body"] {
+  border: 1px solid var(--code-block-border);
+  background-color: var(--code-block-bg);
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  padding: 0.8572em 1.1429em;
+  font-size: 0.7875rem;
+  line-height: 1.7143;
+}
+
+.ai-page-markdown [data-streamdown="code-block-body"] pre {
+  margin: 0;
+  border: 0;
+  background: transparent !important;
+  padding: 0;
+}
+
+.ai-page-table {
+  margin: 0.375rem 0;
+  max-width: 100%;
+  max-height: min(16rem, 38vh);
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--code-block-border);
+  border-radius: 0.25rem;
+  background-color: var(--bg);
+}
+
+.ai-page-table table {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.ai-page-markdown [data-streamdown="table"] {
+  width: 100%;
+  min-width: 26rem;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.ai-page-table thead {
+  background-color: var(--inline-code-bg);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.ai-page-markdown [data-streamdown="table-header"] {
+  background-color: var(--inline-code-bg);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.ai-page-table th,
+.ai-page-table td,
+.ai-page-markdown [data-streamdown="table-header-cell"],
+.ai-page-markdown [data-streamdown="table-cell"] {
+  border-bottom: 1px solid var(--code-block-border);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.ai-page-table th,
+.ai-page-markdown [data-streamdown="table-header-cell"] {
+  color: var(--fg);
+  font-weight: 500;
+  white-space: normal;
+}
+
+.ai-page-table td,
+.ai-page-markdown [data-streamdown="table-cell"] {
+  color: var(--muted);
+}
+
+.ai-page-table tr:last-child td,
+.ai-page-markdown [data-streamdown="table-row"]:last-child [data-streamdown="table-cell"] {
+  border-bottom: 0;
 }
 
 .prose pre.astro-code {
@@ -268,13 +425,15 @@ a {
 }
 
 @media (prefers-color-scheme: dark) {
-  .prose pre.astro-code {
+  .prose pre.astro-code,
+  .ai-page-code pre.astro-code {
     background-color: var(--code-block-bg) !important;
     color: var(--shiki-dark, inherit) !important;
     border-color: var(--code-block-border) !important;
     filter: none;
   }
 
+  .ai-page-code pre.astro-code span,
   .prose :where(pre.astro-code, code.shiki-inline) span {
     color: var(--shiki-dark, inherit) !important;
   }
@@ -285,13 +444,15 @@ a {
 }
 
 @media (prefers-color-scheme: light) {
-  .prose pre.astro-code {
+  .prose pre.astro-code,
+  .ai-page-code pre.astro-code {
     background-color: var(--code-block-bg) !important;
     color: var(--shiki-light, inherit) !important;
     border-color: var(--code-block-border) !important;
     filter: none;
   }
 
+  .ai-page-code pre.astro-code span,
   .prose :where(pre.astro-code, code.shiki-inline) span {
     color: var(--shiki-light, inherit) !important;
   }

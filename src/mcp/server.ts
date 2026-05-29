@@ -13,19 +13,27 @@ import {
   searchBrainResources,
 } from "./external-tools";
 
+type McpToolDefinition = {
+  name: string;
+  description: string;
+  parameters: z.ZodType;
+  execute: (args: unknown) => unknown;
+};
+
 export function createMcpServer(reader: JsonFeedReader): EdgeFastMCP {
   const server = new EdgeFastMCP({
     mcpPath: "/mcp",
     name: "egeuysal-www",
     version: "0.1.0",
   });
+  const addTool = server.addTool.bind(server) as unknown as (tool: McpToolDefinition) => void;
 
   const tools = createJsonFeedTools(reader);
 
   for (const [index, tool] of tools.entries()) {
     const feed = jsonFeeds[index];
 
-    server.addTool({
+    addTool({
       name: tool.name,
       description: tool.description ?? `Read ${tool.name}`,
       parameters: z.object({}),
@@ -33,35 +41,35 @@ export function createMcpServer(reader: JsonFeedReader): EdgeFastMCP {
     });
   }
 
-  server.addTool({
+  addTool({
     name: "fetch_brain_resource",
     description:
       "Fetch a brain.egeuysal.com resource markdown file. Accepts a .md URL, page URL, routePath, or /resources path.",
     parameters: brainFetchSchema,
-    execute: fetchBrainResource,
+    execute: fetchBrainResource as McpToolDefinition["execute"],
   });
 
-  server.addTool({
+  addTool({
     name: "search_brain_resources",
     description:
       "Search brain.egeuysal.com/api/routes.json across paginated route pages and return matching docs with markdownUrl.",
     parameters: brainSearchSchema,
-    execute: searchBrainResources,
+    execute: searchBrainResources as McpToolDefinition["execute"],
   });
 
-  server.addTool({
+  addTool({
     name: "get_bri_notes",
     description: "Fetch Bri notes from bri.fyi/api/notes with the configured bearer token.",
     parameters: briNotesSchema,
-    execute: fetchBriNotes,
+    execute: fetchBriNotes as McpToolDefinition["execute"],
   });
 
-  server.addTool({
+  addTool({
     name: "get_ibx_todos",
     description:
       "Fetch IBX todos from ibx.egeuysal.com/api/todos with the configured bearer token.",
     parameters: ibxTodosSchema,
-    execute: fetchIbxTodos,
+    execute: fetchIbxTodos as McpToolDefinition["execute"],
   });
 
   return server;

@@ -1,6 +1,7 @@
 ---
 import JsonLd from "@/components/seo/JsonLd.astro";
 import CodeBlockCopyOnClick from "@/components/content/CodeBlockCopyOnClick";
+import PageAiOverlay from "@/components/ai/PageAiOverlay";
 import { NAV_LINKS, SEO_DEFAULTS, SITE, SOCIAL_LINKS } from "@/config/site";
 import Analytics from "@vercel/analytics/astro";
 import { ClientRouter } from "astro:transitions";
@@ -38,6 +39,7 @@ const canonical = new URL(pathname, siteOrigin).toString();
 const ogImage = new URL(image, siteOrigin).toString();
 const normalizePath = (value: string) => value.replace(/\/+$/, "") || "/";
 const currentPath = normalizePath(Astro.url.pathname);
+const shouldShowAiOverlay = /^\/(?:blog|diary|photo)\/[^/]+$/.test(currentPath);
 const isNavActive = (href: string): boolean => {
   const normalizedHref = normalizePath(href);
 
@@ -147,6 +149,7 @@ const isNavActive = (href: string): boolean => {
       </footer>
     </div>
     <CodeBlockCopyOnClick client:only="react" />
+    {shouldShowAiOverlay && <PageAiOverlay client:only="react" />}
     <Analytics />
   </body>
 </html>

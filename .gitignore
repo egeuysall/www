@@ -27,3 +27,4 @@ pnpm-debug.log*
 
 # diary runtime artifacts
 src/content/diary/_runtime/
+.vercel
