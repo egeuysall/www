@@ -1,4 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { Combobox } from "@base-ui/react/combobox";
+
+import { setPostTitle, slugFromPost, titleFromPost } from "@/lib/blog-editor";
 
 type Report = {
   reportId: string;
@@ -16,6 +19,9 @@ type Report = {
 export default function BlogEditor() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [posts, setPosts] = useState<string[]>([]);
+  const [selectedPost, setSelectedPost] = useState("");
+  const [loadedSha, setLoadedSha] = useState("");
+  const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [content, setContent] = useState(newPost());
   const [reports, setReports] = useState<Report[]>([]);
@@ -57,15 +63,23 @@ export default function BlogEditor() {
   }
 
   async function loadPost(nextSlug: string) {
-    setSlug(nextSlug);
     if (!nextSlug) {
-      setContent(newPost());
+      const draft = newPost();
+      setSelectedPost("");
+      setLoadedSha("");
+      setContent(draft);
+      setTitle(titleFromPost(draft));
+      setSlug(slugFromPost(draft));
       return;
     }
     setBusy(true);
     try {
-      const post = await request<{ content: string }>(`/api/admin/blog?slug=${encodeURIComponent(nextSlug)}`);
+      const post = await request<{ content: string; sha: string }>(`/api/admin/blog?slug=${encodeURIComponent(nextSlug)}`);
+      setSelectedPost(nextSlug);
+      setLoadedSha(post.sha);
       setContent(post.content);
+      setTitle(titleFromPost(post.content));
+      setSlug(nextSlug);
     } catch (error) {
       setStatus(message(error));
     } finally {
@@ -80,9 +94,27 @@ export default function BlogEditor() {
     try {
       const result = await request<{ url: string }>("/api/admin/blog", {
         method: "POST",
-        body: JSON.stringify({ slug, content }),
+        body: JSON.stringify({ slug, sourceSlug: selectedPost || undefined, sha: loadedSha || undefined, content }),
       });
       setStatus(`Committed to master. Vercel is deploying ${result.url}`);
+      await loadDashboard();
+      await loadPost(slug);
+    } catch (error) {
+      setStatus(message(error));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deleteReportedComment(commentId: string) {
+    if (!window.confirm("Delete this comment and its attachment?")) return;
+    setBusy(true);
+    setStatus("");
+    try {
+      await request("/api/admin/moderation", {
+        method: "POST",
+        body: JSON.stringify({ commentId }),
+      });
       await loadDashboard();
     } catch (error) {
       setStatus(message(error));
@@ -91,13 +123,10 @@ export default function BlogEditor() {
     }
   }
 
-  async function moderate(commentId: string, action: "hide" | "delete" | "block") {
-    if (!window.confirm(`${action} this comment${action === "block" ? " and block its author" : ""}?`)) return;
-    await request("/api/admin/moderation", {
-      method: "POST",
-      body: JSON.stringify({ commentId, action }),
-    });
-    await loadDashboard();
+  function updateContent(nextContent: string) {
+    setContent(nextContent);
+    setTitle(titleFromPost(nextContent));
+    if (!selectedPost) setSlug(slugFromPost(nextContent));
   }
 
   if (authenticated === null) return <p className="text-xs text-neutral-400">Loading…</p>;
@@ -117,18 +146,65 @@ export default function BlogEditor() {
     <div className="space-y-10">
       <form onSubmit={save} className="space-y-4">
         <div className="flex flex-wrap gap-3">
-          <label className="min-w-48 flex-1 text-xs text-neutral-400">Post
-            <select value={posts.includes(slug) ? slug : ""} onChange={(event) => void loadPost(event.target.value)} className="mt-1 block w-full rounded-sm border border-neutral-800 bg-bg px-3 py-2 text-sm text-neutral-100">
-              <option value="">New post</option>
-              {posts.map((post) => <option key={post} value={post}>{post}</option>)}
-            </select>
-          </label>
+          <div className="min-w-48 flex-1 text-xs text-neutral-400">
+            <label htmlFor="post-combobox">Post</label>
+            <Combobox.Root
+              items={posts}
+              value={selectedPost || null}
+              onValueChange={(value) => {
+                if (value !== undefined) void loadPost(value || "");
+              }}
+              autoHighlight
+            >
+              <Combobox.Input
+                id="post-combobox"
+                placeholder="Search posts…"
+                className="mt-1 block w-full rounded-sm border border-neutral-800 bg-bg px-3 py-2 text-sm text-neutral-100 outline-none placeholder:text-neutral-500 focus:border-neutral-500"
+              />
+              <Combobox.Portal>
+                <Combobox.Positioner sideOffset={4} className="z-50 outline-none">
+                  <Combobox.Popup className="max-h-[min(var(--available-height),20rem)] w-[var(--anchor-width)] max-w-[var(--available-width)] overflow-y-auto rounded-sm border border-neutral-800 bg-black p-1 text-sm text-neutral-200 shadow-xl outline-none">
+                    <Combobox.Empty className="px-2 py-2 text-xs text-neutral-500">No posts found.</Combobox.Empty>
+                    <Combobox.List>
+                      {(post: string) => (
+                        <Combobox.Item
+                          key={post}
+                          value={post}
+                          className="cursor-default rounded-sm px-2 py-1.5 outline-none data-highlighted:bg-neutral-900 data-highlighted:text-neutral-100"
+                        >
+                          {post}
+                        </Combobox.Item>
+                      )}
+                    </Combobox.List>
+                  </Combobox.Popup>
+                </Combobox.Positioner>
+              </Combobox.Portal>
+            </Combobox.Root>
+            <button type="button" onClick={() => void loadPost("")} disabled={busy} className="mt-2 rounded-sm border border-neutral-700 px-3 py-2 text-xs text-neutral-100 disabled:opacity-60">
+              New post
+            </button>
+          </div>
           <label className="min-w-48 flex-1 text-xs text-neutral-400">Slug
-            <input value={slug} onChange={(event) => setSlug(event.target.value)} required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="my-post" className="mt-1 block w-full rounded-sm border border-neutral-800 bg-transparent px-3 py-2 text-sm text-neutral-100" />
+            <input value={slug} readOnly required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="Generated from title" className="mt-1 block w-full rounded-sm border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-400" />
           </label>
         </div>
+        <label className="block text-xs text-neutral-400">Title
+          <input
+            value={title}
+            onChange={(event) => {
+              const nextTitle = event.target.value;
+              setTitle(nextTitle);
+              const nextContent = setPostTitle(content, nextTitle);
+              setContent(nextContent);
+              if (!selectedPost) setSlug(slugFromPost(nextContent));
+            }}
+            required
+            placeholder="Post title"
+            className="mt-1 block w-full rounded-sm border border-neutral-800 bg-transparent px-3 py-2 text-sm text-neutral-100 outline-none focus:border-neutral-500"
+          />
+        </label>
         <label className="block text-xs text-neutral-400">MDX
-          <textarea value={content} onChange={(event) => setContent(event.target.value)} required rows={28} spellCheck className="mt-1 block w-full resize-y rounded-sm border border-neutral-800 bg-transparent p-3 font-mono text-xs leading-relaxed text-neutral-100 outline-none focus:border-neutral-500" />
+          <textarea value={content} onChange={(event) => updateContent(event.target.value)} required rows={28} spellCheck className="mt-1 block w-full resize-y rounded-sm border border-neutral-800 bg-transparent p-3 font-mono text-xs leading-relaxed text-neutral-100 outline-none focus:border-neutral-500" />
         </label>
         <div className="flex items-center gap-3">
           <button disabled={busy} className="rounded-sm border border-neutral-700 px-3 py-2 text-xs text-neutral-100 disabled:opacity-60">{busy ? "Saving…" : "Commit and deploy"}</button>
@@ -136,23 +212,19 @@ export default function BlogEditor() {
         </div>
       </form>
 
-      <section>
+      {reports.length > 0 && <section>
         <h2 className="text-sm text-neutral-100">Reported comments</h2>
         <div className="mt-4 space-y-4">
-          {reports.length === 0 ? <p className="text-xs text-neutral-500">No open reports.</p> : reports.map((report) => report.comment && (
+          {reports.map((report) => report.comment && (
             <article key={report.reportId} className="rounded-sm border border-neutral-800 p-3">
               <p className="text-xs text-neutral-500">{report.comment.kind}/{report.comment.slug} · {report.reason}</p>
               <p className="mt-2 text-sm text-neutral-300"><strong>{report.comment.authorName || "Anonymous"}:</strong> {report.comment.body}</p>
               {report.comment.imageUrl && <img src={report.comment.imageUrl} alt="Reported comment attachment" className="mt-3 max-h-48 rounded-sm object-contain" />}
-              <div className="mt-3 flex gap-3 text-xs">
-                <button type="button" onClick={() => void moderate(report.comment!._id, "hide")} className="text-neutral-400 hover:text-neutral-100">Hide</button>
-                <button type="button" onClick={() => void moderate(report.comment!._id, "delete")} className="text-neutral-400 hover:text-neutral-100">Delete</button>
-                <button type="button" onClick={() => void moderate(report.comment!._id, "block")} className="text-red-400 hover:text-red-300">Block author</button>
-              </div>
+              <button type="button" disabled={busy} onClick={() => void deleteReportedComment(report.comment!._id)} className="mt-3 text-xs text-red-400 hover:text-red-300 disabled:opacity-60">Delete comment and attachment</button>
             </article>
           ))}
         </div>
-      </section>
+      </section>}
     </div>
   );
 }

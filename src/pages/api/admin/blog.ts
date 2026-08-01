@@ -1,12 +1,14 @@
 import type { APIRoute } from "astro";
 
 import { isAdmin } from "@/lib/admin-auth";
+import { slugFromPost } from "@/lib/blog-editor";
 import { json, rejectCrossOrigin } from "@/lib/engagement";
 
 export const prerender = false;
 
 const API_ROOT = "https://api.github.com/repos/egeuysall/www/contents/src/content/blog";
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+const SHA = /^[a-f0-9]{40}$/;
 const MAX_CONTENT_BYTES = 200_000;
 
 export const GET: APIRoute = async ({ url, cookies }) => {
@@ -39,31 +41,50 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return json({ error: "Request body too large" }, 413);
   }
 
-  const body = await request.json().catch(() => null) as { slug?: unknown; content?: unknown } | null;
-  if (!body || typeof body.slug !== "string" || !SLUG.test(body.slug) || typeof body.content !== "string") {
+  const body = await request.json().catch(() => null) as { slug?: unknown; sourceSlug?: unknown; sha?: unknown; content?: unknown } | null;
+  if (
+    !body
+    || typeof body.slug !== "string"
+    || body.slug.length > 120
+    || !SLUG.test(body.slug)
+    || (body.sourceSlug !== undefined && (typeof body.sourceSlug !== "string" || body.sourceSlug.length > 120 || !SLUG.test(body.sourceSlug)))
+    || (body.sha !== undefined && (typeof body.sha !== "string" || !SHA.test(body.sha)))
+    || typeof body.content !== "string"
+  ) {
     return json({ error: "Invalid post" }, 400);
   }
   if (Buffer.byteLength(body.content) > MAX_CONTENT_BYTES || !validFrontmatter(body.content)) {
     return json({ error: "Post must have valid title, description, and publishedAt frontmatter" }, 400);
   }
+  if (body.sourceSlug && body.sourceSlug !== body.slug) {
+    return json({ error: "Existing post slugs cannot be changed" }, 400);
+  }
+  if (Boolean(body.sourceSlug) !== Boolean(body.sha)) {
+    return json({ error: "Existing posts require their loaded revision" }, 400);
+  }
+  if (!body.sourceSlug && slugFromPost(body.content) !== body.slug) {
+    return json({ error: "Slug must match the post title" }, 400);
+  }
 
-  const located = await findPost(body.slug);
-  const path = located.response.ok ? located.path : `${API_ROOT}/${body.slug}.mdx`;
-  const existing = located.response;
-  if (!existing.ok && existing.status !== 404) return json({ error: "GitHub request failed" }, 502);
-  const existingPayload: unknown = existing.ok ? await existing.json() : null;
-  const sha = isGithubFile(existingPayload) && typeof existingPayload.sha === "string" ? existingPayload.sha : undefined;
-  if (existing.ok && !sha) return json({ error: "Invalid GitHub response" }, 502);
+  const target = await findPost(body.slug);
+  if (!target.response.ok && target.response.status !== 404) return json({ error: "GitHub request failed" }, 502);
+  if (!body.sourceSlug && target.response.ok) return json({ error: "Slug already exists" }, 409);
+  if (body.sourceSlug && !target.response.ok) return json({ error: "Post not found" }, 404);
+
+  const path = target.response.ok ? target.path : `${API_ROOT}/${body.slug}.mdx`;
   const saved = await github(path, {
     method: "PUT",
     body: JSON.stringify({
-      message: `${sha ? "Update" : "Publish"} blog post: ${body.slug}`,
+      message: `${body.sha ? "Update" : "Publish"} blog post: ${body.slug}`,
       content: Buffer.from(body.content).toString("base64"),
       branch: "master",
-      ...(sha ? { sha } : {}),
+      ...(body.sha ? { sha: body.sha } : {}),
     }),
   });
-  if (!saved.ok) return json({ error: "GitHub rejected the publish" }, 502);
+  if (!saved.ok) {
+    return json({ error: saved.status === 409 || saved.status === 422 ? "Post changed elsewhere; reload before saving" : "GitHub rejected the publish" }, saved.status === 409 || saved.status === 422 ? 409 : 502);
+  }
+
   return json({ ok: true, url: `/blog/${body.slug}/` });
 };
 

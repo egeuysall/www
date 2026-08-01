@@ -6,7 +6,6 @@ import { env, mutation, query, type MutationCtx, type QueryCtx } from "./_genera
 import { viewBaseline } from "./view_baseline";
 
 const kindArg = v.union(v.literal("blog"), v.literal("diary"), v.literal("photo"));
-const actionArg = v.union(v.literal("hide"), v.literal("delete"));
 const itemArg = v.object({ kind: kindArg, slug: v.string() });
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -127,6 +126,26 @@ async function resolveReports(ctx: MutationCtx, commentId: Id<"comments">) {
       .filter((report) => report.status === "open")
       .map((report) => ctx.db.patch(report._id, { status: "resolved" })),
   );
+}
+
+async function deleteComment(ctx: MutationCtx, comment: Doc<"comments">) {
+  const now = Date.now();
+  if (comment.status === "visible") {
+    const stats = await ensureStats(ctx, comment.kind, comment.slug);
+    await ctx.db.patch(stats._id, {
+      commentCount: Math.max(0, stats.commentCount - 1),
+      updatedAt: now,
+    });
+  }
+  await deleteCommentImage(ctx, comment);
+  await resolveReports(ctx, comment._id);
+  await ctx.db.patch(comment._id, {
+    body: undefined,
+    storageId: undefined,
+    status: "deleted",
+    likeCount: 0,
+    updatedAt: now,
+  });
 }
 
 function dayKey(now: number) {
@@ -455,28 +474,7 @@ export const deleteOwnComment = mutation({
     if (!comment || comment.status !== "visible") throw new ConvexError("Comment not found.");
     if (comment.actorHash !== args.actorHash) throw new ConvexError("You can only delete your own comment.");
 
-    const now = Date.now();
-    const stats = await ensureStats(ctx, comment.kind, comment.slug);
-    const likes = await ctx.db
-      .query("commentLikes")
-      .withIndex("by_commentId_and_actorHash", (q) => q.eq("commentId", args.commentId))
-      .collect();
-
-    // ponytail: one transaction is enough here; batch cleanup if a comment nears Convex write limits.
-    await Promise.all(likes.map((like) => ctx.db.delete(like._id)));
-    await deleteCommentImage(ctx, comment);
-    await resolveReports(ctx, args.commentId);
-    await ctx.db.patch(stats._id, {
-      commentCount: Math.max(0, stats.commentCount - 1),
-      updatedAt: now,
-    });
-    await ctx.db.patch(args.commentId, {
-      body: undefined,
-      storageId: undefined,
-      status: "deleted",
-      likeCount: 0,
-      updatedAt: now,
-    });
+    await deleteComment(ctx, comment);
     return { deleted: true };
   },
 });
@@ -491,77 +489,13 @@ export const checkAdminLogin = mutation({
   },
 });
 
-export const moderateComment = mutation({
-  args: { secret: v.string(), commentId: v.id("comments"), action: actionArg },
-  handler: async (ctx, args) => {
-    requireSecret(args.secret);
-    const comment = await ctx.db.get(args.commentId);
-    if (!comment || comment.status === "deleted") throw new ConvexError("Comment not found.");
-    const now = Date.now();
-    if (comment.status === "visible") {
-      const stats = await ensureStats(ctx, comment.kind, comment.slug);
-      await ctx.db.patch(stats._id, {
-        commentCount: Math.max(0, stats.commentCount - 1),
-        updatedAt: now,
-      });
-    }
-    await deleteCommentImage(ctx, comment);
-    await resolveReports(ctx, args.commentId);
-    await ctx.db.patch(args.commentId, {
-      body: undefined,
-      storageId: undefined,
-      status: args.action === "delete" ? "deleted" : "hidden",
-      updatedAt: now,
-    });
-    return { status: args.action === "delete" ? "deleted" : "hidden" };
-  },
-});
-
-export const blockCommentAuthor = mutation({
+export const deleteReportedComment = mutation({
   args: { secret: v.string(), commentId: v.id("comments") },
   handler: async (ctx, args) => {
     requireSecret(args.secret);
     const comment = await ctx.db.get(args.commentId);
-    if (!comment) throw new ConvexError("Comment not found.");
-    const existing = await ctx.db
-      .query("blockedActorHashes")
-      .withIndex("by_actor", (q) => q.eq("actorHash", comment.actorHash))
-      .first();
-    if (!existing) {
-      await ctx.db.insert("blockedActorHashes", {
-        actorHash: comment.actorHash,
-        sourceCommentId: args.commentId,
-        createdAt: Date.now(),
-      });
-    }
-    if (comment.rateHash) {
-      const blockedRate = await ctx.db
-        .query("blockedRateHashes")
-        .withIndex("by_rate", (q) => q.eq("rateHash", comment.rateHash!))
-        .first();
-      if (!blockedRate) {
-        await ctx.db.insert("blockedRateHashes", {
-          rateHash: comment.rateHash,
-          sourceCommentId: args.commentId,
-          createdAt: Date.now(),
-        });
-      }
-    }
-    if (comment.status === "visible") {
-      await deleteCommentImage(ctx, comment);
-      await resolveReports(ctx, args.commentId);
-      const stats = await ensureStats(ctx, comment.kind, comment.slug);
-      await ctx.db.patch(stats._id, {
-        commentCount: Math.max(0, stats.commentCount - 1),
-        updatedAt: Date.now(),
-      });
-      await ctx.db.patch(args.commentId, {
-        body: undefined,
-        storageId: undefined,
-        status: "hidden",
-        updatedAt: Date.now(),
-      });
-    }
-    return { blocked: true };
+    if (!comment || comment.status === "deleted") throw new ConvexError("Comment not found.");
+    await deleteComment(ctx, comment);
+    return { status: "deleted" };
   },
 });

@@ -16,18 +16,15 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const crossOrigin = rejectCrossOrigin(request);
   if (crossOrigin) return crossOrigin;
   if (!isAdmin(cookies)) return json({ error: "Unauthorized" }, 401);
-  const body = await request.json().catch(() => null) as { commentId?: unknown; action?: unknown } | null;
-  if (!body || typeof body.commentId !== "string" || !["hide", "delete", "block"].includes(String(body.action))) {
+  if (Number(request.headers.get("content-length") || 0) > 8_192) {
+    return json({ error: "Request body too large" }, 413);
+  }
+  const body = await request.json().catch(() => null) as { commentId?: unknown } | null;
+  if (!body || typeof body.commentId !== "string") {
     return json({ error: "Invalid moderation action" }, 400);
   }
-  const client = getConvexServerClient();
-  const secret = getWriteSecret();
-  if (body.action === "block") {
-    return json(await client.mutation(api.interactions.blockCommentAuthor, { secret, commentId: body.commentId as Id<"comments"> }));
-  }
-  return json(await client.mutation(api.interactions.moderateComment, {
-    secret,
+  return json(await getConvexServerClient().mutation(api.interactions.deleteReportedComment, {
+    secret: getWriteSecret(),
     commentId: body.commentId as Id<"comments">,
-    action: body.action as "hide" | "delete",
   }));
 };
