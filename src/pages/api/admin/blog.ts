@@ -6,7 +6,9 @@ import { json, rejectCrossOrigin } from "@/lib/engagement";
 
 export const prerender = false;
 
-const API_ROOT = "https://api.github.com/repos/egeuysall/www/contents/src/content/blog";
+const REPO_API = "https://api.github.com/repos/egeuysall/www";
+const CONTENT_ROOT = "src/content/blog";
+const API_ROOT = `${REPO_API}/contents/${CONTENT_ROOT}`;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const SHA = /^[a-f0-9]{40}$/;
 const MAX_CONTENT_BYTES = 200_000;
@@ -56,22 +58,32 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   if (Buffer.byteLength(body.content) > MAX_CONTENT_BYTES || !validFrontmatter(body.content)) {
     return json({ error: "Post must have valid title, description, and publishedAt frontmatter" }, 400);
   }
-  if (body.sourceSlug && body.sourceSlug !== body.slug) {
-    return json({ error: "Existing post slugs cannot be changed" }, 400);
-  }
   if (Boolean(body.sourceSlug) !== Boolean(body.sha)) {
     return json({ error: "Existing posts require their loaded revision" }, 400);
   }
-  if (!body.sourceSlug && slugFromPost(body.content) !== body.slug) {
+  if (slugFromPost(body.content) !== body.slug) {
     return json({ error: "Slug must match the post title" }, 400);
+  }
+
+  const source = body.sourceSlug ? await findPost(body.sourceSlug) : null;
+  if (source && !source.response.ok) return json({ error: source.response.status === 404 ? "Post not found" : "GitHub request failed" }, source.response.status === 404 ? 404 : 502);
+  const sourcePayload = source ? await source.response.json() as unknown : null;
+  if (sourcePayload && (!isGithubFile(sourcePayload) || sourcePayload.sha !== body.sha)) {
+    return json({ error: "Post changed elsewhere; reload before saving" }, 409);
   }
 
   const target = await findPost(body.slug);
   if (!target.response.ok && target.response.status !== 404) return json({ error: "GitHub request failed" }, 502);
   if (!body.sourceSlug && target.response.ok) return json({ error: "Slug already exists" }, 409);
-  if (body.sourceSlug && !target.response.ok) return json({ error: "Post not found" }, 404);
+  if (body.sourceSlug && body.sourceSlug !== body.slug && target.response.ok) return json({ error: "Slug already exists" }, 409);
 
-  const path = target.response.ok ? target.path : `${API_ROOT}/${body.slug}.mdx`;
+  if (body.sourceSlug && body.sourceSlug !== body.slug) {
+    const renamed = await commitPostRename(source!.repoPath, `${CONTENT_ROOT}/${body.slug}${source!.repoPath.endsWith(".md") ? ".md" : ".mdx"}`, body.sha!, body.content, body.slug);
+    if (!renamed.ok) return json({ error: renamed.status === 409 ? "Post changed elsewhere; reload before saving" : "GitHub rejected the publish" }, renamed.status === 409 ? 409 : 502);
+    return json({ ok: true, url: `/blog/${body.slug}/` });
+  }
+
+  const path = source?.path ?? `${API_ROOT}/${body.slug}.mdx`;
   const saved = await github(path, {
     method: "PUT",
     body: JSON.stringify({
@@ -104,12 +116,65 @@ function github(url: string, init: RequestInit = {}): Promise<Response> {
   });
 }
 
-async function findPost(slug: string): Promise<{ response: Response; path: string }> {
+async function findPost(slug: string): Promise<{ response: Response; path: string; repoPath: string }> {
+  const mdxRepoPath = `${CONTENT_ROOT}/${slug}.mdx`;
   const mdxPath = `${API_ROOT}/${slug}.mdx`;
   const mdx = await github(mdxPath);
-  if (mdx.status !== 404) return { response: mdx, path: mdxPath };
+  if (mdx.status !== 404) return { response: mdx, path: mdxPath, repoPath: mdxRepoPath };
+  const mdRepoPath = `${CONTENT_ROOT}/${slug}.md`;
   const mdPath = `${API_ROOT}/${slug}.md`;
-  return { response: await github(mdPath), path: mdPath };
+  return { response: await github(mdPath), path: mdPath, repoPath: mdRepoPath };
+}
+
+async function commitPostRename(oldPath: string, newPath: string, oldSha: string, content: string, slug: string): Promise<Response> {
+  const ref = await github(`${REPO_API}/git/ref/heads/master`);
+  if (!ref.ok) return ref;
+  const head = await ref.json() as { object?: { sha?: string } };
+  const headSha = head.object?.sha;
+  if (!headSha) return new Response(null, { status: 502 });
+  const base = await github(`${REPO_API}/git/commits/${headSha}`);
+  if (!base.ok) return base;
+  const baseCommit = await base.json() as { tree?: { sha?: string } };
+  const baseTreeSha = baseCommit.tree?.sha;
+  if (!baseTreeSha) return new Response(null, { status: 502 });
+  const baseTree = await github(`${REPO_API}/git/trees/${baseTreeSha}?recursive=1`);
+  if (!baseTree.ok) return baseTree;
+  const baseTreePayload = await baseTree.json() as { tree?: Array<{ path?: string; sha?: string }> };
+  const entries = baseTreePayload.tree ?? [];
+  if (entries.find((entry) => entry.path === oldPath)?.sha !== oldSha || entries.some((entry) => entry.path === newPath)) {
+    return new Response(null, { status: 409 });
+  }
+
+  const tree = await github(`${REPO_API}/git/trees`, {
+    method: "POST",
+    body: JSON.stringify({
+      base_tree: baseTreeSha,
+      tree: [
+        { path: newPath, mode: "100644", type: "blob", content },
+        { path: oldPath, mode: "100644", type: "blob", sha: null },
+      ],
+    }),
+  });
+  if (!tree.ok) return tree;
+  const treePayload = await tree.json() as { sha?: string };
+  if (!treePayload.sha) return new Response(null, { status: 502 });
+
+  const commit = await github(`${REPO_API}/git/commits`, {
+    method: "POST",
+    body: JSON.stringify({
+      message: `Update blog post: ${slug}`,
+      tree: treePayload.sha,
+      parents: [headSha],
+    }),
+  });
+  if (!commit.ok) return commit;
+  const commitPayload = await commit.json() as { sha?: string };
+  if (!commitPayload.sha) return new Response(null, { status: 502 });
+
+  return github(`${REPO_API}/git/refs/heads/master`, {
+    method: "PATCH",
+    body: JSON.stringify({ sha: commitPayload.sha, force: false }),
+  });
 }
 
 function isGithubFile(value: unknown): value is { name: string; sha?: string; content?: string } {

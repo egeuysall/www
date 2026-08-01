@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Combobox } from "@base-ui/react/combobox";
 
-import { setPostTitle, slugFromPost, titleFromPost } from "@/lib/blog-editor";
+import { slugFromPost } from "@/lib/blog-editor";
 
 type Report = {
   reportId: string;
@@ -21,7 +21,6 @@ export default function BlogEditor() {
   const [posts, setPosts] = useState<string[]>([]);
   const [selectedPost, setSelectedPost] = useState("");
   const [loadedSha, setLoadedSha] = useState("");
-  const [title, setTitle] = useState("");
   const [slug, setSlug] = useState("");
   const [content, setContent] = useState(newPost());
   const [reports, setReports] = useState<Report[]>([]);
@@ -68,7 +67,6 @@ export default function BlogEditor() {
       setSelectedPost("");
       setLoadedSha("");
       setContent(draft);
-      setTitle(titleFromPost(draft));
       setSlug(slugFromPost(draft));
       return;
     }
@@ -78,8 +76,7 @@ export default function BlogEditor() {
       setSelectedPost(nextSlug);
       setLoadedSha(post.sha);
       setContent(post.content);
-      setTitle(titleFromPost(post.content));
-      setSlug(nextSlug);
+      setSlug(slugFromPost(post.content));
     } catch (error) {
       setStatus(message(error));
     } finally {
@@ -107,7 +104,6 @@ export default function BlogEditor() {
   }
 
   async function deleteReportedComment(commentId: string) {
-    if (!window.confirm("Delete this comment and its attachment?")) return;
     setBusy(true);
     setStatus("");
     try {
@@ -125,8 +121,7 @@ export default function BlogEditor() {
 
   function updateContent(nextContent: string) {
     setContent(nextContent);
-    setTitle(titleFromPost(nextContent));
-    if (!selectedPost) setSlug(slugFromPost(nextContent));
+    setSlug(slugFromPost(nextContent));
   }
 
   if (authenticated === null) return <p className="text-xs text-neutral-400">Loading…</p>;
@@ -151,16 +146,20 @@ export default function BlogEditor() {
             <Combobox.Root
               items={posts}
               value={selectedPost || null}
-              onValueChange={(value) => {
-                if (value !== undefined) void loadPost(value || "");
+              onValueChange={(value, details) => {
+                if (value) void loadPost(value);
+                else if (details.reason === "clear-press") void loadPost("");
               }}
               autoHighlight
             >
-              <Combobox.Input
-                id="post-combobox"
-                placeholder="Search posts…"
-                className="mt-1 block w-full rounded-sm border border-neutral-800 bg-bg px-3 py-2 text-sm text-neutral-100 outline-none placeholder:text-neutral-500 focus:border-neutral-500"
-              />
+              <div className="relative mt-1">
+                <Combobox.Input
+                  id="post-combobox"
+                  placeholder="Search posts…"
+                  className="block w-full rounded-sm border border-neutral-800 bg-bg px-3 py-2 pr-9 text-sm text-neutral-100 outline-none placeholder:text-neutral-500 focus:border-neutral-500"
+                />
+                <Combobox.Clear aria-label="Clear post selection" className="absolute inset-y-0 right-0 px-3 text-neutral-500 hover:text-neutral-100">×</Combobox.Clear>
+              </div>
               <Combobox.Portal>
                 <Combobox.Positioner sideOffset={4} className="z-50 outline-none">
                   <Combobox.Popup className="max-h-[min(var(--available-height),20rem)] w-[var(--anchor-width)] max-w-[var(--available-width)] overflow-y-auto rounded-sm border border-neutral-800 bg-black p-1 text-sm text-neutral-200 shadow-xl outline-none">
@@ -180,34 +179,16 @@ export default function BlogEditor() {
                 </Combobox.Positioner>
               </Combobox.Portal>
             </Combobox.Root>
-            <button type="button" onClick={() => void loadPost("")} disabled={busy} className="mt-2 rounded-sm border border-neutral-700 px-3 py-2 text-xs text-neutral-100 disabled:opacity-60">
-              New post
-            </button>
           </div>
           <label className="min-w-48 flex-1 text-xs text-neutral-400">Slug
             <input value={slug} readOnly required pattern="[a-z0-9]+(?:-[a-z0-9]+)*" placeholder="Generated from title" className="mt-1 block w-full rounded-sm border border-neutral-800 bg-neutral-950 px-3 py-2 text-sm text-neutral-400" />
           </label>
         </div>
-        <label className="block text-xs text-neutral-400">Title
-          <input
-            value={title}
-            onChange={(event) => {
-              const nextTitle = event.target.value;
-              setTitle(nextTitle);
-              const nextContent = setPostTitle(content, nextTitle);
-              setContent(nextContent);
-              if (!selectedPost) setSlug(slugFromPost(nextContent));
-            }}
-            required
-            placeholder="Post title"
-            className="mt-1 block w-full rounded-sm border border-neutral-800 bg-transparent px-3 py-2 text-sm text-neutral-100 outline-none focus:border-neutral-500"
-          />
-        </label>
         <label className="block text-xs text-neutral-400">MDX
           <textarea value={content} onChange={(event) => updateContent(event.target.value)} required rows={28} spellCheck className="mt-1 block w-full resize-y rounded-sm border border-neutral-800 bg-transparent p-3 font-mono text-xs leading-relaxed text-neutral-100 outline-none focus:border-neutral-500" />
         </label>
         <div className="flex items-center gap-3">
-          <button disabled={busy} className="rounded-sm border border-neutral-700 px-3 py-2 text-xs text-neutral-100 disabled:opacity-60">{busy ? "Saving…" : "Commit and deploy"}</button>
+          <button disabled={busy || !slug} className="rounded-sm border border-neutral-700 px-3 py-2 text-xs text-neutral-100 disabled:opacity-60">{busy ? "Saving…" : "Commit and deploy"}</button>
           {status && <span role="status" className="text-xs text-neutral-400">{status}</span>}
         </div>
       </form>
@@ -220,7 +201,7 @@ export default function BlogEditor() {
               <p className="text-xs text-neutral-500">{report.comment.kind}/{report.comment.slug} · {report.reason}</p>
               <p className="mt-2 text-sm text-neutral-300"><strong>{report.comment.authorName || "Anonymous"}:</strong> {report.comment.body}</p>
               {report.comment.imageUrl && <img src={report.comment.imageUrl} alt="Reported comment attachment" className="mt-3 max-h-48 rounded-sm object-contain" />}
-              <button type="button" disabled={busy} onClick={() => void deleteReportedComment(report.comment!._id)} className="mt-3 text-xs text-red-400 hover:text-red-300 disabled:opacity-60">Delete comment and attachment</button>
+              <button type="button" disabled={busy} onClick={() => void deleteReportedComment(report.comment!._id)} className="mt-3 text-xs text-red-400 hover:text-red-300 disabled:opacity-60">Delete</button>
             </article>
           ))}
         </div>
