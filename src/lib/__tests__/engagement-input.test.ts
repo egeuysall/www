@@ -1,6 +1,6 @@
 import { describe, expect, test } from "bun:test";
 
-import { isContentKind, isSlug } from "@/lib/engagement-input";
+import { isContentKind, isReportReason, isSlug } from "@/lib/engagement-input";
 
 describe("engagement input", () => {
   test("allows scoped content keys and rejects path-shaped input", () => {
@@ -9,5 +9,7 @@ describe("engagement input", () => {
     expect(isSlug("my-post-2")).toBe(true);
     expect(isSlug("../my-post")).toBe(false);
     expect(isSlug("My Post")).toBe(false);
+    expect(isReportReason("Spam")).toBe(true);
+    expect(isReportReason("anything else")).toBe(false);
   });
 });

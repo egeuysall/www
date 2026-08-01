@@ -9,6 +9,7 @@
  */
 
 import type * as interactions from "../interactions.js";
+import type * as view_baseline from "../view_baseline.js";
 
 import type {
   ApiFromModules,
@@ -18,6 +19,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   interactions: typeof interactions;
+  view_baseline: typeof view_baseline;
 }>;
 
 /**

@@ -7,7 +7,6 @@ import { paginateItems } from "@/lib/pagination";
 const photos = await getPhotoFeed();
 const pagination = paginateItems(photos, 1, PHOTO_PAGE_SIZE);
 const configured = photos.length > 0;
-const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 
 const hasNextPage = pagination.currentPage < pagination.totalPages;
 const nextPage = hasNextPage
@@ -28,6 +27,5 @@ const nextPageHref = nextPage ? `/photo/page/${nextPage.currentPage}/` : undefin
     totalPages={pagination.totalPages}
     configured={configured}
     nextPageHref={nextPageHref}
-    convexUrl={convexUrl}
   />
 </BaseLayout>

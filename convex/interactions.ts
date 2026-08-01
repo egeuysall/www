@@ -3,6 +3,7 @@ import { ConvexError, v } from "convex/values";
 import { components } from "./_generated/api";
 import { type Doc, type Id } from "./_generated/dataModel";
 import { env, mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import { viewBaseline } from "./view_baseline";
 
 const kindArg = v.union(v.literal("blog"), v.literal("diary"), v.literal("photo"));
 const actionArg = v.union(v.literal("hide"), v.literal("delete"));
@@ -142,7 +143,7 @@ export const getStatsBatch = query({
         return {
           kind: item.kind,
           slug: item.slug,
-          viewCount: stats?.viewCount ?? 0,
+          viewCount: viewBaseline(contentKey(item.kind, item.slug)) + (stats?.viewCount ?? 0),
           likeCount: stats?.likeCount ?? 0,
           commentCount: stats?.commentCount ?? 0,
         };
@@ -241,7 +242,10 @@ export const getViewerState = query({
         }),
       )
     ).filter((id): id is Id<"comments"> => id !== null);
-    return { contentLiked: contentLike !== null, likedCommentIds };
+    const ownedCommentIds = comments
+      .filter((comment) => comment.actorHash === args.actorHash)
+      .map((comment) => comment._id);
+    return { contentLiked: contentLike !== null, likedCommentIds, ownedCommentIds };
   },
 });
 
@@ -261,7 +265,7 @@ export const recordView = mutation({
       )
       .first();
     const stats = await ensureStats(ctx, args.kind, args.slug);
-    if (seen) return { counted: false, viewCount: stats.viewCount };
+    if (seen) return { counted: false, viewCount: viewBaseline(key) + stats.viewCount };
     await ctx.db.insert("dailyViews", {
       kind: args.kind,
       slug: args.slug,
@@ -271,7 +275,7 @@ export const recordView = mutation({
       createdAt: now,
     });
     await ctx.db.patch(stats._id, { viewCount: stats.viewCount + 1, updatedAt: now });
-    return { counted: true, viewCount: stats.viewCount + 1 };
+    return { counted: true, viewCount: viewBaseline(key) + stats.viewCount + 1 };
   },
 });
 
@@ -439,6 +443,41 @@ export const reportComment = mutation({
       updatedAt: Date.now(),
     });
     return { reported: true, reportCount: comment.reportCount + 1 };
+  },
+});
+
+export const deleteOwnComment = mutation({
+  args: { secret: v.string(), commentId: v.id("comments"), actorHash: v.string() },
+  handler: async (ctx, args) => {
+    requireSecret(args.secret);
+    requireActor(args.actorHash);
+    const comment = await ctx.db.get(args.commentId);
+    if (!comment || comment.status !== "visible") throw new ConvexError("Comment not found.");
+    if (comment.actorHash !== args.actorHash) throw new ConvexError("You can only delete your own comment.");
+
+    const now = Date.now();
+    const stats = await ensureStats(ctx, comment.kind, comment.slug);
+    const likes = await ctx.db
+      .query("commentLikes")
+      .withIndex("by_commentId_and_actorHash", (q) => q.eq("commentId", args.commentId))
+      .collect();
+
+    // ponytail: one transaction is enough here; batch cleanup if a comment nears Convex write limits.
+    await Promise.all(likes.map((like) => ctx.db.delete(like._id)));
+    await deleteCommentImage(ctx, comment);
+    await resolveReports(ctx, args.commentId);
+    await ctx.db.patch(stats._id, {
+      commentCount: Math.max(0, stats.commentCount - 1),
+      updatedAt: now,
+    });
+    await ctx.db.patch(args.commentId, {
+      body: undefined,
+      storageId: undefined,
+      status: "deleted",
+      likeCount: 0,
+      updatedAt: now,
+    });
+    return { deleted: true };
   },
 });
 

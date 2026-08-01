@@ -10,7 +10,7 @@ import {
   json,
   rejectCrossOrigin,
 } from "@/lib/engagement";
-import { isContentKind, isSlug } from "@/lib/engagement-input";
+import { isContentKind, isReportReason, isSlug } from "@/lib/engagement-input";
 
 export const prerender = false;
 
@@ -87,7 +87,7 @@ async function handleJson(request: Request, actor: ReturnType<typeof getActor>):
   }
 
   if (action === "report") {
-    if (typeof body.commentId !== "string" || typeof body.reason !== "string") {
+    if (typeof body.commentId !== "string" || !isReportReason(body.reason)) {
       return json({ error: "Invalid report" }, 400);
     }
     return json(await client.mutation(api.interactions.reportComment, {
@@ -95,6 +95,15 @@ async function handleJson(request: Request, actor: ReturnType<typeof getActor>):
       ...actor,
       commentId: body.commentId as Id<"comments">,
       reason: body.reason,
+    }));
+  }
+
+  if (action === "deleteComment") {
+    if (typeof body.commentId !== "string") return json({ error: "Invalid comment" }, 400);
+    return json(await client.mutation(api.interactions.deleteOwnComment, {
+      secret,
+      actorHash: actor.actorHash,
+      commentId: body.commentId as Id<"comments">,
     }));
   }
 
