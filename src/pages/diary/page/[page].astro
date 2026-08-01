@@ -5,6 +5,7 @@ import Pagination from "@/components/ui/pagination.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { getDiaryDayMap, getDiaryEntrySlug, getPublishedDiaryEntries } from "@/lib/content";
 import { getStaticPaginationPages, paginateItems } from "@/lib/pagination";
+import ViewCount from "@/components/engagement/ViewCount";
 
 type Props = {
   page: number;
@@ -29,6 +30,7 @@ export async function getStaticPaths() {
 
 const { page, entries, dayMap } = Astro.props as Props;
 const pagination = paginateItems(entries, page, 9);
+const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 ---
 
 <BaseLayout
@@ -45,8 +47,9 @@ const pagination = paginateItems(entries, page, 9);
         return (
           <li class="row-border pb-4">
             <a href={`/diary/${getDiaryEntrySlug(entry)}/`} class="block">
-              <p class="text-xs text-neutral-400 tabular-nums">
-                Day {dayNumber}
+              <p class="flex gap-2 text-xs text-neutral-400 tabular-nums">
+                <span>Day {dayNumber}</span><span aria-hidden="true">·</span>
+                <ViewCount client:load convexUrl={convexUrl} kind="diary" slug={getDiaryEntrySlug(entry)} />
               </p>
               <p class="mt-2 text-sm text-neutral-100">{entry.data.summary}</p>
             </a>

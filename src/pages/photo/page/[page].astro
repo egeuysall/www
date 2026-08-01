@@ -27,6 +27,7 @@ export async function getStaticPaths() {
 
 const { page, photos, configured } = Astro.props as Props;
 const pagination = paginateItems(photos, page, PHOTO_PAGE_SIZE);
+const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 
 const hasNextPage = pagination.currentPage < pagination.totalPages;
 const nextPage = hasNextPage
@@ -48,5 +49,6 @@ const nextPageHref = nextPage ? `/photo/page/${nextPage.currentPage}/` : undefin
     totalPages={pagination.totalPages}
     configured={configured}
     nextPageHref={nextPageHref}
+    convexUrl={convexUrl}
   />
 </BaseLayout>

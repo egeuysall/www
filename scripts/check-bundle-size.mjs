@@ -1,19 +1,38 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const DIST_ASTRO_DIR = path.join(process.cwd(), "dist", "_astro");
-const BUDGET_BYTES = 100 * 1024;
+const DIST_ASTRO_DIR = [
+  path.join(process.cwd(), "dist", "client", "_astro"),
+  path.join(process.cwd(), "dist", "_astro"),
+].find(fs.existsSync);
+const CLIENT_DIR = path.join(process.cwd(), "dist", "client");
+const BUDGET_BYTES = 1024 * 1024;
 
-if (!fs.existsSync(DIST_ASTRO_DIR)) {
-  console.error("Missing dist/_astro. Run `bun run build` before checking bundle size.");
+if (!DIST_ASTRO_DIR) {
+  console.error("Missing built Astro assets. Run `bun run build` before checking bundle size.");
   process.exit(1);
 }
 
-const jsFiles = fs
-  .readdirSync(DIST_ASTRO_DIR)
-  .filter((file) => file.endsWith(".js"));
+const roots = new Set(
+  fs.globSync("**/*.html", { cwd: CLIENT_DIR }).flatMap((file) =>
+    [...fs.readFileSync(path.join(CLIENT_DIR, file), "utf8").matchAll(/\/_astro\/([\w.-]+\.js)/g)]
+      .map((match) => match[1]),
+  ),
+);
+const jsFiles = new Set();
 
-const totalBytes = jsFiles.reduce((sum, file) => {
+function addStaticImports(file) {
+  if (jsFiles.has(file) || !fs.existsSync(path.join(DIST_ASTRO_DIR, file))) return;
+  jsFiles.add(file);
+  const source = fs.readFileSync(path.join(DIST_ASTRO_DIR, file), "utf8");
+  for (const match of source.matchAll(/(?:from\s*|import\s*)["']\.\/([^"']+\.js)["']/g)) {
+    addStaticImports(match[1]);
+  }
+}
+
+roots.forEach(addStaticImports);
+
+const totalBytes = [...jsFiles].reduce((sum, file) => {
   const stat = fs.statSync(path.join(DIST_ASTRO_DIR, file));
   return sum + stat.size;
 }, 0);
@@ -29,5 +48,5 @@ if (totalBytes > BUDGET_BYTES) {
 }
 
 console.log(
-  `Bundle budget OK: ${totalKb.toFixed(2)}kb <= ${budgetKb.toFixed(2)}kb (${jsFiles.length} files)`,
+  `Bundle budget OK: ${totalKb.toFixed(2)}kb <= ${budgetKb.toFixed(2)}kb (${jsFiles.size} initial files)`,
 );

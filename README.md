@@ -55,12 +55,38 @@ Notes:
 - Blog: `src/content/blog/*.mdx`
 - Diary: `src/content/diary/YYYY-MM-DD.mdx`
 
+## Engagement and editor
+
+Convex stores post views, likes, comments, reports, blocks, and comment images. Public writes go through `/api/engagement`; the browser never receives the Convex write secret.
+
+Set the same write secret on the production Convex deployment before the first push:
+
+```bash
+bunx convex env set --prod INTERACTION_WRITE_SECRET <secret>
+bunx convex deployment token create vercel-production --prod
+```
+
+Store the returned deploy key as `CONVEX_DEPLOY_KEY` in Vercel production. Preview deployments need a separate preview-scoped key.
+
+The private `/editor/` route edits blog MDX and commits it to `master`, which triggers the normal Git-based Vercel deployment. Retrieve the local admin password from Keychain with:
+
+```bash
+security find-generic-password -s www-admin-password -w
+```
+
 ## Production
 
 Set these environment variables in Vercel (or your host):
 
 ```bash
 PUBLIC_SITE_URL=https://egeuysal.com
+CONVEX_URL=https://your-production-deployment.convex.cloud
+CONVEX_DEPLOY_KEY=...
+INTERACTION_WRITE_SECRET=...
+INTERACTION_ACTOR_SALT=...
+ADMIN_PASSWORD=...
+ADMIN_SESSION_SECRET=...
+GITHUB_TOKEN=...
 ```
 
 This is used for canonical URLs, OG/Twitter URLs, RSS, robots, sitemap, and JSON-LD.

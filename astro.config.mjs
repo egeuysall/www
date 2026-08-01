@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
+import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
 import tailwindcss from "@tailwindcss/vite";
@@ -33,10 +34,12 @@ export default defineConfig({
       themes: SHIKI_THEMES,
       defaultColor: false,
     },
-    remarkPlugins: [
-      remarkContentCdnShorthand,
-      [remarkInlineShiki, { themes: SHIKI_THEMES, defaultColor: false }],
-    ],
+    processor: unified({
+      remarkPlugins: [
+        remarkContentCdnShorthand,
+        [remarkInlineShiki, { themes: SHIKI_THEMES, defaultColor: false }],
+      ],
+    }),
   },
   vite: {
     plugins: [

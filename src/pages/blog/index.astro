@@ -4,9 +4,11 @@ import Pagination from "@/components/ui/pagination.astro";
 import { getPublishedBlogPosts } from "@/lib/content";
 import { paginateItems } from "@/lib/pagination";
 import { formatDate } from "@/lib/utils";
+import ViewCount from "@/components/engagement/ViewCount";
 
 const posts = await getPublishedBlogPosts();
 const pagination = paginateItems(posts, 1, 9);
+const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 ---
 
 <BaseLayout title="Blog" pathname="/blog/" description="Technical notes, architecture choices, and build logs.">
@@ -15,7 +17,11 @@ const pagination = paginateItems(posts, 1, 9);
       <article class="row-border pb-5">
         <a href={`/blog/${post.id}/`} class="block">
           <h2 class="text-sm text-neutral-100">{post.data.title}</h2>
-          <p class="mt-1 text-xs text-neutral-400">{formatDate(post.data.publishedAt)}</p>
+          <p class="mt-1 flex gap-2 text-xs text-neutral-400">
+            <span>{formatDate(post.data.publishedAt)}</span>
+            <span aria-hidden="true">·</span>
+            <ViewCount client:load convexUrl={convexUrl} kind="blog" slug={post.id} />
+          </p>
         </a>
       </article>
     ))}

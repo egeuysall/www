@@ -8,6 +8,7 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { resolveContentCdnShorthand } from "@/lib/content-cdn";
 import { getDiaryDayMap, getDiaryEntrySlug } from "@/lib/content";
 import { formatDate } from "@/lib/utils";
+import EngagementPanel from "@/components/engagement/EngagementPanel";
 
 type Props = {
   entry: CollectionEntry<"diary">;
@@ -45,6 +46,7 @@ const contentComponents = {
   ...mdxComponents,
   Image: MdxImage,
 };
+const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -88,5 +90,6 @@ const jsonLd = {
     </header>
 
     <Content components={contentComponents} />
+    <EngagementPanel client:load convexUrl={convexUrl} kind="diary" slug={slug} />
   </article>
 </BaseLayout>

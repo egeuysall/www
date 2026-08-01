@@ -1,0 +1,14 @@
+---
+import BlogEditor from "@/components/editor/BlogEditor";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="Blog editor" pathname="/editor/" description="Private blog editor." noindex>
+  <section class="animate-enter" style="--delay: 40ms;">
+    <header class="mb-6 border-b border-neutral-900 pb-5">
+      <h1 class="text-base font-semibold text-neutral-100">Blog editor</h1>
+      <p class="mt-2 text-xs text-neutral-400">Edits commit to master and deploy through the repository push workflow.</p>
+    </header>
+    <BlogEditor client:load />
+  </section>
+</BaseLayout>

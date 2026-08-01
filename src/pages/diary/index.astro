@@ -3,10 +3,12 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import Pagination from "@/components/ui/pagination.astro";
 import { getDiaryDayMap, getDiaryEntrySlug, getPublishedDiaryEntries } from "@/lib/content";
 import { paginateItems } from "@/lib/pagination";
+import ViewCount from "@/components/engagement/ViewCount";
 
 const entries = await getPublishedDiaryEntries();
 const dayMap = await getDiaryDayMap();
 const pagination = paginateItems(entries, 1, 9);
+const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 ---
 
 <BaseLayout title="Diary" pathname="/diary/" description="Daily short progress notes, sorted by date.">
@@ -18,8 +20,9 @@ const pagination = paginateItems(entries, 1, 9);
         return (
           <li class="row-border pb-4">
             <a href={`/diary/${getDiaryEntrySlug(entry)}/`} class="block">
-              <p class="text-xs text-neutral-400 tabular-nums">
-                Day {dayNumber}
+              <p class="flex gap-2 text-xs text-neutral-400 tabular-nums">
+                <span>Day {dayNumber}</span><span aria-hidden="true">·</span>
+                <ViewCount client:load convexUrl={convexUrl} kind="diary" slug={getDiaryEntrySlug(entry)} />
               </p>
               <p class="mt-2 text-sm text-neutral-100">{entry.data.summary}</p>
             </a>

@@ -6,6 +6,7 @@ import { SITE } from "@/config/site";
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import { formatDate } from "@/lib/utils";
 import { getPhotoFeed, type PhotoAsset } from "@/lib/photos";
+import EngagementPanel from "@/components/engagement/EngagementPanel";
 
 type Props = {
   photo: PhotoAsset;
@@ -33,6 +34,7 @@ if (!photo.storyEntry) {
 
 const { Content } = await render(photo.storyEntry);
 const storyDate = photo.publishedAt ? formatDate(new Date(photo.publishedAt)) : null;
+const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -83,5 +85,6 @@ const jsonLd = {
     />
 
     <Content components={contentComponents} />
+    <EngagementPanel client:load convexUrl={convexUrl} kind="photo" slug={photo.slug} />
   </article>
 </BaseLayout>

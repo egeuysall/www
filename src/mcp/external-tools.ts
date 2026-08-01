@@ -4,9 +4,9 @@ const BRAIN_HOST = "brain.egeuysal.com";
 const BRAIN_ORIGIN = `https://${BRAIN_HOST}`;
 const BRAIN_ROUTES_URL = `${BRAIN_ORIGIN}/api/routes.json`;
 const BRI_NOTES_URL = "https://bri.fyi/api/notes";
-const BRI_API_KEY = "bri_YsX0UP4M.ntpkGbs5GIrU3Cu7PqjJjZsCdtn4Tfby";
+const BRI_API_KEY = process.env.BRI_API_KEY || import.meta.env.BRI_API_KEY;
 const IBX_TODOS_URL = "https://ibx.egeuysal.com/api/todos";
-const IBX_API_KEY = "iak_BMr7A7BP0cslD6Pg_FOgNVfYRvNp041V";
+const IBX_API_KEY = process.env.IBX_API_KEY || import.meta.env.IBX_API_KEY;
 const MAX_LIMIT = 200;
 
 export const brainFetchSchema = z.object({
@@ -217,6 +217,7 @@ export async function searchBrainResources(args: z.infer<typeof brainSearchSchem
 }
 
 export async function fetchBriNotes(args: z.infer<typeof briNotesSchema>) {
+  if (!BRI_API_KEY) throw new Error("missing_bri_api_key");
   const response = await fetch(BRI_NOTES_URL, {
     headers: {
       Authorization: `Bearer ${BRI_API_KEY}`,
@@ -243,6 +244,7 @@ export async function fetchBriNotes(args: z.infer<typeof briNotesSchema>) {
 }
 
 export async function fetchIbxTodos(args: z.infer<typeof ibxTodosSchema>) {
+  if (!IBX_API_KEY) throw new Error("missing_ibx_api_key");
   const today = args.today ?? getChicagoDateKey();
   const url = new URL(IBX_TODOS_URL);
   url.searchParams.set("today", today);
