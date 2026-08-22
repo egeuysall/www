@@ -2,7 +2,20 @@ function titleFromPost(content: string) {
   const frontmatter = content.match(/^---\n([\s\S]*?)\n---/)?.[1] ?? "";
   const rawTitle = frontmatter.match(/^title:\s*(.+)$/m)?.[1]?.trim() ?? "";
 
-  return rawTitle.replace(/^(["'])(.*)\1$/, "$2");
+  return normalizeTitle(rawTitle.replace(/^(["'])(.*)\1$/, "$2"));
+}
+
+export function normalizeTitle(value: string): string {
+  return value.trim().replace(/^[“‘](.*)[”’]$/, "$1").trim();
+}
+
+export function normalizeFrontmatterTitle(content: string): string {
+  return content.replace(/^title:\s*(.+)$/m, (line, rawValue: string) => {
+    const value = rawValue.trim();
+    const unwrapped = /^(["'])(.*)\1$/.exec(value)?.[2] ?? value;
+    const title = normalizeTitle(unwrapped);
+    return title === unwrapped ? line : "title: " + JSON.stringify(title);
+  });
 }
 
 export function slugFromPost(content: string) {

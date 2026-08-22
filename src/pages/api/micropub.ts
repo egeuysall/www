@@ -3,7 +3,7 @@ import { timingSafeEqual } from "node:crypto";
 import type { APIRoute } from "astro";
 
 import { SITE } from "@/config/site";
-import { slugFromPost, validFrontmatter } from "@/lib/blog-editor";
+import { normalizeFrontmatterTitle, normalizeTitle, slugFromPost, validFrontmatter } from "@/lib/blog-editor";
 import { json } from "@/lib/engagement";
 
 export const prerender = false;
@@ -144,7 +144,7 @@ function buildPost(fields: Fields): BuildResult {
   const requestedSlug = firstValue(fields["mp-slug"]);
 
   if (content.startsWith("---\n")) {
-    const publishedContent = content.replace(/^draft:\s*(?:true|yes)\s*$/im, "draft: false");
+    const publishedContent = normalizeFrontmatterTitle(content.replace(/^draft:\s*(?:true|yes)\s*$/im, "draft: false"));
     if (!validFrontmatter(publishedContent)) {
       return { error: "Frontmatter must include title, description, and publishedAt" };
     }
@@ -155,7 +155,7 @@ function buildPost(fields: Fields): BuildResult {
     return { post: { slug, content: publishedContent } };
   }
 
-  const title = cleanLine(firstValue(fields.name) || headingFromContent(content)).replace(/^#+\s*/, "");
+  const title = normalizeTitle(cleanLine(firstValue(fields.name) || headingFromContent(content)).replace(/^#+\s*/, ""));
   if (title.length < 3) return { error: "name or a Markdown heading is required" };
 
   const description = cleanLine(firstValue(fields.summary) || firstParagraph(content) || "Published from iA Writer.").slice(0, 500);
