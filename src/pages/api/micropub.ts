@@ -141,24 +141,17 @@ function buildPost(fields: Fields): BuildResult {
   if (!rawContent) return { error: "content is required" };
   const content = rawContent.replace(/\r\n?/g, "\n").trimEnd() + "\n";
   const requestedSlug = firstValue(fields["mp-slug"]);
-  const draftRequested = firstValue(fields["post-status"]).toLowerCase() === "draft"
-    || firstValue(fields.draft).toLowerCase() === "true"
-    || fields.draft === true;
-
-  if (draftRequested) return { error: "Draft publishing is disabled" };
 
   if (content.startsWith("---\n")) {
-    if (/^draft:\s*(?:true|yes)\s*$/im.test(content)) {
-      return { error: "Draft publishing is disabled" };
-    }
-    if (!validFrontmatter(content)) {
+    const publishedContent = content.replace(/^draft:\s*(?:true|yes)\s*$/im, "draft: false");
+    if (!validFrontmatter(publishedContent)) {
       return { error: "Frontmatter must include title, description, and publishedAt" };
     }
-    const derivedSlug = slugFromPost(content);
+    const derivedSlug = slugFromPost(publishedContent);
     const slug = requestedSlug || derivedSlug;
     if (!SLUG.test(slug) || slug.length > 120) return { error: "Invalid slug" };
     if (requestedSlug && requestedSlug !== derivedSlug) return { error: "Slug must match the post title" };
-    return { post: { slug, content } };
+    return { post: { slug, content: publishedContent } };
   }
 
   const title = cleanLine(firstValue(fields.name) || headingFromContent(content)).replace(/^#+\s*/, "");
