@@ -21,7 +21,8 @@ type BlogPost = { slug: string; content: string };
 type BuildResult = { post: BlogPost } | { error: string };
 
 export const GET: APIRoute = ({ url }) => {
-  if (url.searchParams.get("q") !== "config") {
+  const query = url.searchParams.get("q");
+  if (query && query !== "config") {
     return json({ error: "Use q=config to inspect this Micropub endpoint" }, 400);
   }
 
