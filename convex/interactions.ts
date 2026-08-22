@@ -1,9 +1,15 @@
 import { HOUR, MINUTE, RateLimiter } from "@convex-dev/rate-limiter";
 import { ConvexError, v } from "convex/values";
-import { components } from "./_generated/api";
+import { components, internal } from "./_generated/api";
 import { type Doc, type Id } from "./_generated/dataModel";
-import { env, mutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
-import { viewBaseline } from "./view_baseline";
+import {
+  env,
+  internalMutation,
+  mutation,
+  query,
+  type MutationCtx,
+  type QueryCtx,
+} from "./_generated/server";
 
 const kindArg = v.union(v.literal("blog"), v.literal("diary"), v.literal("photo"));
 const itemArg = v.object({ kind: kindArg, slug: v.string() });
@@ -162,7 +168,7 @@ export const getStatsBatch = query({
         return {
           kind: item.kind,
           slug: item.slug,
-          viewCount: viewBaseline(contentKey(item.kind, item.slug)) + (stats?.viewCount ?? 0),
+          viewCount: stats?.viewCount ?? 0,
           likeCount: stats?.likeCount ?? 0,
           commentCount: stats?.commentCount ?? 0,
         };
@@ -284,7 +290,7 @@ export const recordView = mutation({
       )
       .first();
     const stats = await ensureStats(ctx, args.kind, args.slug);
-    if (seen) return { counted: false, viewCount: viewBaseline(key) + stats.viewCount };
+    if (seen) return { counted: false, viewCount: stats.viewCount };
     await ctx.db.insert("dailyViews", {
       kind: args.kind,
       slug: args.slug,
@@ -294,7 +300,31 @@ export const recordView = mutation({
       createdAt: now,
     });
     await ctx.db.patch(stats._id, { viewCount: stats.viewCount + 1, updatedAt: now });
-    return { counted: true, viewCount: viewBaseline(key) + stats.viewCount + 1 };
+    return { counted: true, viewCount: stats.viewCount + 1 };
+  },
+});
+
+// One-time cleanup for the old synthetic counters. It stays internal so it
+// cannot be called through the public engagement API.
+export const resetViewCounts = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const views = await ctx.db.query("dailyViews").take(100);
+    await Promise.all(views.map((view) => ctx.db.delete(view._id)));
+
+    if (views.length === 100) {
+      await ctx.scheduler.runAfter(0, internal.interactions.resetViewCounts, {});
+      return { phase: "views", deletedViews: views.length, resetStats: false };
+    }
+
+    const stats = await ctx.db.query("contentStats").take(200);
+    const now = Date.now();
+    await Promise.all(
+      stats
+        .filter((stat) => stat.viewCount !== 0)
+        .map((stat) => ctx.db.patch(stat._id, { viewCount: 0, updatedAt: now })),
+    );
+    return { phase: "complete", deletedViews: views.length, resetStats: true };
   },
 });
 
