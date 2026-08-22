@@ -137,8 +137,16 @@ function buildPost(fields: Fields): BuildResult {
   if (!rawContent) return { error: "content is required" };
   const content = rawContent.replace(/\r\n?/g, "\n").trimEnd() + "\n";
   const requestedSlug = firstValue(fields["mp-slug"]);
+  const draftRequested = firstValue(fields["post-status"]).toLowerCase() === "draft"
+    || firstValue(fields.draft).toLowerCase() === "true"
+    || fields.draft === true;
+
+  if (draftRequested) return { error: "Draft publishing is disabled" };
 
   if (content.startsWith("---\n")) {
+    if (/^draft:\s*(?:true|yes)\s*$/im.test(content)) {
+      return { error: "Draft publishing is disabled" };
+    }
     if (!validFrontmatter(content)) {
       return { error: "Frontmatter must include title, description, and publishedAt" };
     }
@@ -161,7 +169,6 @@ function buildPost(fields: Fields): BuildResult {
   const tags = [...new Set(valuesOf(fields.category).flatMap((value) => value.split(",")).map(cleanLine).filter(Boolean))];
   if (tags.length > 20 || tags.some((tag) => tag.length > 64)) return { error: "Use at most 20 tags of 64 characters or fewer" };
 
-  const draft = firstValue(fields["post-status"]).toLowerCase() === "draft" || firstValue(fields.draft).toLowerCase() === "true";
   const frontmatter = [
     "---",
     `title: ${yamlString(title)}`,
@@ -169,7 +176,7 @@ function buildPost(fields: Fields): BuildResult {
     `publishedAt: ${publishedAt}`,
     ...(updatedAt ? [`updatedAt: ${updatedAt}`] : []),
     `tags: ${JSON.stringify(tags)}`,
-    `draft: ${draft}`,
+    "draft: false",
     "---",
     "",
   ].join("\n");
