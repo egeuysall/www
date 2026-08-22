@@ -84,7 +84,7 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const location = new URL(`/blog/${built.post.slug}/`, SITE.url).toString();
-    const response = json({ url: location }, 201);
+    const response = json({}, 202);
     response.headers.set("Location", location);
     return response;
   } catch (error) {
