@@ -8,6 +8,8 @@ import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
 import vercel from "@astrojs/vercel";
 import tailwindcss from "@tailwindcss/vite";
+import rehypeKatex from "rehype-katex";
+import remarkMath from "remark-math";
 
 import {
   ALLOWED_IMAGE_HOSTS,
@@ -36,9 +38,11 @@ export default defineConfig({
     },
     processor: unified({
       remarkPlugins: [
+        remarkMath,
         remarkContentCdnShorthand,
         [remarkInlineShiki, { themes: SHIKI_THEMES, defaultColor: false }],
       ],
+      rehypePlugins: [rehypeKatex],
     }),
   },
   vite: {

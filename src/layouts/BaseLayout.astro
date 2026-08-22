@@ -66,6 +66,7 @@ const isNavActive = (href: string): boolean => {
 
     <title>{pageTitle}</title>
     <link rel="canonical" href={canonical} />
+    <link rel="micropub" href={new URL("/api/micropub", siteOrigin).toString()} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />

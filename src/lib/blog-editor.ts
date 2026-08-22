@@ -18,3 +18,11 @@ export function slugFromPost(content: string) {
     .slice(0, 120)
     .replace(/-+$/g, "");
 }
+
+export function validFrontmatter(content: string): boolean {
+  if (!content.startsWith("---\n")) return false;
+  const end = content.indexOf("\n---", 4);
+  if (end < 0) return false;
+  const frontmatter = content.slice(4, end);
+  return /^title:\s*.+$/m.test(frontmatter) && /^description:\s*.+$/m.test(frontmatter) && /^publishedAt:\s*\d{4}-\d{2}-\d{2}/m.test(frontmatter);
+}

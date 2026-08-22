@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 
 import { isAdmin } from "@/lib/admin-auth";
-import { slugFromPost } from "@/lib/blog-editor";
+import { slugFromPost, validFrontmatter } from "@/lib/blog-editor";
 import { json, rejectCrossOrigin } from "@/lib/engagement";
 
 export const prerender = false;
@@ -179,12 +179,4 @@ async function commitPostRename(oldPath: string, newPath: string, oldSha: string
 
 function isGithubFile(value: unknown): value is { name: string; sha?: string; content?: string } {
   return typeof value === "object" && value !== null && "name" in value && typeof value.name === "string";
-}
-
-function validFrontmatter(content: string): boolean {
-  if (!content.startsWith("---\n")) return false;
-  const end = content.indexOf("\n---", 4);
-  if (end < 0) return false;
-  const frontmatter = content.slice(4, end);
-  return /^title:\s*.+$/m.test(frontmatter) && /^description:\s*.+$/m.test(frontmatter) && /^publishedAt:\s*\d{4}-\d{2}-\d{2}/m.test(frontmatter);
 }
