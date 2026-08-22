@@ -31,7 +31,6 @@ export const GET: APIRoute = ({ url }) => {
 export const POST: APIRoute = async ({ request }) => {
   const token = configuredToken();
   if (!token) return json({ error: "Micropub is not configured" }, 503);
-  if (!authorized(request, token)) return unauthorized();
 
   const contentLength = Number(request.headers.get("content-length") || 0);
   if (Number.isFinite(contentLength) && contentLength > MAX_REQUEST_BYTES) {
@@ -45,6 +44,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   const rawBody = await request.arrayBuffer();
   if (rawBody.byteLength > MAX_REQUEST_BYTES) return json({ error: "Request body too large" }, 413);
+  if (!authorized(request, token, rawBody, contentType)) return unauthorized();
 
   let fields: Fields | null;
   try {
@@ -97,15 +97,19 @@ function configuredToken(): string {
   return (process.env.MICROPUB_TOKEN || import.meta.env.MICROPUB_TOKEN || "").trim();
 }
 
-function authorized(request: Request, expectedToken: string): boolean {
-  const supplied = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || "";
+function authorized(request: Request, expectedToken: string, rawBody: ArrayBuffer, contentType: string): boolean {
+  const headerToken = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1]?.trim() || "";
+  const bodyToken = contentType === "application/x-www-form-urlencoded"
+    ? new URLSearchParams(new TextDecoder().decode(rawBody)).get("access_token")?.trim() || ""
+    : "";
+  const supplied = headerToken || bodyToken;
   const expected = Buffer.from(expectedToken);
   const actual = Buffer.from(supplied);
   return actual.length === expected.length && timingSafeEqual(actual, expected);
 }
 
 function unauthorized(): Response {
-  const response = json({ error: "Unauthorized" }, 401);
+  const response = json({ error: "unauthorized" }, 401);
   response.headers.set("WWW-Authenticate", "Bearer");
   return response;
 }
