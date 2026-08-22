@@ -139,7 +139,7 @@ function buildPost(fields: Fields): BuildResult {
 
   const rawContent = firstValue(fields.content);
   if (!rawContent) return { error: "content is required" };
-  const content = rawContent.replace(/\r\n?/g, "\n").trimEnd() + "\n";
+  const content = stripWriterAnnotations(rawContent.replace(/\r\n?/g, "\n").trimEnd()) + "\n";
   const requestedSlug = firstValue(fields["mp-slug"]);
 
   if (content.startsWith("---\n")) {
@@ -200,6 +200,10 @@ function firstParagraph(content: string): string {
 
 function cleanLine(value: string): string {
   return value.replace(/\s+/g, " ").trim();
+}
+
+function stripWriterAnnotations(value: string): string {
+  return value.replace(/\n{2,}---\nAnnotations:[\s\S]*\n\.\.\.\s*$/, "");
 }
 
 function yamlString(value: string): string {
