@@ -5,23 +5,23 @@ publishedAt: 2026-08-30
 tags: ["ai", "agi", "systems", "vector-databases", "memory", "engineering"]
 ---
 
-People talk about AGI like it is a finish line.
+People talk about AGI as if it were a finish line.
 
 At some point, a model will supposedly become smart enough, cross an invisible threshold, and we will all agree that artificial general intelligence has arrived.
 
-I am not convinced it will happen like that.
+I don’t believe it will happen that way.
 
-The word AGI hides several different ideas. Some people mean a system that can do most economically useful work. Some mean a machine that learns like a person. Some mean an autonomous scientist. Some mean a language model that makes fewer mistakes.
+The word AGI hides several different ideas. Some people mean a system capable of doing most economically useful work. Some mean a machine that learns like a person. Some mean an autonomous scientist. Some mean a language model that makes fewer mistakes.
 
 Those are not the same target.
 
-The definition I find most useful is more operational: an AGI-like system should be able to pursue unfamiliar goals over time, in changing environments, while using tools, preserving relevant state, learning from feedback, and recovering when its first plan fails.
+The definition I find most useful is more operational: an AGI-like system should be able to pursue unfamiliar goals over time in changing environments, use tools, preserve relevant state, learn from feedback, and recover when its first plan fails.
 
 That definition makes AGI feel less like one model and more like a complete system.
 
 ## AGI is a systems problem
 
-Current models already have pieces of general intelligence. They can write software, explain unfamiliar topics, analyze images, use tools, and solve problems they have never seen word-for-word before.
+Current models already have pieces of general intelligence. They can write software, explain unfamiliar topics, analyze images, use tools, and solve problems they have never seen before.
 
 But the model is only one layer.
 
@@ -56,7 +56,7 @@ query
   -> generate an answer
 ```
 
-Vector search is useful because it turns semantic similarity into something a system can query. Embeddings represent text as points in a high-dimensional space, and indexes such as HNSW make nearest-neighbor search fast enough to use in applications. Filtering, hybrid search, and reranking can make the candidate set better.
+Vector search is useful because it makes semantic similarity queryable. Embeddings represent text as points in a high-dimensional space, and indexes such as HNSW make nearest-neighbor search fast enough to use in applications. Filtering, hybrid search, and reranking can improve the candidate set.
 
 But a vector database answers a narrower question than people often ask of it.
 
@@ -104,7 +104,7 @@ Context is closer to working memory. It is available for the current computation
 
 Memory needs more structure than a pile of text.
 
-```ts
+``` ts
 const memoryItem = {
   subject: "authentication",
   value: "owned by Bob and canceled",
@@ -115,9 +115,9 @@ const memoryItem = {
 };
 ```
 
-The exact schema is not the important part. The important part is that the system can distinguish current facts from historical facts, preserve where a fact came from, and exclude information that should not influence a current-state decision.
+The exact schema is not the important part. The important part is that the system can distinguish current facts from historical ones, preserve the source of each fact, and exclude information that should not influence a current-state decision.
 
-I tested a small version of this idea in a benchmark for changing software-project context. It compared a full project history, traditional TF-IDF retrieval, and a selective-memory table that explicitly marked information as current, updated, outdated, canceled, usable, or ignorable.
+I tested a small version of this idea in a benchmark to assess changes in the software project context. It compared a full project history, traditional TF-IDF retrieval, and a selective-memory table that explicitly marked information as current, updated, outdated, canceled, usable, or ignorable.
 
 The benchmark used 90 simulated events and 30 questions. After manually auditing the saved responses, the results were:
 
@@ -131,13 +131,13 @@ The result I cared about most was not that one table won a small benchmark. It w
 
 Finding related information is not the same as resolving the state described by that information.
 
-The result also had an important cost. Selective memory was the most accurate condition and the slowest one. The benchmark was small and simulated, so it does not prove that this architecture is always better. It does show why an AGI system needs to optimize accuracy, latency, token cost, freshness, and provenance together instead of treating any one score as intelligence.
+The result also had an important cost. Selective memory was the most accurate condition, but the slowest. The benchmark was small and simulated, so it does not prove that this architecture is always better. It does show why an AGI system needs to optimize accuracy, latency, token cost, freshness, and provenance together rather than treating any single metric as intelligence.
 
 ## Tools turn language into action
 
-An AGI that can only describe an action is still separated from the environment where the action matters.
+An AGI that can only describe an action remains separate from the environment where the action matters.
 
-Tools close that gap, but they introduce a new class of problems. A tool can time out. An API can return a partial result. A write can succeed even when the response is lost. Two retries can create two records. A model can have permission to call a tool without having enough evidence that it should call it.
+Tools close that gap, but they introduce a new class of problems. A tool can time out. An API can return a partial result. A writer can succeed even when the response is lost. Two retries can create two records. A model can have permission to call a tool without sufficient evidence that it should do so.
 
 That means an agent needs more than tool names in a prompt. It needs discovery, permissions, validation, idempotency, error handling, and verification.
 
@@ -159,7 +159,7 @@ The last two lines are what many demos leave out. An agent that acts without che
 
 The same applies to tool discovery. Sending every tool schema into every model call is the tool equivalent of sending the entire project history into every prompt. A better system can search the catalog, inspect the few relevant schemas, validate access, execute the call, and return a compact result.
 
-Vector search can help find the right tool. It still does not decide whether the tool should be used.
+Vector search can help find the right tool. It has not yet been decided whether to use the tool.
 
 ## Remembering is not learning
 
@@ -167,24 +167,24 @@ These concepts are often collapsed into one word, but they are different:
 
 ```text
 context  = what the system can use right now
-memory   = what the system preserves across interactions
-learning = how future behavior changes from feedback
+Memory is what the system preserves across interactions
+Learning is how future behavior changes from feedback
 training = how model parameters are changed
 ```
 
-Writing a new event to a database is memory. It is not necessarily learning. A model can retrieve a previous failure and make the same mistake again.
+Writing a new event to a database is memory-intensive. It is not necessarily learning. A model can retrieve a previous failure and make the same mistake again.
 
-For an AGI-like system, learning probably needs multiple timescales. A temporary observation can affect the next decision. A verified project fact can update persistent state. A repeated pattern can become a procedure. A large collection of high-quality examples can eventually become a training signal.
+For an AGI-like system, learning probably needs multiple timescales. A temporary observation can affect the next decision. A verified project fact can update the persistent state. A repeated pattern can become a procedure. A large collection of high-quality examples can eventually become a training signal.
 
-This is one reason I am skeptical of the idea that AGI arrives simply by making the context window larger. More context improves access to information. Learning requires a feedback loop that changes future decisions.
+This is one reason I am skeptical of the idea that AGI can be achieved simply by increasing the context window. More context improves access to information. Learning requires a feedback loop that changes future decisions.
 
-The system has to notice what happened, determine whether the outcome was good, update the right state, and avoid turning one noisy result into a permanent false belief.
+The system has to detect what happened, determine whether the outcome was good, update the correct state, and avoid turning a single noisy result into a permanent false belief.
 
 ## Generality means transfer and recovery
 
-An agent answering questions in ten domains is not necessarily general. It may have memorized ten patterns.
+An agent that answers questions across ten domains is not necessarily general. It may have memorized ten patterns.
 
-The harder test is what happens when the task, environment, or available tools change at the same time.
+The harder test is what happens when the task, environment, or available tools change simultaneously.
 
 ```text
 new task
@@ -226,14 +226,14 @@ goal
 
 The model matters. It may be the most flexible reasoning component in the loop. But a model without state is forgetful, a model without tools is isolated, a model without feedback is ungrounded, and a model without evaluation cannot reliably tell whether it succeeded.
 
-Vector databases may be part of the solution. They are useful for finding candidates in a large information space. They are not memory by themselves.
+Vector databases may be part of the solution. They are useful for finding candidates in a large information space. They are not remembered by themselves.
 
-Large context windows may be part of the solution. They make more evidence available. They are not continuity by themselves.
+Large context windows may be part of the solution. They make more evidence available. They are not continuous by themselves.
 
-Tools may be part of the solution. They let the system act. They are not judgment by themselves.
+Tools may be part of the solution. They let the system act. They are not judged by themselves.
 
 Training may be part of the solution. It gives a model broad capabilities. It is not a substitute for current state and real-world feedback.
 
-AGI, if the term ends up being useful, is probably what happens when these pieces compose into a reliable system that can adapt over time.
+AGI, if the term proves useful, is probably what happens when these pieces come together to form a reliable system that can adapt over time.
 
 That is the part I find more interesting than the finish line. Not whether a model gets a new label, but whether it can take a goal, understand what is true now, do something in the world, learn from what happened, and still know where it left off tomorrow.
