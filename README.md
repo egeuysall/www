@@ -76,7 +76,7 @@ security find-generic-password -s www-admin-password -w
 
 ### Automatic publication
 
-Publishing a new blog post through iA Writer's Micropub endpoint or the private editor writes the MDX file to GitHub first, then fans out to configured X, LinkedIn, email, and Substack handoff channels. Editing an existing post does not repost it.
+The existing iA Writer Micropub endpoint remains the site publisher and keeps its original response contract. A new post created through the private editor writes the MDX file to GitHub first, then fans out to configured X, LinkedIn, email, and Substack handoff channels. Editing an existing post does not repost it.
 
 Set these additional Vercel environment variables to enable distribution:
 
