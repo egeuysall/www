@@ -36,6 +36,7 @@ export const NAV_LINKS = [
   { label: "Blog", href: "/blog" },
   { label: "Diary", href: "/diary" },
   { label: "Photo", href: "/photo" },
+  { label: "Newsletter", href: "/newsletter" },
 ] as const;
 
 export const SOCIAL_LINKS: SocialLink[] = [
