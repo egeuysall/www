@@ -1,0 +1,38 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+const status = Astro.url.searchParams.get("status");
+const message = status === "check"
+  ? "Check your email and confirm the subscription."
+  : status === "confirmed"
+    ? "You’re subscribed."
+    : status === "unsubscribed"
+      ? "You’re unsubscribed."
+      : status === "error"
+        ? "That link is invalid or expired."
+        : "Get new posts by email. No account or password required.";
+---
+
+<BaseLayout title="Newsletter" pathname="/newsletter">
+  <section class="animate-enter" style="--delay: 40ms;">
+    <h1 class="text-base font-semibold text-neutral-100">Newsletter</h1>
+    <p class="mt-3 max-w-lg text-sm leading-relaxed text-neutral-300">{message}</p>
+    {status !== "confirmed" && status !== "unsubscribed" ? (
+      <form action="/api/newsletter" method="post" class="mt-6 flex max-w-lg gap-2">
+        <label class="sr-only" for="newsletter-email">Email address</label>
+        <input
+          id="newsletter-email"
+          name="email"
+          type="email"
+          required
+          autocomplete="email"
+          placeholder="you@example.com"
+          class="min-w-0 flex-1 rounded-sm border border-neutral-800 bg-transparent px-3 py-2 text-sm text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-neutral-500"
+        />
+        <button type="submit" class="rounded-sm border border-neutral-700 px-3 py-2 text-xs text-neutral-100 hover:border-neutral-400">
+          Subscribe
+        </button>
+      </form>
+    ) : null}
+  </section>
+</BaseLayout>

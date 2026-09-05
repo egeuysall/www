@@ -3,6 +3,7 @@ import type { APIRoute } from "astro";
 import { isAdmin } from "@/lib/admin-auth";
 import { slugFromPost, validFrontmatter } from "@/lib/blog-editor";
 import { json, rejectCrossOrigin } from "@/lib/engagement";
+import { publicationInfoFromMarkdown, publishToChannels } from "@/lib/publishing";
 
 export const prerender = false;
 
@@ -97,7 +98,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return json({ error: saved.status === 409 || saved.status === 422 ? "Post changed elsewhere; reload before saving" : "GitHub rejected the publish" }, saved.status === 409 || saved.status === 422 ? 409 : 502);
   }
 
-  return json({ ok: true, url: `/blog/${body.slug}/` });
+  const url = `/blog/${body.slug}/`;
+  const post = publicationInfoFromMarkdown(body.content, body.slug);
+  const distribution = !body.sha && post ? await publishToChannels(post) : [];
+  return json({ ok: true, url, distribution });
 };
 
 function github(url: string, init: RequestInit = {}): Promise<Response> {

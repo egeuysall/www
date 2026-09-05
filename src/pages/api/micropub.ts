@@ -5,6 +5,7 @@ import type { APIRoute } from "astro";
 import { SITE } from "@/config/site";
 import { normalizeFrontmatterTitle, normalizeTitle, slugFromPost, validFrontmatter } from "@/lib/blog-editor";
 import { json } from "@/lib/engagement";
+import { publicationInfoFromMarkdown, publishToChannels } from "@/lib/publishing";
 
 export const prerender = false;
 
@@ -17,7 +18,13 @@ const MAX_CONTENT_BYTES = 200_000;
 const MAX_REQUEST_BYTES = MAX_CONTENT_BYTES + 16_384;
 
 type Fields = Record<string, unknown>;
-type BlogPost = { slug: string; content: string };
+type BlogPost = {
+  slug: string;
+  content: string;
+  title: string;
+  description: string;
+  publishedAt: string;
+};
 type BuildResult = { post: BlogPost } | { error: string };
 
 export const GET: APIRoute = ({ url }) => {
@@ -85,7 +92,8 @@ export const POST: APIRoute = async ({ request }) => {
     }
 
     const location = new URL(`/blog/${built.post.slug}/`, SITE.url).toString();
-    const response = json({}, 202);
+    const distribution = await publishToChannels(built.post);
+    const response = json({ url: location, distribution }, 202);
     response.headers.set("Location", location);
     return response;
   } catch (error) {
@@ -152,7 +160,8 @@ function buildPost(fields: Fields): BuildResult {
     const slug = requestedSlug || derivedSlug;
     if (!SLUG.test(slug) || slug.length > 120) return { error: "Invalid slug" };
     if (requestedSlug && requestedSlug !== derivedSlug) return { error: "Slug must match the post title" };
-    return { post: { slug, content: publishedContent } };
+    const post = publicationInfoFromMarkdown(publishedContent, slug);
+    return post ? { post } : { error: "Frontmatter must include title, description, and publishedAt" };
   }
 
   const title = normalizeTitle(cleanLine(firstValue(fields.name) || headingFromContent(content)).replace(/^#+\s*/, ""));
@@ -184,7 +193,7 @@ function buildPost(fields: Fields): BuildResult {
   if (!SLUG.test(slug) || slug.length > 120) return { error: "Invalid slug" };
   if (requestedSlug && requestedSlug !== derivedSlug) return { error: "Slug must match the post title" };
 
-  return { post: { slug, content: generated } };
+  return { post: { slug, content: generated, title, description, publishedAt } };
 }
 
 function headingFromContent(content: string): string {

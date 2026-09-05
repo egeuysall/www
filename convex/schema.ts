@@ -84,4 +84,18 @@ export default defineSchema({
     sourceCommentId: v.optional(v.id("comments")),
     createdAt: v.number(),
   }).index("by_rate", ["rateHash"]),
+
+  newsletterSubscribers: defineTable({
+    email: v.string(),
+    emailHash: v.string(),
+    confirmTokenHash: v.string(),
+    confirmExpiresAt: v.number(),
+    status: v.union(v.literal("pending"), v.literal("subscribed"), v.literal("unsubscribed")),
+    createdAt: v.number(),
+    confirmedAt: v.optional(v.number()),
+    unsubscribedAt: v.optional(v.number()),
+  })
+    .index("by_emailHash", ["emailHash"])
+    .index("by_confirmTokenHash", ["confirmTokenHash"])
+    .index("by_status", ["status"]),
 });
