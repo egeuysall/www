@@ -1,0 +1,399 @@
+---
+title: "The End of the Chatbot Era"
+description: "I used to think AI progress was mostly about the quality of an answer."
+publishedAt: 2026-09-05
+tags: []
+draft: false
+---
+I used to think AI progress was mostly about the quality of an answer.
+
+Could the model write better? Code better? Explain more? Reason through harder problems?
+
+Then I gave GPT-6 Astra a couple of design references and asked it to help recreate Paper and Igloo. In about an hour, I had convincing local versions of both landing pages: responsive layouts, working interactions, source code, local assets, and screenshots that looked like real products instead of unfinished mockups.
+
+They were not the original products. They were not their backends or private design systems. They were local recreations built from the references I provided.
+
+But the speed was still difficult to process.
+
+The surprising part was not that a model could write HTML. Models have been able to do that for a while. The surprising part was how many steps could happen in one loop:
+
+```text
+reference
+  -> understand the visual system
+  -> find the right assets
+  -> write the interface
+  -> run the application
+  -> inspect the result
+  -> fix what is wrong
+  -> capture and publish the result
+```
+
+That made me think about the entire history of AI differently.
+
+AI did not jump from nothing to GPT-6 Astra. It kept moving the boundary between what a person had to describe and what a machine could finish.
+
+> AI evolved from predicting what comes next, to reasoning about what comes next, to doing what comes next.
+
+## The question came before the product
+
+In 1950, Alan Turing published [Computing Machinery and Intelligence](https://academic.oup.com/mind/article/LIX/236/433/986238). Instead of trying to settle the definition of “thinking,” he proposed an imitation game: could a machine participate in a conversation well enough that a person could not reliably identify it?
+
+That was a useful starting point because it turned a vague philosophical question into an observable behavior.
+
+Six years later, the [Dartmouth proposal](https://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html) gave the field a name and a much bigger ambition. The proposal suggested that a machine might use language, form abstractions and concepts, solve problems usually reserved for humans, and improve itself.
+
+The language sounds surprisingly current.
+
+The systems were not.
+
+Early AI programs were mostly built from rules, search, and carefully described environments. If a person wanted the system to know something, a person usually had to encode it. The machine could be impressive inside its world, but the world had already been narrowed for it.
+
+The first era of AI was mostly about describing intelligence precisely enough for a machine to imitate a small part of it.
+
+```text
+human describes the rules
+  -> machine searches the rules
+  -> machine produces a result
+```
+
+The goal was general intelligence.
+
+The practical systems were usually specific.
+
+## Learning changed where the intelligence lived
+
+Neural networks changed the question from “Which rules should we write?” to “Can the system learn useful internal representations from examples?”
+
+The idea was not new in the 1980s, but training deeper networks became much more practical as the field developed better optimization methods, more data, and more compute. In [Learning representations by back-propagating errors](https://www.nature.com/articles/323533a0), Rumelhart, Hinton, and Williams described a procedure that adjusted network weights to reduce the difference between the desired output and the actual output. Hidden units could learn features that were not explicitly written by a programmer.
+
+The toy version is simple:
+
+```python
+error = target - prediction
+weights += learning_rate * error * inputs
+```
+
+The real systems are much more complicated, but the conceptual change is enormous.
+
+The programmer no longer has to specify every useful feature in advance. The system can discover representations that help it solve the task.
+
+The intelligence moved from the rules around the program into the parameters learned by the program.
+
+That still did not create a general-purpose assistant. A model could learn a strong representation for one type of input and fail completely outside its training setup. But it created the foundation for scaling.
+
+## Scale made the old ideas practical
+
+The next major shift was not one algorithm by itself. It was the combination of larger datasets, faster hardware, deeper networks, and training procedures that could use both.
+
+The [AlexNet paper](https://proceedings.neurips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html) is a useful landmark. The network was trained on 1.3 million high-resolution images across 1,000 classes, used 60 million parameters, and relied on GPUs to make training practical. Its result on ImageNet made deep convolutional networks difficult to ignore.
+
+The lesson was bigger than image classification:
+
+```text
+better architecture
+  + more data
+  + more compute
+  + better optimization
+  -> capabilities that were previously impractical
+```
+
+AI progress started to look less like a sequence of isolated inventions and more like a curve. When the ingredients were combined at a larger scale, systems began to do things that were not obvious from the small versions.
+
+This is also where the economics of AI began to matter more. A clever architecture was not enough. The system had to be trainable, deployable, and fast enough to use.
+
+## The Transformer changed the unit of work
+
+In 2017, [Attention Is All You Need](https://arxiv.org/abs/1706.03762) introduced the Transformer architecture. The paper showed that a sequence model could be built around attention rather than recurrence and convolutions, making training more parallelizable and giving the model a flexible way to relate tokens to one another.
+
+The famous equation is compact:
+
+```text
+Attention(Q, K, V) = softmax(QKᵀ / √dₖ)V
+```
+
+The practical consequence was not just a better translation model. It was a better scaling path for general-purpose models.
+
+A token could attend to other tokens. A word could relate to an earlier sentence. A line of code could relate to a function definition hundreds of tokens away. The model could use relationships across a growing context instead of processing every position as an isolated step.
+
+The basic language-model loop still looked almost absurdly small:
+
+```python
+while not finished:
+    probabilities = model.predict_next_token(context)
+    token = sample(probabilities)
+    context.append(token)
+```
+
+The loop predicts one token at a time. The model behind the loop contains the learned statistical machinery needed to make those predictions useful.
+
+That is why “autocomplete” was both a fair description and an incomplete one. At enough scale, predicting the next token required learning about syntax, facts, code, style, structure, and the patterns of human reasoning.
+
+## GPT-3 showed that text could become an interface
+
+The [GPT-3 paper](https://arxiv.org/abs/2005.14165) made scaling feel like a product direction. GPT-3 had 175 billion parameters and showed that a model could perform many tasks from instructions and a few examples in the prompt, without a gradient update for each task.
+
+That was a major change in how software could be built.
+
+Instead of writing a separate model and training pipeline for every small language task, a developer could describe the task in text and let one general model adapt inside the context.
+
+```text
+task description
+  + a few examples
+  -> model adapts in context
+  -> task-specific output
+```
+
+The model was still not learning permanently from the interaction. It was conditioning its next prediction on the text it had been given. But from the outside, that distinction was easy to miss because the same model could translate, summarize, classify, explain, and write code.
+
+Text stopped being only data.
+
+Text became an interface for programming the model.
+
+## Chat made AI ordinary
+
+On November 30, 2022, OpenAI introduced [ChatGPT](https://openai.com/index/chatgpt/), a model tuned for conversation. The dialogue format let people ask follow-up questions, correct the model, challenge an answer, and continue working without learning a new software interface.
+
+ChatGPT changed the distribution of AI as much as it changed the model.
+
+Before chat, many people used AI without thinking about it. Search ranking, recommendations, photo enhancement, fraud detection, and autocomplete were already embedded in products. The model was hidden behind the interface.
+
+Chat put the model directly in front of the user.
+
+```text
+old interface:
+  application -> hidden model -> result
+
+chat interface:
+  person -> model -> response -> person
+```
+
+That made AI accessible to almost anyone. It also made the limits impossible to ignore.
+
+A model could sound certain while being wrong. It could answer the last message while losing the larger objective. It could describe a fix without opening the codebase, running the tests, or checking whether the fix worked.
+
+Chat made AI conversational.
+
+It did not yet make AI responsible for an outcome.
+
+## Context became external
+
+The next layer was giving models access to more than the text inside the current prompt.
+
+Retrieval systems and vector databases let an application search a larger collection of documents, memories, or tools and inject a smaller relevant subset into the context. The common pattern looks like this:
+
+```ts
+const context = await vectorDatabase.search(query, { topK: 5 });
+const answer = await model.generate({ query, context });
+```
+
+That solved a real problem, but it also exposed an important distinction. Finding a related document is not the same as knowing whether the document is current, authorized, or still true. External memory can increase what a model can access without giving it a reliable state model.
+
+Context is working memory.
+
+Continuity requires a system that can decide what to preserve, update, ignore, and verify.
+
+This was the point where AI systems started becoming less like single models and more like software architectures.
+
+## Tools changed the unit from answer to goal
+
+Reasoning is useful, but a model that cannot interact with the environment is still isolated from the result it is describing.
+
+Browsers, code execution, files, APIs, databases, search, and computer-use interfaces changed the loop. The model could inspect the world, choose an action, execute it, and observe what happened next.
+
+```text
+goal
+  -> observe the environment
+  -> plan
+  -> use a tool
+  -> inspect the result
+  -> recover or continue
+  -> deliver an outcome
+```
+
+This is where “agent” became a useful word. The unit of work was no longer just a request for text.
+
+| Chatbot | Agent |
+| --- | --- |
+| Write this function | Fix the failing checkout flow |
+| Summarize these pages | Research the question and verify the evidence |
+| Explain this error | Investigate the cause and test the fix |
+| Create a spreadsheet | Find the records, update them, and verify the result |
+
+The first column describes an output.
+
+The second column describes an outcome.
+
+That difference creates new engineering requirements: permissions, tool discovery, retries, idempotency, error handling, state, and verification. A tool call can time out. A write can succeed even if its response is lost. A retry can create a duplicate record. A model can have permission to act without enough evidence that it should act.
+
+The last step is often the most important one:
+
+```text
+verify the result
+```
+
+An agent that acts without checking the result is not autonomous. It is just producing side effects with confidence.
+
+## Astra made the shift visible
+
+OpenAI released [GPT-6 Astra](https://openai.com/index/gpt-6-astra/) on September 3, 2026. OpenAI describes Astra as its most capable broadly deployed model, with improvements across computer use, browsing, software engineering, cybersecurity, science, and professional work.
+
+The important part is not any individual benchmark.
+
+Earlier models could already write code, browse pages, call tools, and generate images. Astra matters because the release is framed around connecting those capabilities into end-to-end work. The examples include filling out forms, updating customer records, organizing calendars, creating websites, running frontend QA, installing software, and troubleshooting problems on screen.
+
+The current [Astra API model page](https://developers.openai.com/api/docs/models/gpt-6-astra) lists a 1,050,000-token context window, a 128,000-token maximum output, and support for tools including web search, file search, image generation, code interpreter, hosted shell, apply patch, computer use, MCP, and tool search.
+
+That is a very different product surface from a model that only returns a paragraph.
+
+OpenAI reports that Astra scored 72.6% on OSWorld 2.0 at roughly 40 minutes per task, compared with 65.7% at roughly 75 minutes for GPT-5.6 Sol. It also reports a 57.9% score on Terminal-Bench 4.0, compared with 37.3% for GPT-5.6 Sol. These are company-reported evaluations under specific harnesses and settings, not guarantees about every real-world workflow.
+
+```text
+model capability
+  -> tool access
+  -> environment feedback
+  -> longer task horizon
+  -> fewer human handoffs
+```
+
+The decrease in handoffs is the real story.
+
+Older workflow:
+
+```text
+person -> ask model
+person -> copy output
+person -> open another tool
+person -> provide new context
+person -> check result
+person -> ask model again
+```
+
+Newer workflow:
+
+```text
+person -> describe the goal
+agent -> inspect
+agent -> plan
+agent -> act
+agent -> verify
+agent -> deliver
+```
+
+The model is no longer only producing an artifact for a person to use. It is increasingly being asked to operate inside the workflow that produces the artifact.
+
+## A one-hour build felt like a historical moment
+
+This is what I felt while rebuilding Paper and Igloo.
+
+I gave the system a visual target, local source files, and a bounded task. It had to infer hierarchy from screenshots, identify which assets mattered, reconstruct the layout, write the code, run it, and respond to visual differences.
+
+```text
+visual reference
+  -> inspect typography and spacing
+  -> identify reusable assets
+  -> implement the first pass
+  -> run locally
+  -> compare against the reference
+  -> fix the highest-signal mismatch
+```
+
+The workflow was not magic. I still had to decide what counted as close enough, which details were important, and which parts of the original experience were outside the scope of a local recreation.
+
+But the cost of the first attempt collapsed.
+
+![A Paper-style landing page recreation built from a visual reference](https://cdn.egeuysal.com/content/2026/09/05/asset-02.png)
+
+![Igloo landing page visual used as the article hero](https://cdn.egeuysal.com/content/2026/09/05/asset-03.jpg)
+
+That changes what is worth trying. When the first version costs a week, people protect the idea and avoid experiments. When the first version costs an hour, people can test five directions and keep the one that deserves more work.
+
+AI did not remove taste from the process.
+
+It made taste more important because execution became cheaper.
+
+## Capability is outrunning simple deployment
+
+The same release that makes a landing page easier to build also makes more consequential work easier to automate.
+
+OpenAI says Astra meets the Critical cybersecurity capability threshold under its [Preparedness Framework](https://openai.com/index/path-to-astra/). The company reports that, with the right tools and access, Astra can find previously unknown security flaws and develop ways to exploit them across well-protected systems without a person guiding every step.
+
+That capability could help defenders find and patch vulnerabilities faster. It could also make misuse more dangerous.
+
+```text
+more capability
+  -> more useful tools
+  -> more consequential actions
+  -> stronger safeguards
+  -> more serious failures when safeguards fail
+```
+
+This is why a benchmark score cannot be the whole definition of progress. A system can be better at finishing a task and still need strict boundaries around what it is allowed to do.
+
+For an agent, I care about more than whether it got the right answer:
+
+- Did it understand the actual goal?
+- Did it use current information?
+- Did it stay within its permissions?
+- Did it recover from failure?
+- Did it verify the final state?
+- Can a human monitor and interrupt it?
+
+The more capable the model becomes, the more important the surrounding system becomes.
+
+## The chatbot era is ending, but chat is not
+
+I do not think chat disappears.
+
+Conversation is still one of the best ways to express a goal, clarify an ambiguity, supervise work, and decide what should happen next.
+
+What may be ending is the assumption that AI's job is to return a message.
+
+The next generation of AI systems will increasingly be judged by what they complete: a working feature, a tested website, a researched report, an updated database, a finished presentation, or a decision supported by evidence.
+
+The model may communicate through chat, but the product is the work happening behind the chat.
+
+That is why the history matters. The shift from rules to learning, from learning to scale, from scale to language, from language to conversation, and from conversation to action was not a series of unrelated breakthroughs.
+
+It was a steady expansion of the machine's operating surface.
+
+```text
+rules
+  -> learned representations
+  -> scaled models
+  -> language interfaces
+  -> conversation
+  -> reasoning
+  -> tools
+  -> autonomous workflows
+```
+
+GPT-6 Astra does not settle the definition of AGI. It does not make every task delegable. It does not remove the need for human judgment.
+
+It does make one thing harder to deny: the distance between an idea and a working artifact is shrinking quickly.
+
+AI learned to speak because prediction became good enough.
+
+It learned to reason because models could spend more computation searching for better paths.
+
+It learned to act because tools gave it an environment.
+
+Now the difficult question is whether it can act responsibly.
+
+The next frontier may not be a model that can produce a better answer.
+
+It may be a system that can take a goal, understand what is true now, do something in the world, inspect what happened, learn from the result, and still know where it left off tomorrow.
+
+That is the part I want to keep building.
+
+## Sources
+
+- [Computing Machinery and Intelligence](https://academic.oup.com/mind/article/LIX/236/433/986238), Alan Turing, 1950
+- [A Proposal for the Dartmouth Summer Research Project on Artificial Intelligence](https://www-formal.stanford.edu/jmc/history/dartmouth/dartmouth.html), 1955
+- [Learning representations by back-propagating errors](https://www.nature.com/articles/323533a0), Rumelhart, Hinton, and Williams, 1986
+- [ImageNet Classification with Deep Convolutional Neural Networks](https://proceedings.neurips.cc/paper/2012/hash/c399862d3b9d6b76c8436e924a68c45b-Abstract.html), Krizhevsky, Sutskever, and Hinton, 2012
+- [Attention Is All You Need](https://arxiv.org/abs/1706.03762), Vaswani et al., 2017
+- [Language Models are Few-Shot Learners](https://arxiv.org/abs/2005.14165), Brown et al., 2020
+- [Introducing ChatGPT](https://openai.com/index/chatgpt/), OpenAI, 2022
+- [GPT-6 Astra: A new generation of intelligence](https://openai.com/index/gpt-6-astra/), OpenAI, 2026
+- [GPT-6 Astra API model page](https://developers.openai.com/api/docs/models/gpt-6-astra), OpenAI, 2026
+- [Path to Astra: critical capabilities and frontier safeguards](https://openai.com/index/path-to-astra/), OpenAI, 2026
