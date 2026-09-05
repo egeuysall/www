@@ -98,4 +98,11 @@ export default defineSchema({
     .index("by_emailHash", ["emailHash"])
     .index("by_confirmTokenHash", ["confirmTokenHash"])
     .index("by_status", ["status"]),
+
+  publicationDeliveries: defineTable({
+    deliveryId: v.string(),
+    status: v.union(v.literal("processing"), v.literal("complete")),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  }).index("by_deliveryId", ["deliveryId"]),
 });

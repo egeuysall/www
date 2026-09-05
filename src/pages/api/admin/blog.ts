@@ -88,7 +88,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const saved = await github(path, {
     method: "PUT",
     body: JSON.stringify({
-      message: `${body.sha ? "Update" : "Publish"} blog post: ${body.slug}`,
+      message: `${body.sha ? "Update" : "Publish via private editor"} blog post: ${body.slug}`,
       content: Buffer.from(body.content).toString("base64"),
       branch: "master",
       ...(body.sha ? { sha: body.sha } : {}),
