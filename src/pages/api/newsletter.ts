@@ -77,7 +77,7 @@ export const GET: APIRoute = async ({ url }) => {
       });
       return redirect(url, "unsubscribed");
     }
-    return json({ error: "Missing newsletter action" }, 400);
+    return Response.redirect(new URL("/newsletter/", url), 303);
   } catch {
     return redirect(url, "error");
   }
