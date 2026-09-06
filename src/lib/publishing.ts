@@ -57,7 +57,7 @@ export async function publishToChannels(post: PublishedPost): Promise<Distributi
 }
 
 async function publishToX(post: PublishedPost, url: string): Promise<DistributionResult> {
-  const token = env("X_ACCESS_TOKEN");
+  const token = await xAccessToken();
   if (!token) return { channel: "x", status: "skipped", detail: "X_ACCESS_TOKEN is not configured" };
   try {
     const response = await fetch("https://api.x.com/2/tweets", {
@@ -71,6 +71,33 @@ async function publishToX(post: PublishedPost, url: string): Promise<Distributio
   } catch {
     return { channel: "x", status: "failed", detail: "X request failed" };
   }
+}
+
+async function xAccessToken(): Promise<string> {
+  const accessToken = env("X_ACCESS_TOKEN");
+  const refreshToken = env("X_REFRESH_TOKEN");
+  const clientId = env("X_CLIENT_ID");
+  if (!refreshToken || !clientId) return accessToken;
+
+  try {
+    const response = await fetch("https://api.x.com/2/oauth2/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({
+        refresh_token: refreshToken,
+        grant_type: "refresh_token",
+        client_id: clientId,
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (response.ok) {
+      const payload = (await response.json()) as { access_token?: unknown };
+      if (typeof payload.access_token === "string") return payload.access_token;
+    }
+  } catch {
+    // Fall back to the current access token if refresh is temporarily unavailable.
+  }
+  return accessToken;
 }
 
 async function publishToLinkedIn(post: PublishedPost, url: string): Promise<DistributionResult> {
