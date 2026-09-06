@@ -68,8 +68,10 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       const sent = await sendConfirmationEmail(email, confirmationToken);
       if (!sent) return json({ error: "Could not send confirmation email" }, 502);
     }
-    const body = { ok: true, message: "Check your email to confirm your subscription." };
-    return respond(request, body, 200, "check");
+    if (result.status === "subscribed") {
+      return respond(request, { ok: true, message: "You’re already subscribed." }, 200, "already-subscribed");
+    }
+    return respond(request, { ok: true, message: "Check your email to confirm your subscription." }, 200, "check");
   } catch (error) {
     console.error("Newsletter subscription failed", error instanceof Error ? error.message : "Unknown error");
     return json({ error: "Newsletter subscription failed" }, 503);
@@ -93,7 +95,7 @@ export const GET: APIRoute = async ({ url }) => {
       if (!readUnsubscribeToken(unsubscribeToken)) return redirect(url, "error");
       return new Response(null, {
         status: 303,
-        headers: { Location: new URL(`/newsletter?unsubscribe=${encodeURIComponent(unsubscribeToken)}`, url).toString() },
+        headers: { Location: new URL(`/newsletter/?unsubscribe=${encodeURIComponent(unsubscribeToken)}`, url).toString() },
       });
     }
     return new Response(null, {

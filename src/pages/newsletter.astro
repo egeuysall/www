@@ -9,13 +9,15 @@ const message = unsubscribeToken
   ? "Are you sure you want to unsubscribe from new posts?"
   : status === "check"
     ? "Check your email and confirm the subscription."
-    : status === "confirmed"
-      ? "You’re subscribed."
-      : status === "unsubscribed"
-        ? "You’re unsubscribed."
-        : status === "error"
-          ? "That link is invalid or expired."
-          : "Get new posts by email. No account or password required.";
+    : status === "already-subscribed"
+      ? "You’re already subscribed."
+      : status === "confirmed"
+        ? "You’re subscribed."
+        : status === "unsubscribed"
+          ? "You’re unsubscribed."
+          : status === "error"
+            ? "That link is invalid or expired."
+            : "Get new posts by email. No account or password required.";
 ---
 
 <BaseLayout title="Newsletter" pathname="/newsletter">
@@ -34,7 +36,7 @@ const message = unsubscribeToken
         </div>
         <p data-newsletter-status class="mt-3 text-xs text-neutral-400" aria-live="polite" hidden></p>
       </form>
-    ) : status !== "confirmed" && status !== "unsubscribed" ? (
+    ) : status !== "confirmed" && status !== "unsubscribed" && status !== "already-subscribed" ? (
       <form id="newsletter-subscribe-form" data-newsletter-form action="/api/newsletter" method="post" enctype="application/x-www-form-urlencoded" class="mt-6 max-w-lg">
         <div class="flex gap-2">
         <label class="sr-only" for="newsletter-email">Email address</label>
