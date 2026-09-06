@@ -1,6 +1,9 @@
+import { createElement } from "react";
+import { render, toPlainText } from "react-email";
 import type { APIRoute } from "astro";
 
 import { api } from "../../../convex/_generated/api";
+import ConfirmationEmail, { type ConfirmationEmailProps } from "../../../emails/confirmation";
 import { getActor, getConvexServerClient, getWriteSecret, json, rejectCrossOrigin } from "@/lib/engagement";
 import {
   createConfirmationToken,
@@ -111,16 +114,21 @@ async function sendConfirmationEmail(email: string, token: string): Promise<bool
       Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      from: process.env.NEWSLETTER_FROM,
-      to: [email],
-      subject: "Confirm your subscription",
-      html: `<p>Click to confirm your subscription to Ege Uysal's blog.</p><p><a href="${escapeHtml(confirmationUrl)}">Confirm subscription</a></p>`,
-      text: `Confirm your subscription: ${confirmationUrl}`,
-    }),
+    body: JSON.stringify(await confirmationEmailPayload(confirmationUrl, email)),
     signal: AbortSignal.timeout(10_000),
   });
   return response.ok;
+}
+
+async function confirmationEmailPayload(confirmationUrl: string, email: string) {
+  const html = await render(createElement<Partial<ConfirmationEmailProps>>(ConfirmationEmail, { confirmationUrl }));
+  return {
+    from: process.env.NEWSLETTER_FROM,
+    to: [email],
+    subject: "Confirm your subscription",
+    html,
+    text: toPlainText(html),
+  };
 }
 
 function redirect(url: URL, status: string): Response {
@@ -132,8 +140,4 @@ function redirect(url: URL, status: string): Response {
 
 function siteUrl(): URL {
   return new URL(process.env.PUBLIC_SITE_URL || "https://egeuysal.com");
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);
 }

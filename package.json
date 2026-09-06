@@ -8,6 +8,7 @@
     "preview": "astro preview",
     "check": "astro sync && tsc --noEmit",
     "check:bundle": "node scripts/check-bundle-size.mjs",
+    "email:dev": "email dev --dir emails",
     "test": "bun test",
     "astro": "astro"
   },
@@ -38,10 +39,11 @@
     "preact": "^10.29.8",
     "preact-render-to-string": "^6.7.0",
     "radix-ui": "^1.6.7",
-    "rehype-katex": "^7.0.1",
-    "remark-math": "^6.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "react-email": "^6.9.3",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0",
     "shiki": "^4.4.3",
     "sonner": "^2.0.8",
     "streamdown": "^2.5.0",
@@ -50,6 +52,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@react-email/ui": "^6.9.3",
     "@types/node": "^26.2.0",
     "typescript": "^7.0.2"
   }

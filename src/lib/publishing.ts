@@ -1,6 +1,11 @@
+import { createElement } from "react";
+import { render, toPlainText } from "react-email";
+
 import { api } from "../../convex/_generated/api";
+import NewsletterEmail, { type NewsletterEmailProps } from "../../emails/newsletter";
 import { getConvexServerClient, getWriteSecret } from "@/lib/engagement";
 import { createUnsubscribeToken } from "@/lib/newsletter";
+import { formatDate } from "@/lib/utils";
 
 const X_LIMIT = 280;
 const LINKEDIN_LIMIT = 3_000;
@@ -123,12 +128,21 @@ async function publishNewsletter(post: PublishedPost, url: string): Promise<Dist
     if (!subscribers.length) return { channel: "email", status: "skipped", detail: "No confirmed subscribers" };
 
     for (let index = 0; index < subscribers.length; index += EMAIL_BATCH_SIZE) {
-      const batch = subscribers.slice(index, index + EMAIL_BATCH_SIZE).map((email) => ({
-        from,
-        to: [email],
-        subject: post.title,
-        html: newsletterHtml(post, url, email),
-        text: newsletterText(post, url, email),
+      const batch = await Promise.all(subscribers.slice(index, index + EMAIL_BATCH_SIZE).map(async (email) => {
+        const html = await render(createElement<Partial<NewsletterEmailProps>>(NewsletterEmail, {
+          title: post.title,
+          description: post.description,
+          publishedAt: formatDate(new Date(`${post.publishedAt}T00:00:00.000Z`)),
+          url,
+          unsubscribeUrl: newsletterUnsubscribeUrl(email).toString(),
+        }));
+        return {
+          from,
+          to: [email],
+          subject: post.title,
+          html,
+          text: toPlainText(html),
+        };
       }));
       const response = await fetch("https://api.resend.com/emails/batch", {
         method: "POST",
@@ -175,16 +189,6 @@ async function handoffToSubstack(post: PublishedPost, url: string): Promise<Dist
   }
 }
 
-function newsletterHtml(post: PublishedPost, url: string, email: string): string {
-  const unsubscribe = newsletterUnsubscribeUrl(email);
-  return `<p>${escapeHtml(post.description)}</p><p><a href="${escapeHtml(url)}">Read “${escapeHtml(post.title)}”</a></p><p><a href="${escapeHtml(unsubscribe.toString())}">Unsubscribe</a></p>`;
-}
-
-function newsletterText(post: PublishedPost, url: string, email: string): string {
-  const unsubscribe = newsletterUnsubscribeUrl(email);
-  return `${post.description}\n\nRead “${post.title}”: ${url}\n\nUnsubscribe: ${unsubscribe}`;
-}
-
 function newsletterUnsubscribeUrl(email: string): URL {
   return new URL(`/api/newsletter?unsubscribe=${encodeURIComponent(createUnsubscribeToken(email))}`, siteUrl());
 }
@@ -205,10 +209,6 @@ function frontmatterValue(content: string, key: string): string {
 function truncate(value: string, limit: number): string {
   const characters = Array.from(value);
   return characters.length <= limit ? value : `${characters.slice(0, limit - 1).join("")}…`;
-}
-
-function escapeHtml(value: string): string {
-  return value.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] ?? character);
 }
 
 function siteUrl(): URL {
