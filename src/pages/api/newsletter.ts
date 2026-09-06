@@ -45,9 +45,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       if (!sent) return json({ error: "Could not send confirmation email" }, 502);
     }
     const body = { ok: true, message: "Check your email to confirm your subscription." };
-    return request.headers.get("accept")?.includes("text/html")
-      ? Response.redirect(new URL("/newsletter?status=check", request.url), 303)
-      : json(body);
+    return request.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() === "application/json"
+      ? json(body)
+      : Response.redirect(new URL("/newsletter?status=check", request.url), 303);
   } catch (error) {
     console.error("Newsletter subscription failed", error instanceof Error ? error.message : "Unknown error");
     return json({ error: "Newsletter subscription failed" }, 503);
