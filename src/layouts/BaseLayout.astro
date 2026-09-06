@@ -99,16 +99,16 @@ const isNavActive = (href: string): boolean => {
   <body class="min-h-full bg-bg font-mono text-fg antialiased">
     <div class="mx-auto flex min-h-screen w-full max-w-155 flex-col px-6 py-8 sm:px-8 sm:py-10">
       <header class="pb-8">
-        <div class="flex items-end justify-between gap-6">
-          <div>
+        <div class="flex items-end justify-between gap-4 sm:gap-6">
+          <div class="shrink-0">
             <a
               href="/"
-              class="text-[15px] tracking-tight text-neutral-100 hover:text-neutral-300 focus-visible:text-neutral-300"
+              class="whitespace-nowrap text-[15px] tracking-tight text-neutral-100 hover:text-neutral-300 focus-visible:text-neutral-300"
             >
               {SITE.title}
             </a>
           </div>
-          <nav class="flex items-center gap-4 text-xs text-neutral-400">
+          <nav class="flex items-center gap-2 text-xs text-neutral-400 sm:gap-4">
             {NAV_LINKS.map((item) => (
               <a
                 href={item.href}
