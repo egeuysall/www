@@ -186,7 +186,7 @@ async function publishNewsletter(post: PublishedPost, url: string): Promise<Dist
 }
 
 function newsletterUnsubscribeUrl(email: string): URL {
-  return new URL(`/newsletter/?unsubscribe=${encodeURIComponent(createUnsubscribeToken(email))}`, siteUrl());
+  return new URL(`/blog/?unsubscribe=${encodeURIComponent(createUnsubscribeToken(email))}`, siteUrl());
 }
 
 function newsletterExcerpt(content: string): string[] {

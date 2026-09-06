@@ -107,12 +107,12 @@ export const GET: APIRoute = async ({ url }) => {
       if (!readUnsubscribeToken(unsubscribeToken)) return redirect(url, "error");
       return new Response(null, {
         status: 303,
-        headers: { Location: new URL(`/newsletter/?unsubscribe=${encodeURIComponent(unsubscribeToken)}`, url).toString() },
+        headers: { Location: new URL(`/blog/?unsubscribe=${encodeURIComponent(unsubscribeToken)}`, url).toString() },
       });
     }
     return new Response(null, {
       status: 303,
-      headers: { Location: new URL("/newsletter/", url).toString() },
+      headers: { Location: new URL("/blog/", url).toString() },
     });
   } catch {
     return redirect(url, "error");
@@ -163,7 +163,7 @@ async function confirmationEmailPayload(confirmationUrl: string, email: string) 
 function redirect(url: URL, status: string): Response {
   return new Response(null, {
     status: 303,
-    headers: { Location: new URL(`/newsletter?status=${status}`, url).toString() },
+    headers: { Location: new URL(`/blog/?status=${status}`, url).toString() },
   });
 }
 
