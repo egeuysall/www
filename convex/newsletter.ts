@@ -36,13 +36,12 @@ export const subscribe = mutation({
     requireHash(args.emailHash, "email hash");
     requireHash(args.confirmTokenHash, "confirmation token");
     requireHash(args.rateHash, "rate hash");
-    await limits.limit(ctx, "subscribe", { key: args.rateHash, throws: true });
-
     const existing = await ctx.db
       .query("newsletterSubscribers")
       .withIndex("by_emailHash", (q) => q.eq("emailHash", args.emailHash))
       .first();
     if (existing?.status === "subscribed") return { status: "subscribed" as const };
+    await limits.limit(ctx, "subscribe", { key: args.rateHash, throws: true });
 
     const now = Date.now();
     if (existing) {
