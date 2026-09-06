@@ -76,7 +76,7 @@ security find-generic-password -s www-admin-password -w
 
 ### Automatic publication
 
-The existing iA Writer Micropub endpoint remains the site publisher and keeps its original response contract. New Micropub commits are fanned out asynchronously by the GitHub webhook at `https://egeuysal.com/api/github-webhook`; the private editor publishes directly after writing GitHub. Both paths send new posts to configured X, LinkedIn, email, and Substack handoff channels. Editing an existing post does not repost it.
+The existing iA Writer Micropub endpoint remains the site publisher and keeps its original response contract. New Micropub commits are fanned out asynchronously by the GitHub webhook at `https://egeuysal.com/api/github-webhook`; the private editor publishes directly after writing GitHub. Both paths send new posts to configured X, LinkedIn, and email channels. Editing an existing post does not repost it.
 
 Set these additional Vercel environment variables to enable distribution:
 
@@ -91,8 +91,6 @@ RESEND_API_KEY=
 NEWSLETTER_FROM=Ege Uysal <hi@egeuysal.com>
 NEWSLETTER_TOKEN_SECRET=
 GITHUB_WEBHOOK_SECRET=
-SUBSTACK_AUTOMATION_WEBHOOK_URL=
-SUBSTACK_AUTOMATION_WEBHOOK_TOKEN=
 ```
 
 One-time setup:
@@ -101,7 +99,7 @@ One-time setup:
 2. In the [LinkedIn Developer Portal](https://www.linkedin.com/developers/apps), create/select an app with the Share on LinkedIn product, authorize `w_member_social`, and set the returned member token and `urn:li:person:<member-id>`.
 3. Verify `egeuysal.com` in Resend, create an API key, set `RESEND_API_KEY` and `NEWSLETTER_FROM`, then generate `NEWSLETTER_TOKEN_SECRET` with `openssl rand -hex 32`.
 4. Add a repository push webhook to `https://egeuysal.com/api/github-webhook` with the same random value in `GITHUB_WEBHOOK_SECRET`; subscribe to the `push` event and send JSON.
-5. Substack does not currently document a public article/Note publishing endpoint. For automatic handoff, point `SUBSTACK_AUTOMATION_WEBHOOK_URL` at a trusted HTTPS automation bridge that you control; otherwise use the site's RSS feed at `/rss.xml` and publish in Substack's editor.
+5. For other publishing platforms, use the site's RSS feed at `/rss.xml` or add a separately reviewed distribution adapter.
 
 The newsletter uses double opt-in and one-click unsubscribe. Readers do not need passwords or accounts; likes and comments continue using the existing anonymous, rate-limited flow.
 

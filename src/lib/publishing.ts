@@ -20,8 +20,8 @@ export type PublishedPost = {
 };
 
 export type DistributionResult = {
-  channel: "x" | "linkedin" | "email" | "substack";
-  status: "published" | "handed_off" | "skipped" | "failed";
+  channel: "x" | "linkedin" | "email";
+  status: "published" | "skipped" | "failed";
   detail?: string;
 };
 
@@ -45,10 +45,9 @@ export async function publishToChannels(post: PublishedPost): Promise<Distributi
       publishToX(post, url),
       publishToLinkedIn(post, url),
       publishNewsletter(post, url),
-      handoffToSubstack(post, url),
     ]);
   } catch {
-    return (["x", "linkedin", "email", "substack"] as const).map((channel) => ({
+    return (["x", "linkedin", "email"] as const).map((channel) => ({
       channel,
       status: "failed" as const,
       detail: "Publication fan-out failed",
@@ -183,37 +182,6 @@ async function publishNewsletter(post: PublishedPost, url: string): Promise<Dist
     return { channel: "email", status: "published", detail: `${subscribers.length} subscriber(s)` };
   } catch {
     return { channel: "email", status: "failed", detail: "Newsletter request failed" };
-  }
-}
-
-async function handoffToSubstack(post: PublishedPost, url: string): Promise<DistributionResult> {
-  const endpoint = env("SUBSTACK_AUTOMATION_WEBHOOK_URL");
-  if (!endpoint) return { channel: "substack", status: "skipped", detail: "Substack handoff is not configured" };
-  let parsed: URL;
-  try {
-    parsed = new URL(endpoint);
-    if (parsed.protocol !== "https:") throw new Error("HTTPS required");
-  } catch {
-    return { channel: "substack", status: "failed", detail: "Substack handoff URL must use HTTPS" };
-  }
-
-  try {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    const token = env("SUBSTACK_AUTOMATION_WEBHOOK_TOKEN");
-    if (token) headers.Authorization = `Bearer ${token}`;
-    const response = await fetch(parsed, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({
-        event: "blog.published",
-        post: { ...post, url },
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!response.ok) return { channel: "substack", status: "failed", detail: `Substack handoff returned ${response.status}` };
-    return { channel: "substack", status: "handed_off" };
-  } catch {
-    return { channel: "substack", status: "failed", detail: "Substack handoff failed" };
   }
 }
 
