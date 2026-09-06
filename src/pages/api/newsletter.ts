@@ -73,6 +73,18 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     return respond(request, { ok: true, message: "Check your email to confirm your subscription." }, 200, "check");
   } catch (error) {
+    const retryAfter = rateLimitRetryAfterMs(error);
+    if (retryAfter !== null) {
+      return new Response(JSON.stringify({ error: "Too many subscription attempts. Please try again later." }), {
+        status: 429,
+        headers: {
+          "Cache-Control": "no-store",
+          "Content-Type": "application/json",
+          "Retry-After": String(Math.ceil(retryAfter / 1_000)),
+          "X-Content-Type-Options": "nosniff",
+        },
+      });
+    }
     console.error("Newsletter subscription failed", error instanceof Error ? error.message : "Unknown error");
     return json({ error: "Newsletter subscription failed" }, 503);
   }
@@ -163,4 +175,12 @@ function respond(request: Request, body: Record<string, unknown>, status: number
 
 function siteUrl(): URL {
   return new URL(process.env.PUBLIC_SITE_URL || "https://egeuysal.com");
+}
+
+function rateLimitRetryAfterMs(error: unknown): number | null {
+  if (!error || typeof error !== "object") return null;
+  const data = (error as { data?: unknown }).data;
+  if (!data || typeof data !== "object" || (data as { kind?: unknown }).kind !== "RateLimited") return null;
+  const retryAfter = (data as { retryAfter?: unknown }).retryAfter;
+  return typeof retryAfter === "number" && Number.isFinite(retryAfter) ? Math.max(0, Math.ceil(retryAfter)) : null;
 }
