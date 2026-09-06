@@ -47,7 +47,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     const body = { ok: true, message: "Check your email to confirm your subscription." };
     return request.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() === "application/json"
       ? json(body)
-      : Response.redirect(new URL("/newsletter?status=check", request.url), 303);
+      : redirect(new URL(request.url), "check");
   } catch (error) {
     console.error("Newsletter subscription failed", error instanceof Error ? error.message : "Unknown error");
     return json({ error: "Newsletter subscription failed" }, 503);
@@ -77,7 +77,10 @@ export const GET: APIRoute = async ({ url }) => {
       });
       return redirect(url, "unsubscribed");
     }
-    return Response.redirect(new URL("/newsletter/", url), 303);
+    return new Response(null, {
+      status: 303,
+      headers: { Location: new URL("/newsletter/", url).toString() },
+    });
   } catch {
     return redirect(url, "error");
   }
@@ -121,7 +124,10 @@ async function sendConfirmationEmail(email: string, token: string): Promise<bool
 }
 
 function redirect(url: URL, status: string): Response {
-  return Response.redirect(new URL(`/newsletter?status=${status}`, url), 303);
+  return new Response(null, {
+    status: 303,
+    headers: { Location: new URL(`/newsletter?status=${status}`, url).toString() },
+  });
 }
 
 function siteUrl(): URL {
