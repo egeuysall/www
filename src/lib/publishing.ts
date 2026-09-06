@@ -158,7 +158,7 @@ async function publishNewsletter(post: PublishedPost, url: string): Promise<Dist
         const html = await render(createElement<Partial<NewsletterEmailProps>>(NewsletterEmail, {
           title: post.title,
           description: post.description,
-          excerpt: newsletterExcerpt(post.content),
+          excerpt: newsletterExcerpt(post.content, post.description),
           publishedAt: formatDate(new Date(`${post.publishedAt}T00:00:00.000Z`)),
           url,
           unsubscribeUrl: newsletterUnsubscribeUrl(email).toString(),
@@ -189,7 +189,7 @@ function newsletterUnsubscribeUrl(email: string): URL {
   return new URL(`/blog/?unsubscribe=${encodeURIComponent(createUnsubscribeToken(email))}`, siteUrl());
 }
 
-function newsletterExcerpt(content: string): string[] {
+function newsletterExcerpt(content: string, description: string): string[] {
   const body = content.replace(/^---[\s\S]*?---\s*/, "");
   const paragraphs = body
     .split(/\n{2,}/)
@@ -207,8 +207,10 @@ function newsletterExcerpt(content: string): string[] {
     .filter(Boolean);
 
   const excerpt: string[] = [];
+  const descriptionText = description.replace(/\s+/g, " ").trim();
   let remaining = 900;
   for (const paragraph of paragraphs) {
+    if (paragraph === descriptionText) continue;
     if (excerpt.length === 2 || remaining <= 0) break;
     if (paragraph.length > remaining) break;
     excerpt.push(paragraph);
