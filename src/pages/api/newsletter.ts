@@ -26,8 +26,29 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     return json({ error: "Request body too large" }, 413);
   }
 
-  const email = await readEmail(request);
-  if (!email) return json({ error: "Enter a valid email address" }, 400);
+  const fields = await readFields(request);
+  if (!fields) return json({ error: "Invalid request body" }, 400);
+
+  const unsubscribeToken = typeof fields.unsubscribe === "string" ? fields.unsubscribe.trim() : "";
+  if (unsubscribeToken) {
+    const email = readUnsubscribeToken(unsubscribeToken);
+    if (!email) return respond(request, { error: "That link is invalid or expired." }, 400, "error");
+    try {
+      const client = getConvexServerClient();
+      await client.mutation(api.newsletter.unsubscribe, {
+        secret: getWriteSecret(),
+        emailHash: hashNewsletterValue(`email:${email}`),
+      });
+      return respond(request, { ok: true, message: "You’re unsubscribed." }, 200, "unsubscribed");
+    } catch (error) {
+      console.error("Newsletter unsubscribe failed", error instanceof Error ? error.message : "Unknown error");
+      return respond(request, { error: "Newsletter unsubscribe failed" }, 503, "error");
+    }
+  }
+
+  const rawEmail = typeof fields.email === "string" ? fields.email : "";
+  const email = normalizeEmail(rawEmail);
+  if (!isEmail(email)) return json({ error: "Enter a valid email address" }, 400);
   if (!process.env.RESEND_API_KEY || !process.env.NEWSLETTER_FROM) {
     return json({ error: "Newsletter is not configured" }, 503);
   }
@@ -48,9 +69,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
       if (!sent) return json({ error: "Could not send confirmation email" }, 502);
     }
     const body = { ok: true, message: "Check your email to confirm your subscription." };
-    return request.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() === "application/json"
-      ? json(body)
-      : redirect(new URL(request.url), "check");
+    return respond(request, body, 200, "check");
   } catch (error) {
     console.error("Newsletter subscription failed", error instanceof Error ? error.message : "Unknown error");
     return json({ error: "Newsletter subscription failed" }, 503);
@@ -59,12 +78,11 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
 export const GET: APIRoute = async ({ url }) => {
   try {
-    const client = getConvexServerClient();
-    const secret = getWriteSecret();
     const confirmationToken = url.searchParams.get("confirm");
     if (confirmationToken) {
+      const client = getConvexServerClient();
       const result = await client.mutation(api.newsletter.confirm, {
-        secret,
+        secret: getWriteSecret(),
         confirmTokenHash: hashNewsletterValue(`confirm:${confirmationToken}`),
       });
       return redirect(url, result.confirmed ? "confirmed" : "error");
@@ -72,13 +90,11 @@ export const GET: APIRoute = async ({ url }) => {
 
     const unsubscribeToken = url.searchParams.get("unsubscribe");
     if (unsubscribeToken) {
-      const email = readUnsubscribeToken(unsubscribeToken);
-      if (!email) return redirect(url, "error");
-      await client.mutation(api.newsletter.unsubscribe, {
-        secret,
-        emailHash: hashNewsletterValue(`email:${email}`),
+      if (!readUnsubscribeToken(unsubscribeToken)) return redirect(url, "error");
+      return new Response(null, {
+        status: 303,
+        headers: { Location: new URL(`/newsletter?unsubscribe=${encodeURIComponent(unsubscribeToken)}`, url).toString() },
       });
-      return redirect(url, "unsubscribed");
     }
     return new Response(null, {
       status: 303,
@@ -89,18 +105,17 @@ export const GET: APIRoute = async ({ url }) => {
   }
 };
 
-async function readEmail(request: Request): Promise<string | null> {
+async function readFields(request: Request): Promise<Record<string, unknown> | null> {
   const contentType = request.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase();
   if (contentType !== "application/x-www-form-urlencoded" && contentType !== "application/json") return null;
   const raw = await request.arrayBuffer();
   if (raw.byteLength > MAX_BODY_BYTES) return null;
   try {
-    const value = contentType === "application/json"
-      ? (JSON.parse(new TextDecoder().decode(raw)) as { email?: unknown }).email
-      : new URLSearchParams(new TextDecoder().decode(raw)).get("email");
-    if (typeof value !== "string") return null;
-    const email = normalizeEmail(value);
-    return isEmail(email) ? email : null;
+    const value: unknown = contentType === "application/json"
+      ? JSON.parse(new TextDecoder().decode(raw))
+      : Object.fromEntries(new URLSearchParams(new TextDecoder().decode(raw)));
+    if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+    return value as Record<string, unknown>;
   } catch {
     return null;
   }
@@ -136,6 +151,12 @@ function redirect(url: URL, status: string): Response {
     status: 303,
     headers: { Location: new URL(`/newsletter?status=${status}`, url).toString() },
   });
+}
+
+function respond(request: Request, body: Record<string, unknown>, status: number, redirectStatus: string): Response {
+  return request.headers.get("content-type")?.split(";", 1)[0].trim().toLowerCase() === "application/json"
+    ? json(body, status)
+    : redirect(new URL(request.url), redirectStatus);
 }
 
 function siteUrl(): URL {

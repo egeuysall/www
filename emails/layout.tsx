@@ -69,14 +69,14 @@ export function EmailFrame({ preview, children, unsubscribeUrl }: EmailFrameProp
               >
                 Ege Uysal
               </Link>
-              <Text className="m-0 mt-1 font-mono text-[11px] uppercase leading-4 tracking-[0.16em] text-[#737373]">
-                Blog
-              </Text>
             </Section>
 
             {children}
 
-            <Hr className="my-8 border-0 border-t border-solid border-[#262626]" />
+            <Hr
+              className="my-8 w-full"
+              style={{ borderTop: "1px solid #262626" }}
+            />
             <Section>
               <Text className="m-0 font-mono text-[11px] leading-5 text-[#737373]">
                 <Link href={SITE_URL} className="text-[#a3a3a3] underline decoration-[#404040] underline-offset-4">

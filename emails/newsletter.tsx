@@ -6,6 +6,7 @@ import { EmailFrame, SITE_URL } from "./layout";
 export type NewsletterEmailProps = {
   title: string;
   description: string;
+  excerpt: string[];
   publishedAt: string;
   url: string;
   unsubscribeUrl: string;
@@ -15,6 +16,10 @@ const preview: NewsletterEmailProps = {
   title: "The End of the Chatbot Era",
   description:
     "From Turing and Dartmouth to GPT-6 Astra, AI has moved from predicting language to operating inside real workflows. I felt that shift while rebuilding Paper and Igloo in about an hour.",
+  excerpt: [
+    "I used to think AI progress was mostly about the quality of an answer. Could the model write better, code better, explain more, or reason through harder problems?",
+    "Then I gave GPT-6 Astra a couple of design references and asked it to help recreate Paper and Igloo. In about an hour, I had convincing local versions of both landing pages: responsive layouts, working interactions, source code, local assets, and screenshots that looked like real products instead of unfinished mockups.",
+  ],
   publishedAt: "September 5, 2026",
   url: `${SITE_URL}/blog/the-end-of-the-chatbot-era/`,
   unsubscribeUrl: `${SITE_URL}/newsletter/`,
@@ -35,17 +40,26 @@ export function NewsletterEmail(props: Partial<NewsletterEmailProps> = {}) {
         <Text className="m-0 mt-7 font-mono text-[14px] leading-[1.65] text-[#d4d4d4]">
           {values.description}
         </Text>
+        {values.excerpt.map((paragraph, index) => (
+          <Text key={paragraph} className="m-0 mt-5 font-mono text-[14px] leading-[1.65] text-[#d4d4d4]">
+            {index === values.excerpt.length - 1 ? withTruncation(paragraph) : paragraph}
+          </Text>
+        ))}
         <Text className="m-0 mt-7 font-mono text-[13px] leading-6">
           <Link
             href={values.url}
             className="font-mono text-[#f5f5f5] underline decoration-[#525252] underline-offset-4"
           >
-            Read “{values.title}” →
+            Read more
           </Link>
         </Text>
       </Section>
     </EmailFrame>
   );
+}
+
+function withTruncation(value: string): string {
+  return `${value.replace(/\.+$/, "")}...`;
 }
 
 export default NewsletterEmail;

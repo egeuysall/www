@@ -132,6 +132,7 @@ async function publishNewsletter(post: PublishedPost, url: string): Promise<Dist
         const html = await render(createElement<Partial<NewsletterEmailProps>>(NewsletterEmail, {
           title: post.title,
           description: post.description,
+          excerpt: newsletterExcerpt(post.content),
           publishedAt: formatDate(new Date(`${post.publishedAt}T00:00:00.000Z`)),
           url,
           unsubscribeUrl: newsletterUnsubscribeUrl(email).toString(),
@@ -190,7 +191,35 @@ async function handoffToSubstack(post: PublishedPost, url: string): Promise<Dist
 }
 
 function newsletterUnsubscribeUrl(email: string): URL {
-  return new URL(`/api/newsletter?unsubscribe=${encodeURIComponent(createUnsubscribeToken(email))}`, siteUrl());
+  return new URL(`/newsletter?unsubscribe=${encodeURIComponent(createUnsubscribeToken(email))}`, siteUrl());
+}
+
+function newsletterExcerpt(content: string): string[] {
+  const body = content.replace(/^---[\s\S]*?---\s*/, "");
+  const paragraphs = body
+    .split(/\n{2,}/)
+    .map((paragraph) =>
+      paragraph
+        .replace(/```[\s\S]*?```/g, " ")
+        .replace(/<[^>]*>/g, " ")
+        .replace(/!\[([^\]]*)\]\([^)]*\)/g, "$1")
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+        .replace(/^#{1,6}\s+/gm, "")
+        .replace(/[*_`~]/g, "")
+        .replace(/\s+/g, " ")
+        .trim(),
+    )
+    .filter(Boolean);
+
+  const excerpt: string[] = [];
+  let remaining = 900;
+  for (const paragraph of paragraphs) {
+    if (excerpt.length === 2 || remaining <= 0) break;
+    if (paragraph.length > remaining) break;
+    excerpt.push(paragraph);
+    remaining -= paragraph.length;
+  }
+  return excerpt;
 }
 
 function frontmatterValue(content: string, key: string): string {

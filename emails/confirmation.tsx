@@ -26,7 +26,7 @@ export function ConfirmationEmail(props: Partial<ConfirmationEmailProps> = {}) {
         <Text className="m-0 mt-7 font-mono text-[13px] leading-6">
           <Link
             href={values.confirmationUrl}
-            className="inline-block border border-solid border-[#404040] px-3 py-2 font-mono text-[12px] leading-4 text-[#f5f5f5] no-underline"
+            className="inline-block rounded-sm border border-solid border-[#404040] px-3 py-2 font-mono text-[12px] leading-4 text-[#f5f5f5] no-underline"
           >
             Confirm subscription
           </Link>
