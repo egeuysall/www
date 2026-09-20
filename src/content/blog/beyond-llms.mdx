@@ -1,0 +1,250 @@
+---
+title: "Beyond LLMs"
+description: "Most agent systems still use a language model as a very expensive function that returns text."
+publishedAt: 2026-09-20
+tags: []
+draft: false
+---
+Most agent systems still use a language model as a very expensive function that returns text.
+
+```text
+state
+  -> autoregressive model
+  -> JSON or prose
+  -> parser
+  -> validator
+  -> retry
+  -> tool call
+```
+
+Even when the output is valid JSON, the model is still generating a sequence of tokens. The application then has to recover a decision from that sequence.
+
+[TypeSafe](https://typesafe.ai/) is exploring a different primitive with [Jev](https://typesafe.ai/blog/introducing-system-one-models-and-jev). Instead of asking a model to explain a decision and parsing the explanation, you define typed questions and receive typed answers, probabilities, and confidence.
+
+That sounds like a small API difference. It could be an infrastructure difference.
+
+## How Jev works
+
+Jev evaluates a `state` against one or more questions. TypeSafe currently exposes three primitives:
+
+- `Choice`: select one option from a fixed set
+- `Score`: place the state on an ordered scale
+- `Noul`: answer a yes-or-no question as a value from 0 to 1
+
+A support ticket can be evaluated like this:
+
+```python
+from typesafe_sdk import Choice, Score, TypeSafeClient
+
+TICKET = """
+The export button crashes the settings page in Safari.
+It works in Chrome, but several customers only use Safari.
+"""
+
+with TypeSafeClient() as client:
+    response = client.system_one(
+        state=TICKET,
+        questions={
+            "team": Choice(
+                instructions="Which team should handle this issue?",
+                criteria={
+                    "billing": "Payments, invoices, or subscriptions",
+                    "technical": "Bugs, crashes, or integrations",
+                    "sales": "Pricing, plans, or pre-sales questions",
+                },
+            ),
+            "severity": Score(
+                instructions="How severe is the issue?",
+                criteria=[
+                    "Cosmetic; no impact to functionality",
+                    "Broken feature, but a workaround exists",
+                    "Blocking issue; no workaround exists",
+                ],
+            ),
+        },
+    )
+
+team = response.answers["team"]
+severity = response.answers["severity"]
+
+print(team.choice)          # technical
+print(team.probabilities)   # probability for every team
+print(team.confidence)      # confidence in the selected team
+print(severity.score)       # 0 to 2, can be fractional
+```
+
+The important part is the response shape. A `Choice` answer contains a selected value, a probability distribution over all options, and confidence. A `Score` answer contains a probability distribution over the levels, a probability-weighted score, and confidence.
+
+The code can then own the policy:
+
+```python
+if (
+    team.choice == "technical"
+    and min(team.confidence, severity.confidence) >= 0.90
+):
+    create_engineering_ticket(TICKET, severity=severity.score)
+else:
+    send_to_human_review(TICKET, team, severity)
+```
+
+The model does not decide whether `0.90` is enough. The product does. A low-risk routing action may use a lower threshold than an irreversible financial action.
+
+TypeSafe's [documentation](https://docs.typesafe.ai/) says each question is evaluated independently and in parallel against the same state. That means adding several small questions can avoid serial model calls and keep the composition logic in code.
+
+## This is not JSON mode
+
+An ordinary structured-output call looks like this:
+
+```python
+text = llm.generate(prompt)
+data = json.loads(text)
+validate_schema(data)
+```
+
+The schema protects the shape. It does not protect the meaning. The model can return a perfectly valid object with a confidently wrong decision, or a confidence value that is just another generated number.
+
+Jev's question defines the output space before inference:
+
+```json
+{
+  "team": {
+    "type": "choice",
+    "criteria": {
+      "billing": "Payments and subscriptions",
+      "technical": "Bugs and integrations",
+      "sales": "Pricing and account questions"
+    }
+  }
+}
+```
+
+The model returns a value from that set and a distribution over the set. It does not generate an explanation that the application has to interpret first.
+
+This gives the system type safety, but type safety is not truth. If the only valid outputs are `billing`, `technical`, and `sales`, the model can still choose the wrong one. The probability distribution is useful because it exposes ambiguity, not because it proves correctness.
+
+TypeSafe's `confidence` is derived from the shape of that distribution. Whether the probabilities are calibrated for a particular production workflow still has to be tested on that workflow. A score of `0.95` is only operationally meaningful if predictions near `0.95` are actually right at roughly that rate on relevant data.
+
+## The infrastructure changes when decisions are first-class
+
+Today, an agent often spends its latency budget on a serial loop:
+
+```text
+model call
+  -> decode tokens
+  -> parse tool arguments
+  -> retry malformed output
+  -> execute tool
+  -> observe result
+  -> call model again
+```
+
+A decision model enables a different loop:
+
+```text
+structured state
+  -> parallel Choice / Score / Noul questions
+  -> local policy code
+  -> one tool call
+  -> outcome log
+```
+
+That changes more than the prompt.
+
+### 1. The serving target becomes a decision plane
+
+A chat endpoint is optimized around text generation. A decision endpoint can be treated more like a high-throughput feature service:
+
+- bounded output schemas
+- small response payloads
+- predictable latency
+- batchable questions
+- probabilities available for routing
+- outcomes available for calibration
+
+The model becomes one stage in a typed data pipeline instead of the center of an open-ended conversation.
+
+### 2. Parallel questions replace serial model calls
+
+Suppose a ticket needs team routing, severity, customer frustration, and report quality. With a normal LLM, developers often make one call, add another prompt, or create a multi-step agent chain.
+
+With a System One-style API, those questions can be sent together and composed locally:
+
+```python
+priority = (
+    0.60 * (severity.score / 2.0)
+    + 0.25 * (frustration.score / 2.0)
+    + 0.15 * (report_quality.score / 3.0)
+)
+
+if priority > 0.75:
+    page_on_call_engineer()
+```
+
+The weights are visible, testable, and changeable. They do not live inside an opaque prompt or require retraining a model.
+
+### 3. Confidence becomes a routing signal
+
+An agent does not always need another bigger model. It may need a router that knows when to use a smaller model, when to ask for more context, and when to escalate.
+
+```python
+if answer.confidence >= 0.95:
+    execute_fast_path(answer.choice)
+elif answer.confidence >= 0.65:
+    request_confirmation(answer)
+else:
+    escalate_to_human(answer)
+```
+
+That creates a real control plane for inference. Confidence can influence model selection, human review, queue priority, retry budgets, and tool permissions.
+
+### 4. Less generation can change the economics
+
+Autoregressive models spend work producing tokens, even when the application only needs one enum value and a probability distribution. A model designed to emit typed decisions can avoid much of that output overhead.
+
+TypeSafe says Jev uses a parallel sampler and is optimized for System One tasks. Its public benchmarks are company-produced and should be treated cautiously, but the systems argument is sound: if the output is small and bounded, the serving architecture does not need to look like a chat-completion server.
+
+The resulting advantage is not just a cheaper API call. It could make AI viable inside high-frequency paths where an eight-second agent loop is impossible: fraud checks, ranking, moderation, workflow routing, real-time UI decisions, and map-reduce over large datasets.
+
+## The model layer becomes more specialized
+
+This suggests a different division of labor:
+
+```text
+LLM
+  -> interpret ambiguous requests
+  -> explain results
+  -> handle novel language and reasoning
+
+Jev-like decision model
+  -> classify
+  -> score
+  -> route
+  -> rank
+  -> gate actions
+
+Deterministic code
+  -> permissions
+  -> thresholds
+  -> state transitions
+  -> side effects
+```
+
+This is not an argument that LLMs are obsolete. It is an argument that “model” should stop meaning one universal text generator.
+
+The best architecture may use a language model at the edge and a decision model in the hot loop. The LLM turns messy reality into a useful state. The decision model answers small questions about that state. Code combines the answers and owns the consequences.
+
+## What is still unproven
+
+There are real limitations.
+
+Calibration can fail under distribution shift. A model can be well behaved on an evaluation set and wrong on next month's traffic. Typed outputs prevent schema errors but not semantic errors. And decomposing a large judgment into atomic questions moves complexity into workflow design rather than deleting it.
+
+The hardest question is whether these models generalize beyond carefully bounded tasks. A support router, fraud score, or moderation gate has a clear output space. An open-ended research problem does not.
+
+That is why Jev is more interesting as an infrastructure primitive than as a replacement for ChatGPT. It targets the part of an AI system where language is often unnecessary but uncertainty is unavoidable.
+
+We have spent the last few years making models better at talking. The next shift may come from making models easier for software to depend on.
+
+LLMs are the interface layer.
+
+Typed decision models could become the decision plane.
