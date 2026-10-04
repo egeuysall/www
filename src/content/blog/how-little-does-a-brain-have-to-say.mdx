@@ -1,0 +1,179 @@
+---
+title: "How Little Does a Brain Have to Say?"
+description: "I had a question that sounded ridiculous at first: could I think of an idea and have it appear as a Markdown file?"
+publishedAt: 2026-10-04
+tags: []
+draft: false
+---
+I had a question that sounded ridiculous at first: could I think of an idea and have it appear as a Markdown file?
+
+Not dictate it. Not reach for a keyboard. Just intentionally formulate something, and let a computer turn the signal into a note I can edit.
+
+The obvious diagram is almost useless:
+
+```text
+brain -> text -> Markdown
+```
+
+It hides the hardest part in one arrow. Today's brain-computer interfaces do not provide a general-purpose stream of everything a person thinks. The more interesting question is smaller:
+
+> What is the minimum reliable signal a brain interface would need to send for a computer to make a useful *candidate* note?
+
+That changes the engineering problem. We do not have to begin by decoding polished sentences. We can ask whether a deliberately low-bandwidth, uncertain channel can carry enough intent to distinguish one note from the alternatives, while leaving the person in control of what gets saved.
+
+## What the research actually supports
+
+There are impressive brain-to-text results, but the hardware and tasks matter. In a [2023 Nature study](https://www.nature.com/articles/s41586-023-06377-x), an implanted intracortical interface decoded *attempted speech* from one participant with ALS at 62 words per minute. On a 125,000-word vocabulary, its word error rate was 23.8%. That is a major result for communication, not evidence that a consumer headband can transcribe an unspoken essay.
+
+A [2025 Cell study](https://www.cell.com/cell/fulltext/S0092-8674(25)00681-6) investigated inner speech with implanted electrodes in four people with severe speech impairment. It also explored safeguards such as a keyword lock, because the distinction between intended communication and other internal activity matters. The lock is a proof of concept, not a guarantee that a system cannot reveal unintended speech. Imagined speech was harder to decode than attempted speech, as the [NIH summary](https://www.nih.gov/news-events/nih-research-matters/decoding-inner-speech-brain-signals) makes clear.
+
+Non-invasive scalp EEG is a different signal. It is affected by noise, artifacts, and limited spatial resolution. A [review of imagined-speech EEG](https://pmc.ncbi.nlm.nih.gov/articles/PMC8116487/) describes a field built largely around small, prompted classification tasks. The [Chisco dataset paper](https://www.nature.com/articles/s41597-024-04114-1), for example, records silently imagined, visually prompted Chinese sentences with high-density EEG. That is useful research data. It is not a demonstration of arbitrary, spontaneous thought-to-text. The [public dataset](https://openneuro.org/datasets/ds005170/versions/1.1.2) is a place to test methods, not a ready-made wearable interface.
+
+So I would not call the project “mind reading.” I would call it an **intentional communication protocol over a noisy channel**.
+
+## The interface should transmit uncertainty, not prose
+
+Suppose I am working on a project and intentionally want to capture an idea about its distribution. A hypothetical decoder might produce this:
+
+```json
+{
+  "mode": [{ "id": "write_note", "p": 0.94 }, { "id": "none", "p": 0.06 }],
+  "project": [{ "id": "atlai", "p": 0.72 }, { "id": "other", "p": 0.28 }],
+  "concepts": [{ "id": "distribution", "p": 0.81 }, { "id": "research", "p": 0.57 }],
+  "signalQuality": 0.76
+}
+```
+
+Those numbers are illustrative. I am not claiming a consumer EEG device can produce this object today, or that a model's raw scores are calibrated probabilities. It is the *contract* I would want the decoder to satisfy: a small set of possible intents, their measured uncertainty, and an explicit signal-quality estimate.
+
+The rest of the system can then make a proposal using bounded context: the active project, a few recent notes, and the user's own vocabulary. It should not silently fill in a detailed idea merely because that idea sounds plausible.
+
+```text
+intentional capture window
+  -> sensor and signal-quality checks
+  -> subject-specific decoder
+  -> intent candidates + uncertainty
+  -> bounded context retrieval
+  -> proposed Markdown
+  -> user confirmation
+  -> exclusive file write
+```
+
+There are two very different sources of information here. The signal says something about *what I intended now*. Context says what has been relevant to me before. If the context is strong enough, an AI can produce a convincing note even when the neural signal contains almost no information. That would be autocomplete, not brain-to-Markdown.
+
+## Put the safety policy in code
+
+The language model can write a candidate note. It should not decide whether it heard me correctly, whether it was allowed to listen, or whether a file should be saved.
+
+Here is a sketch of the boundary in TypeScript. The scores and thresholds are placeholders to be calibrated against real held-out data, not clinical or product claims.
+
+```ts
+type Candidate = { id: string; p: number };
+type Signal = {
+  captureAuthorized: boolean;
+  signalQuality: number;
+  mode: Candidate[];
+  project: Candidate[];
+  concepts: Candidate[];
+};
+
+type Decision =
+  | { kind: "abstain"; reason: string }
+  | { kind: "propose"; projectId: string; conceptIds: string[] };
+
+function top(items: Candidate[]): Candidate | undefined {
+  return [...items].sort((a, b) => b.p - a.p)[0];
+}
+
+function decide(signal: Signal): Decision {
+  if (!signal.captureAuthorized) {
+    return { kind: "abstain", reason: "capture not authorized" };
+  }
+  if (signal.signalQuality < 0.75) {
+    return { kind: "abstain", reason: "signal too noisy" };
+  }
+
+  const mode = top(signal.mode);
+  const project = top(signal.project);
+  const concepts = signal.concepts.filter((item) => item.p >= 0.7);
+
+  if (mode?.id !== "write_note" || mode.p < 0.9) {
+    return { kind: "abstain", reason: "write intent unclear" };
+  }
+  if (!project || project.p < 0.7 || concepts.length === 0) {
+    return { kind: "abstain", reason: "note subject unclear" };
+  }
+
+  return {
+    kind: "propose",
+    projectId: project.id,
+    conceptIds: concepts.map((item) => item.id),
+  };
+}
+```
+
+The decision is only permission to *propose*. It is not permission to write. After generation, I would show the evidence alongside the draft: “write note, likely Atlai, likely distribution.” The person can edit, reject, or explicitly confirm it through an independent input, such as a button or gesture. For an early prototype, I would not use the same uncertain neural decoder as the sole confirmation mechanism.
+
+```ts
+import { mkdir, writeFile } from "node:fs/promises";
+import { join, resolve } from "node:path";
+
+async function saveConfirmedNote(
+  root: string,
+  slug: string,
+  markdown: string,
+  confirmed: boolean,
+): Promise<string> {
+  if (!confirmed) throw new Error("Explicit confirmation required");
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new Error("Invalid note slug");
+  }
+
+  const directory = resolve(root);
+  await mkdir(directory, { recursive: true });
+  const file = join(directory, `${slug}.md`);
+  await writeFile(file, markdown, { flag: "wx" }); // Never overwrite silently.
+  return file;
+}
+```
+
+A production version would also authenticate the capture session, bound the retrieved files, keep raw signals private by default, and expose deletion and retention controls. A nice Markdown document is not worth an always-on sensor that I cannot audit or turn off.
+
+## The first experiment needs no brain hardware
+
+I would build the software layer first. Take an intended note, generate a deliberately degraded channel, and measure whether the system reconstructs the intended *subject* rather than merely writing convincing prose.
+
+For example:
+
+```text
+Ground truth: investigate whether agent memory should expire by project state
+Channel:      WRITE_NOTE / project=? / agent-memory=.74 / expiry=.61
+Context:      three recent notes, including one about stale tasks
+Expected:     a candidate about expiring agent memory as project state changes
+Failure:      a polished note asserting a specific design I never supplied
+```
+
+Then vary the channel. Drop the project label. Corrupt a concept. Lower the signal quality. Introduce a highly tempting but incorrect recent note. Compare four conditions:
+
+| Condition | What it tests |
+| --- | --- |
+| Context only | How much the AI can guess without a signal |
+| Signal only | What the channel actually communicates |
+| Signal + context | Whether context improves reconstruction |
+| Shuffled signal + context | Whether the system is ignoring the channel |
+
+If signal + context performs no better than context alone, the interface has not earned its neural component. If a shuffled signal produces equally convincing notes, it may be laundering guesses through an impressive-looking sensor. That control matters more than a polished demo.
+
+I would score top-choice intent accuracy, abstention when the signal is unusable, false writes, semantic agreement with the person's confirmed idea, latency, and the time it takes to correct a draft. A wrong note saved automatically is more costly than an empty capture. Personalization would need held-out sessions and days, not random trials from the same recording session, to test whether it survives drift.
+
+Only after that would I try a public EEG dataset, and even then I would respect the task boundary. Prompted imagined-sentence data can test a decoder on that dataset's labels. It cannot validate an arbitrary idea-capture product. A later wearable study would need paired intentional captures and ground-truth notes, consent, a baseline without the neural signal, and a way to reject outputs without training the model to infer everything from personal context.
+
+## The real question
+
+The exciting version is not a machine that reads my mind in the background. It is a tool I deliberately activate when I have something to say, even if the first signal is only enough to say: write, this project, roughly this concept, I am not sure.
+
+That small signal might be useful when combined with context. Or the experiment might reveal that a keyboard, a voice memo, or a two-button interface remains faster and more trustworthy. I would want to know that too.
+
+The research question is not “Can AI turn thoughts into beautiful Markdown?” A language model can turn almost any prompt into beautiful Markdown.
+
+It is: **how much new, reliable information did the brain channel contribute, and was it enough to make the note mine?**
