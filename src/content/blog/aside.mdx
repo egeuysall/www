@@ -1,0 +1,210 @@
+---
+title: "Aside"
+description: "I came across Aside by chance while watching a YouTube video one day."
+publishedAt: 2026-10-10
+tags: []
+draft: false
+---
+I came across [Aside](https://aside.com/) by chance while watching a YouTube video one day.
+
+It was called [Introducing Aside](https://www.youtube.com/watch?v=Q-f0dQ764so). I was not looking for a new browser. I saw it, got curious, and wanted to give it a shot. It ended up becoming my favorite browser.
+
+The reason was not that it could put an AI answer next to a webpage. I already had plenty of ways to ask a model questions. What made it useful was that the agent could do browser work on my computer, across websites where I was already logged in, and connect that work to the files and tools I actually use.
+
+Aside's main purpose is web browsing that gets work done. Its [website](https://aside.com/) describes it as a browser rebuilt for people and agents, working across logged-in websites rather than depending on a separate integration for every service. That is the part I care about: the agent can operate in the environment where the task already exists.
+
+Recently, I asked it to read my blog folder and suggest something to write about. It inspected my essays, checked discussions on X, and returned ideas. Then I asked it to write about how I use Aside, inspect the non-secret parts of my setup, and save the post in my repository.
+
+The result was not just text I had to copy out of a chat. It was an MDX file on my computer, followed by local validation. Research, writing, and the actual file change were all kept in the same task.
+
+I still use Codex for deeper repository work. But a lot of my work begins on a website, in a document, or with something I need to find again. Aside, let’s start there without packaging everything into a different tool first.
+
+## Aside is where I put work that does not fit inside an editor
+
+A lot of my work is not writing code. It is finding the right document, reading something I already saved, checking a claim, revising a note, preparing club materials, or figuring out what I meant in an earlier conversation.
+
+Each step is small. The annoying part is connecting them.
+
+For the 3D Modeling Club, I used Aside to help plan a three-week hackathon and update the presentation and staff runbook. That was not just a request to generate some slides. Student-facing material needed to stay separate from backstage instructions. Existing QR assets and labels needed to survive the edits. The presentation tool had a 10-slide limit that the plan had to adhere to.
+
+Those are the details that disappear when a task becomes a generic prompt. A polished deck is not useful if it removes the check-in information or exposes staff logistics to students.
+
+A grocery list is a smaller example of the same thing. I used Aside to make a new Bri note using the previous list as a formatting reference, with the updated quantities and explicit exclusions. The old list was a template, not permission to copy every item from the old one into the new one.
+
+Neither task sounds like an AI breakthrough. That is part of why I care about them. They are ordinary pieces of work that require context, access, and enough judgment not to turn a small request into a different task.
+
+I want an assistant who can finish those pieces, not just explain how I could finish them.
+
+## Browser work does not have to mean clicking everything
+
+Calling an AI browser aside can make the workflow seem more visual than it actually is.
+
+Sometimes the right action is to inspect a page and interact with its interface. Sometimes the better route is an authenticated service API, a local file, or an installed CLI. For this post, the blog lives at `~/Developer/www/src/content/blog`, so reading the source files makes more sense than opening every published page.
+
+The same principle applies to Bri. If an installed CLI can update a note and read it back, I do not need the agent to navigate a dashboard to imitate what I would do manually.
+
+The browser is the starting surface, not a requirement to express every operation as a click.
+
+That matters because many real tasks cross boundaries. Research begins on a website, becomes notes, turns into a local draft, and ends with a build check. I do not want to split that into four separate conversations because the tools belong to different categories.
+
+## Why running on my computer matters
+
+A browser agent working in an isolated remote environment can be useful for public research. But if it cannot reach my existing browser state or local files, I have to bridge the gap: upload the document, explain the account context, download the result, move it into the repository, and check it myself.
+
+With Aside's local workflow, the browser actions happen on my machine. The agent can use my logged-in websites and, within the permissions I give it, work with local files and commands. The blog folder is not an attachment; it has to be reconstructed. It is the real folder where the post belongs.
+
+That makes a concrete difference to research. I can ask for sources, screenshots, downloaded papers, and a note saved where I will use it. The useful output is not only a convincing summary. It is evidence I can reopen and files I can inspect.
+
+Aside's [research workflow page](https://aside.com/blog/researchers) describes that same pattern: collect live sources, capture page state, download files, and keep uncertain claims visible. I still decide what the evidence means. The agent handles more of the collection and organization around that decision.
+
+There is an important limitation to the word “local”. It describes where browser actions and files live, not a promise that the language model runs entirely on my laptop. Aside's [privacy policy](https://aside.com/policy/privacy) states that hosted model providers receive the selected task context needed to run a task, which may include prompts, tool results, browser snapshots, screenshots, or selected files. Account services and optional sync also involve servers.
+
+Local execution is useful to me. It is not the same claim as offline inference or no data ever leaving the device.
+
+## The comparison with Comet
+
+[Comet](https://www.perplexity.ai/comet) is another way to ask an assistant to work in a browser. It would be inaccurate to say that it cannot be researched or that the browser itself runs only remotely. Perplexity's [Comet documentation](https://www.perplexity.ai/help-center/comet/en/articles/11732243-advice-and-use-cases) describes multi-site research and browser actions.
+
+The more useful distinction is between browser assistance and the broader local workflow I have verified in Aside. Comet's [assistant privacy documentation](https://www.perplexity.ai/help-center/comet/en/articles/12867415-comet-assistant-privacy-data-use) says it does not access or upload local files by default. Perplexity also documents [local file editing in its desktop app](https://www.perplexity.ai/help-center/en/articles/19800004-work-with-local-files-and-folders) with explicit folder access. Those are different product surfaces and permission boundaries, not proof that Perplexity can never touch a file.
+
+I am not claiming that Aside is the only product capable of conducting research or taking local action. I am describing why it became my favorite: in the environment I use, the browser task can continue into an actual file edit, a command, and a verified result, without requiring me to carry the work between separate conversations.
+
+For this post, that distinction is concrete. Aside from reading my source files, researching the products, revising the file in place, and running the site's checks. I care more about that complete workflow than a broad claim that one browser can do everything and another cannot.
+
+## What actually lives in my Aside setup
+
+I looked through the non-secret parts of `~/.aside` before writing this. The account directory contains instructions, memory, skills, and saved sessions. This is a simplified view, not a complete directory dump:
+
+```text
+~/.aside/u/0/
+  AGENTS.md
+  SOUL.md
+  memory/
+    USER.md
+    MEMORY.md
+    episodic/
+    projects/
+    sites/
+  skills/
+    builtin/
+    user/
+  sessions/
+```
+
+The useful part is not that there are lots of files. It is that different kinds of context have different places to live.
+
+`AGENTS.md` describes how I want the assistant to work: inspect the real source, keep the scope small, preserve exact details, and verify the result. `SOUL.md` describes the voice and working style. The memory directory holds longer-lived preferences and records of earlier work. Skills hold instructions for specific tools and workflows.
+
+Memory is enabled in my current Aside settings. That means I can recover more than the last message in the current conversation. It does not mean every remembered detail is current or correct.
+
+For writing, it is useful to remember that I prefer natural paragraphs over a string of dramatic one-line statements. For a Bri edit, it is useful to remember that I usually want an existing note updated rather than duplicated. For a workout note, remember that changing sets means recalculating the totals, too.
+
+Those preferences save explanation. They should not replace inspection. An old deployment name, account identifier, or document link still needs to be checked before it becomes the target of a new action.
+
+> Memory should reduce repeated explanation, not make stale assumptions harder to notice.
+
+I also have skills in areas like documentation, design, research, and the services I use. I do not need all of them loaded into every task. I want the relevant instructions available when the task reaches that tool.
+
+That is a quieter form of customization than writing one enormous prompt and hoping the model follows every sentence forever.
+
+## Aside also has a CLI
+
+The other part that makes Aside interesting to me is that the browser is not the only way to start a browser task. There is a command-line tool too.
+
+I checked the installed CLI's help and guide while writing this. A prompt can start an agent task directly:
+
+```bash
+Aside --host local "Research these sources and return a brief with links. Do not submit forms or send messages."
+```
+
+That is an example command, not a task I ran for this post. The CLI supports choosing the account, model, thinking effort, permissions, and session host. It also lets me resume or steer a task rather than starting from scratch every time.
+
+For a more explicit inspection, `aside repl` exposes a Playwright-style JavaScript environment. For integration with another agent, `aside mcp` starts a server over stdio. There are read-only memory commands too:
+
+```bash
+aside --help
+aside guide
+aside memory search "blog writing preferences" --json
+aside repl
+aside mcp
+```
+
+Those are different interfaces to the browser workflow, not five tools I need to invoke for every request. The normal prompt route delegates the browsing. The REPL is useful when the task needs direct inspection. MCP gives a coding agent a way to request browser work.
+
+Aside's [developer page](https://aside.com/blog/developers) provides examples such as inspecting a private CI run, capturing staging screenshots, and returning evidence for a code review task. That is a practical bridge between browser state and repository work: the coding agent does not have to guess what a private dashboard currently says.
+
+The CLI also supports selecting a remote host. So aside is not exclusively local in every configuration either. The mode I am describing here is work running on my computer; the important part is knowing which host, browser state, and permissions a task is using.
+
+I like that the workflow is available from both the browser and the terminal. I can start where the task makes sense, rather than treating the graphical interface as the only entry point.
+
+## Where Codex fits into my Aside workflow
+
+Aside is not the only agent environment I use. I still use Codex for repository-focused engineering, including my Convex backend work. But that is supporting context for how I use Aside, not a reason to split every task into two tools.
+
+If Aside can read the relevant files, make a small change, and verify it, I do not need a ceremonial handoff. This post is an example: the research, context gathering, writing, and local validation happened in Aside.
+
+When the work becomes a deeper implementation task, Codex gives me a repository-centered environment with specialized roles. I wrote about that in [Subagents in Codex: Planning vs Execution](/blog/subagents-in-codex-planning-vs-execution/). The relevant part of my current parent configuration is:
+
+```toml
+personality = "pragmatic"
+model = "gpt-6.1-sol"
+model_reasoning_effort = "medium"
+approval_policy = "never"
+sandbox_mode = "danger-full-access"
+
+[agents]
+max_threads = 8
+max_depth = 1
+
+[features]
+multi_agent = true
+memories = true
+```
+
+That is a sanitized excerpt of my own configuration, not a recommended security default. The parent has broad access without approval prompts. Written instructions and independent review do not turn that into an operating-system sandbox.
+
+My nine personal roles cover orchestration, architecture, implementation, review, QA, documentation, local operations, GTM, and training. Planning and review are read-only; the builder owns a scoped change; QA verifies behavior. Most role definitions currently specify `gpt-5.5`, while the docs researcher specifies `gpt-5.4-mini`. They do not all inherit the parent's model.
+
+The part worth carrying back into Aside is the principle, not the roster: inspect before acting, give independent work clear ownership, and do not add agents to make a task look thorough.
+
+## Context needs a source of truth
+
+My Convex work is a good reminder of what personal context can and cannot do. I use Convex with Codex; the Convex plugin is enabled in that setup, and my website's project instructions direct agents to the generated Convex guidelines before making changes to backend code.
+
+In earlier work on Bri, a restored note could retain an already-expired `expiresAt`. The interface made the restoration look successful, but the persisted field left the note eligible to expire again. The actual path went from the dashboard, through an API route and a library function, to a Convex mutation. The fix belonged in the lifecycle logic, not in the restore button’s appearance.
+
+That distinction matters in Aside too. Remembering that I have a Bri note is not the same as reading its current contents. Remembering how I usually deploy is not the same as verifying the target of today's command. A saved preference is context; a current file, record, or observed result is evidence.
+
+An enabled integration is also not proof that it is authenticated or healthy. The agent still needs to check the route it intends to use.
+
+I do not assume that Aside and Codex share a single automatic memory. They have separate instructions, skills, and stored context. When a handoff is useful, I want a small artifact containing the sources, constraints, intended change, and unresolved questions. A clear Markdown note is more dependable than expecting another agent to reconstruct a long conversation.
+
+The reason I like starting in Aside is that gathering those pieces can happen where the work already is. The task can begin with a website or a document without requiring me to package everything into an implementation prompt first.
+
+## The part I still have to own
+
+A capable agent can produce a finished-looking result before I have decided whether it is the result I actually want.
+
+That is especially easy with writing. Aside from that, you can read my previous posts and produce something that sounds plausible under my name. It cannot decide which claims I believe or invent an experience because it would make the introduction stronger.
+
+The same problem appears in engineering. A passing command does not settle whether the correct deployment was changed. A screenshot does not prove that the backend write persisted. A reviewer finding no issues does not prove the patch has no issues.
+
+I still need to own the goal, the permissions, and the standard for completion. For consequential changes, I need to look at the evidence, not just the confidence of the final message.
+
+I also do not want every personal detail available merely because more context might improve an answer. The useful context is the smallest relevant context. Private documents, credentials, and unrelated conversations do not become fair material for a public blog post because an assistant can access them.
+
+This post was written with Aside after inspecting my previous writing and the non-secret parts of my actual setup. That is the workflow being described, not something separate from it. I still have to read the result and decide what belongs under my name.
+
+## Why I keep using Aside
+
+I do not need another place where I can ask AI to explain something. I already have plenty of those.
+
+I need a way to take an ordinary piece of work, give it enough context, and get back a result I can inspect. Sometimes that result is a tested code change. Sometimes it is a revised note, a club presentation, a research summary, or a blog draft saved in the right folder.
+
+Aside makes it easier to work across my logged-in websites and the rest of my computer. Its instructions, skills, and memory mean the task does not have to begin as a fresh conversation with no history. The CLI lets that browser work fit into a terminal workflow too.
+
+The launch video made me curious enough to try it. Actually using it for notes, research, club materials, and local files is what made it my favorite browser. That is why I kept using [Aside](https://aside.com/): not because I needed another place to ask a question, but because I wanted less distance between asking for work and having something real to inspect.
+
+I am not trying to automate away every decision. I am working to stop spending those decisions on finding the same document, repeating the same preference, and moving the same information between tools.
+
+That leaves more of my attention for the part I actually want to do: decide what is worth making, make it, and check whether it worked.
