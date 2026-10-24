@@ -1,0 +1,170 @@
+---
+title: "Opportunity"
+description: "A synthesizer and a quadruped robot seem like unrelated places to look for the next opportunity in AI. One makes sound. The other moves through the world. But both expose the same gap: what hardware can physically support is not always what its software makes practical."
+publishedAt: 2026-10-24
+tags: []
+draft: false
+---
+A synthesizer and a quadruped robot seem like unrelated places to look for the next opportunity in AI. One makes sound. The other moves through the world. But both expose the same gap: what hardware can physically support is not always what its software makes practical.
+
+A device can have processing capacity that its firmware never uses for the feature someone wants. A robot can have the reach and strength to move an object without having the perception or control needed to do it reliably. The hardware exists. The useful behavior is still expensive to build.
+
+AI is starting to change that cost in two different ways. Coding models help people write and modify the programs that run machines. Learned robotic policies let machines acquire behaviors that would be difficult to specify as a sequence of explicit rules.
+
+These are not the same technology, and neither makes physical engineering disappear. Together, though, they suggest a large opportunity: reducing the amount of custom work required to turn a machine into a useful product.
+
+## A product is not finished when it ships
+
+This week, [The Verge reported on AI-assisted custom firmware for music equipment](https://www.theverge.com/gadgets/1013493/vibe-coding-ai-music-gear-hacking-custom-firmware). Developers are extending synthesizers, samplers, and effects pedals with capabilities their official software does not provide.
+
+One example is Modded Cycles, a community project for Elektron's Model:Cycles. The developer described using Claude Code to help add six-track audio over USB. The broader community has worked on additional synthesis engines, modulation, and sampling functionality.
+
+This is not evidence that an LLM can independently reverse-engineer arbitrary electronics. The projects build on people's hardware knowledge, earlier reverse engineering, existing code, and repeated testing. But it is evidence of developers finding practical leverage in coding assistance outside conventional web applications.
+
+The [Modded Cycles repository](https://github.com/18nelli18/Modded-Cycles) also makes the limits visible. At the time of writing, it labels its combined version 2.0 firmware experimental and says that exact combined build has not yet run on a physical machine, despite emulator checks and testing of individual features. Features that work separately can still conflict when assembled into one product.
+
+That is the important distinction between creating a feature and delivering a system. More code does not automatically produce more dependable hardware.
+
+Still, the economic implication is interesting. If a modification once required more engineering time than anyone could justify, making that work cheaper can change whether it gets attempted at all. A device's useful life can extend beyond its manufacturer's development schedule.
+
+This will not apply equally everywhere. Locked bootloaders, missing documentation, licensing restrictions, warranty terms, and the consequences of failure determine what modifications are possible or sensible. Experimenting with a music instrument is not equivalent to modifying a medical device.
+
+## Two ways AI changes programming
+
+It helps to separate two developments that often get bundled together under “physical AI.”
+
+**AI-assisted programming changes how the implementation is produced.** A developer can use a coding model to help understand a protocol, draft firmware changes, write tests, or inspect logs. The resulting program may be entirely conventional software. No AI model needs to run inside the finished device.
+
+**Learned control changes how the behavior is represented.** Instead of writing every response to an observation by hand, engineers train a policy that maps observations to actions. Cameras, robot state, and sometimes language become inputs. Motor targets or other action representations become outputs.
+
+A policy is still surrounded by software. Sensor synchronization, coordinate systems, calibration, data collection, evaluation, communication, and hardware interfaces remain engineering problems. A learned model replaces part of the behavior specification, not the entire system.
+
+The opportunity sits in both layers: making the engineering process more productive and making previously brittle behaviors adaptable.
+
+## What a cube-solving robot actually demonstrates
+
+Researchers at ETH Zürich recently showed a [quadruped solving an oversized Rubik's Cube using its feet](https://leggedrobotics.github.io/rubik-skills/). The project reports three autonomous hardware solves, each involving roughly thirty steps over eight to nine minutes.
+
+The system does not ask a language model to improvise every motor command. It combines several components:
+
+1. Onboard RGB-D perception estimates the cube's position, orientation, and colors.
+2. A cube solver computes a solution, and a planner converts it into physical skill sequences.
+3. Learned policies flip the cube and rotate its layers.
+4. Perception updates the cube's pose between skills, while the skill policies use depth and robot-state observations during execution.
+
+The researchers train policies in simulation with privileged information, then distill them into policies using observations available on the robot. They randomize factors such as friction, mass, initial placement, and disturbances to make the learned behavior less dependent on one exact simulated setup.
+
+This is a useful picture of programming physical behavior: explicit algorithms where the problem is well defined, learned skills where contact and motion become difficult to specify, and perception connecting the two.
+
+But three reported solves are not a production reliability study. They demonstrate a capability and a system design, not guaranteed uptime across thousands of unattended operations. The distinction matters because the commercial opportunity depends on repetition, not just possibility.
+
+## Reusing intelligence instead of rebuilding it
+
+A second development is the attempt to reuse learned physical capabilities across applications.
+
+On October 13, Physical Intelligence [announced a beta API for training and inference](https://www.pi.website/blog/api-beta). Its described workflow is to upload robot data, fine-tune a model, deploy through hosted inference, and use evaluation failures to guide the next data collection round.
+
+The company reports partner examples including an autonomous wheel loader moving material during a commercial deployment and an Almond robot deburring spacers after four days of iteration with the API. Those are provider-reported examples, not independently audited operating economics. The announcement does not establish that every customer can reach a given success rate in four days.
+
+What matters is the proposed division of work. An application team can try to adapt a shared model instead of owning the entire pretraining effort. It still needs the right machine, demonstrations, integration, and evaluation for its task.
+
+The company's [openpi repository](https://github.com/Physical-Intelligence/openpi) provides a more concrete view of that work: pretrained checkpoints, data conversion, normalization statistics, training configurations, policy servers, and robot-specific examples. It explicitly warns that checkpoints may not work on a different setup.
+
+A transferable model is a starting point, not a universal driver for any robot with a network connection.
+
+## Why the opportunity is large
+
+Robotics is not an industry waiting for its first useful machine. In its September report, the [International Federation of Robotics](https://ifr.org/ifr-press-releases/news/presidents-report-by-jane-heffner-3-2026) put 2025 industrial robot installations at 603,000 and the operational stock at 5.079 million units.
+
+Those figures describe an existing automation market. They do not measure AI-enabled robots, and they do not prove demand for a particular new product.
+
+My argument is about the boundary of that market. Some tasks are already worth automating with established techniques. Others remain unattractive because the environment varies, the setup is too specialized, or the engineering and support costs exceed the benefit.
+
+If AI reduces those costs, some tasks can cross from technically possible to economically useful. A modest improvement repeated across many workflows could matter more than one spectacular general-purpose demonstration.
+
+Consider loading a particular family of parts into a machine. The buyer does not necessarily need a humanoid that can work in every factory. They need a system that handles the expected parts, detects exceptions, stops appropriately, and fits the production process.
+
+Other candidate applications include constrained inspection, repetitive lab handling, and upgrades to existing equipment. These are places to investigate, not validated business opportunities merely because a model can be connected to them. Each needs a specific buyer, an observed workload, and a comparison against current methods, including simpler automation.
+
+Sometimes the best solution will be a fixture, a barcode, or a conventional controller rather than a more capable model. Removing uncertainty can be cheaper than teaching a robot to tolerate it.
+
+## The unit that matters is a completed operation
+
+A robot's purchase price is only one input. So is model inference cost. The more useful calculation is the cost of producing an acceptable result, including installation, failures, interventions, and maintenance.
+
+The following JavaScript is a deliberately simplified scenario, not a market estimate. It compares the same hypothetical cell under two assumed intervention rates:
+
+```javascript
+function costPerAcceptedOperation({
+  scheduledHours,
+  availability,
+  attemptsPerRunningHour,
+  acceptanceRate,
+  interventionRate,
+  minutesPerIntervention,
+  operatorCostPerHour,
+  fixedCostPerHour,
+}) {
+  // Availability already includes downtime, including intervention stops.
+  const attempts =
+    scheduledHours * availability * attemptsPerRunningHour;
+  const accepted = attempts * acceptanceRate;
+  const operatorHours =
+    (attempts * interventionRate * minutesPerIntervention) / 60;
+  const cost =
+    scheduledHours * fixedCostPerHour +
+    operatorHours * operatorCostPerHour;
+
+  return accepted > 0 ? cost / accepted : Infinity;
+}
+
+const assumptions = {
+  scheduledHours: 8,
+  availability: 0.8,
+  attemptsPerRunningHour: 60,
+  acceptanceRate: 0.95,
+  minutesPerIntervention: 3,
+  operatorCostPerHour: 30,
+  fixedCostPerHour: 20,
+};
+
+for (const interventionRate of [0.1, 0.01]) {
+  const cost = costPerAcceptedOperation({
+    ...assumptions,
+    interventionRate,
+  });
+  console.log(`${interventionRate * 100}% interventions: $${cost.toFixed(2)}`);
+}
+```
+
+With those invented assumptions, the cost is about $0.60 per accepted operation at a 10% intervention rate and $0.45 at 1%. Availability is held constant to isolate operator time; a real improvement could also change downtime and throughput.
+
+The hourly fixed-cost allowance would need to include allocated equipment, integration, maintenance, compute, energy, and other relevant costs. The example excludes scrap, materials, queueing, and many site-specific effects. It also assumes operator time can be allocated fractionally, which may not hold if a dedicated person must remain on site.
+
+It is not a complete investment model. It illustrates why a cheaper model or faster movement can be less valuable than needing fewer human rescues. Production data has to replace every assumption before the calculation supports a purchase.
+
+## Reliability is where the work moves
+
+Better models do not remove physical constraints. Cameras get occluded. Grippers wear. Network connections fail. Materials arrive in unexpected states. An action that is plausible from an image may still be unsafe.
+
+Google DeepMind's [Gemini Robotics On-Device 2 model card](https://deepmind.google/models/model-cards/gemini-robotics-on-device-2/) explicitly lists limits in out-of-distribution generalization and control of high-degree-of-freedom robots. It recommends layered safety, including low-level controllers and hardware-specific functional safety mechanisms. It also distinguishes the standing bi-arm tasks evaluated from risks involving mobile platforms or whole-body control outside that evaluation scope.
+
+Safety cannot be reduced to asking a model whether its proposed action looks safe. A learned policy needs to operate inside a system designed around the machine and environment, with appropriate limits, stopping behavior, and validation.
+
+Deployment location is also a trade-off, not a slogan. Physical Intelligence says most examples in its API announcement used cloud-hosted inference and notes connectivity challenges for some. Local inference can remove that network dependency from the model call, not necessarily from the rest of the robotic system. It also brings hardware, memory, thermal, and update constraints. Neither location guarantees safe control.
+
+As models become easier to access, the scarce work shifts toward proving that the whole installation behaves acceptably over time.
+
+## Build for one operation, then earn the next
+
+The strongest starting point is not “a robot that can do everything.” It is a repeated, expensive operation with a buyer who can explain what success means.
+
+Before substantial development, that buyer should be willing to provide access to the real workflow and commit to a concrete evaluation or paid pilot. General excitement about robotics is not evidence that a customer will integrate a machine into daily operations.
+
+The first evaluation should compare against the existing process on throughput, quality, interventions, and total operating cost. Failures should inform the next data collection and engineering cycle. Expansion becomes credible when the same solution works repeatedly without requiring a complete redesign for each customer.
+
+Useful deployment data and integration experience can become an advantage, but not automatically. The data must be legally usable, cover meaningful failures, and transfer to future installations. A company that accumulates only one-off customization may be building a service business rather than a scalable product.
+
+That is why I think the opportunity is massive without assuming an imminent general-purpose robot. There is already a large base of physical automation, and much more work remains difficult or expensive to automate. Reducing the engineering cost of useful behavior could open parts of that gap.
+
+AI can help write the firmware. It can help learn the skill. The product is the machine that keeps completing the operation when the demo is over.
