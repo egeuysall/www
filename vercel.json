@@ -37,7 +37,7 @@
           "value": "cdn.egeuysal.com"
         }
       ],
-      "destination": "/cdn-asset/content/$1"
+      "destination": "https://egeuysal.com/cdn-asset/content/$1"
     },
     {
       "source": "/photo/(.*)",
@@ -47,7 +47,7 @@
           "value": "cdn.egeuysal.com"
         }
       ],
-      "destination": "/cdn-asset/photo/$1"
+      "destination": "https://egeuysal.com/cdn-asset/photo/$1"
     },
     {
       "source": "/photo-1080/(.*)",
@@ -57,7 +57,7 @@
           "value": "cdn.egeuysal.com"
         }
       ],
-      "destination": "/cdn-asset/photo-1080/$1"
+      "destination": "https://egeuysal.com/cdn-asset/photo-1080/$1"
     }
   ],
   "headers": [
