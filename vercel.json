@@ -37,7 +37,7 @@
           "value": "cdn.egeuysal.com"
         }
       ],
-      "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/content/$1"
+      "destination": "/cdn-asset/content/$1"
     },
     {
       "source": "/photo/(.*)",
@@ -47,7 +47,7 @@
           "value": "cdn.egeuysal.com"
         }
       ],
-      "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/photo/$1"
+      "destination": "/cdn-asset/photo/$1"
     },
     {
       "source": "/photo-1080/(.*)",
@@ -57,7 +57,7 @@
           "value": "cdn.egeuysal.com"
         }
       ],
-      "destination": "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev/photo-1080/$1"
+      "destination": "/cdn-asset/photo-1080/$1"
     }
   ],
   "headers": [

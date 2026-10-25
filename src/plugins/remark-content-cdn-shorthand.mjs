@@ -20,6 +20,16 @@ function normalizeContentCdnUrl(input) {
     value.startsWith("//") ||
     HAS_PROTOCOL.test(value)
   ) {
+    if (HAS_PROTOCOL.test(value)) {
+      try {
+        const url = new URL(value);
+        if (url.protocol === "https:" && url.hostname === "ibx.egeuysal.com" && !url.port && !url.username && !url.password && /^\/[^/]+\/(content|photo|photo-1080)\/.+/.test(url.pathname)) {
+          url.hostname = "cdn.egeuysal.com";
+          url.pathname = url.pathname.replace(/^\/[^/]+\//, "/");
+          return url.toString();
+        }
+      } catch {}
+    }
     return value;
   }
 
