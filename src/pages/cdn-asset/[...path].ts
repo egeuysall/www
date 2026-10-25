@@ -32,7 +32,7 @@ function proxyResponse(upstream: Response, path: string): Response {
     const value = upstream.headers.get(name);
     if (value) headers.set(name, value);
   }
-  headers.set("Cache-Control", "public, max-age=31536000, immutable");
+  headers.set("Cache-Control", upstream.ok ? "public, max-age=31536000, immutable" : "no-store");
   headers.set("Access-Control-Allow-Origin", "*");
   if (path.toLowerCase().endsWith(".svg")) {
     headers.set("Content-Security-Policy", "sandbox; default-src 'none'; style-src 'unsafe-inline'; img-src data:");
