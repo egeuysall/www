@@ -1,0 +1,30 @@
+---
+date: 2026-10-25
+summary: "Turning IBX files into a real drive"
+image: "https://cdn.egeuysal.com/content/2026/10/25/asset-02.png"
+tags: ["ibx", "bri", "building", "daily"]
+draft: false
+---
+
+Today was one of those long product days where a small feature kept revealing the next thing it needed. IBX started as a place to keep files; by the end, it was much closer to a drive that can actually work alongside the rest of my tools.
+
+![A quiet map of files, folders, and notes connected through IBX](https://cdn.egeuysal.com/content/2026/10/25/asset-02.png)
+
+## What moved
+
+- Built out folders and directory-aware file paths, including public links that preserve the folder structure.
+- Made the file list feel more like a drive: rows for folders and files, moving files into folders, inline previews, and a public file browser.
+- Expanded the CLI, API, and in-app terminal around files. The terminal can create directories, show a nested `tree`, attach files without a task number, and rename items.
+- Raised the upload limit to 500 MB and changed `p` to publish images through IBX while keeping the familiar `cdn.egeuysal.com` links for the blog.
+- Connected IBX files to Bri notes with an `@` picker, and brought published files into public Bri profiles.
+- Worked through the rough edges in public pages: nested directories in `tree`, previews for PDFs and other file types, copy-link actions, and stable IBX URLs when opening a file.
+
+## The useful part
+
+The nice thing is that these pieces connect. I can upload an image once, keep it in a folder, use its public link in a note or a blog post, and still find it from the terminal or the file UI. The same library can serve my own workflow and show selected files on public pages.
+
+A lot of the day was small corrections from looking at the real UI: a picker clipped the wrong way, files were slow to load, a route lost its directory after reload, and one public link took a detour through a temporary storage URL. Fixing those details mattered as much as adding the headline features.
+
+## Takeaway
+
+IBX is becoming more useful because the pieces are starting to behave like one system. There is still plenty to refine, but today turned a folder of uploads into something I can use across IBX, Bri, my terminal, and the blog.
