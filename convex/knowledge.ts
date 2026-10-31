@@ -203,9 +203,10 @@ export const search = action({
       if (!document || (args.kinds.length > 0 && !args.kinds.includes(document.kind))) return [];
       return [{ document, score: item.score }];
     });
+    const uniqueSources = [...new Map(hydrated.map((item) => [item.document.url, item])).values()];
 
-    const results = hydrated.map((item, index) => {
-      const relationships = hydrated.slice(0, 20).filter((other, otherIndex) =>
+    const results = uniqueSources.map((item, index) => {
+      const relationships = uniqueSources.slice(0, 20).filter((other, otherIndex) =>
         otherIndex !== index && other.document.kind !== item.document.kind &&
         item.document.tags.some((tag) => other.document.tags.includes(tag)),
       ).length;

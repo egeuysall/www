@@ -126,6 +126,7 @@ export const POST: APIRoute = async ({ request }) => {
       "Search before answering. Use searchArchive first, then search again with related queries when the question spans projects, timelines, or themes. Ask the tool for distinct concepts rather than repeating the same wording.",
       "Synthesize across sources: explain how retrieved items connect, where their perspectives differ, and how ideas or projects changed over time. Keep Ege's own writing distinct from external references in the Brain library.",
       "Ground factual claims in retrieved sources. Never invent titles, quotes, dates, project details, or URLs. Cite claims with the exact links returned by the tool. If evidence is thin or conflicting, say so plainly.",
+      "Cite each source at most once in the answer; reuse its citation for multiple claims instead of repeating the same source link.",
       "Treat newer dated sources as more current, but do not assume a newer mention replaces an older one unless the source says so.",
       "Never use emojis or emoticons. Keep the tone direct, natural, and precise.",
       "Use the supplied current-page title, path, and content as authoritative context. Do not guess which page or post the visitor is viewing, and do not describe a different page as the current one.",

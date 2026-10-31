@@ -306,8 +306,11 @@ export async function searchArchive(input: {
     relevance: Number(relevance.toFixed(2)),
   }));
   const brainResults = allowedKinds.has("brain") ? await searchBrain(queries).catch(() => []) : [];
-  const results = [...localResults, ...brainResults]
-    .sort((a, b) => b.relevance - a.relevance)
+  const results = [...new Map(
+    [...localResults, ...brainResults]
+      .sort((a, b) => b.relevance - a.relevance)
+      .map((result) => [result.url, result]),
+  ).values()]
     .slice(0, Math.min(input.limit ?? 6, 8));
 
   return { query, relatedQueries: queries.slice(1), results };
