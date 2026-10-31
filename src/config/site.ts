@@ -48,13 +48,13 @@ export const SOCIAL_LINKS: SocialLink[] = [
 export const PROJECTS: ProjectProofItem[] = [
   {
     title: "Bri",
-    summary: "Share Markdown instantly.",
+    summary: "publish markdown. share a link.",
     url: "https://bri.fyi",
     linkLabel: "bri.fyi",
   },
   {
     title: "IBX",
-    summary: "Turn thoughts into prioritized todos.",
+    summary: "tasks, notes, and files. web and cli.",
     url: "https://ibx.egeuysal.com",
     linkLabel: "ibx.egeuysal.com",
   },
