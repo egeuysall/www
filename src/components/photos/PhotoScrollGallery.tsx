@@ -34,6 +34,7 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
     let previousPreload = -1;
     const gallery = galleryRef.current;
     const imageStage = gallery?.querySelector<HTMLElement>(".photo-scroll-image-stage");
+    const siteHeader = document.querySelector<HTMLElement>(".site-header");
 
     const update = () => {
       cancelAnimationFrame(frame);
@@ -57,14 +58,11 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         }
 
         const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-        const maxLayerWidth = Math.min(
-          imageStage?.clientWidth ?? gallery.clientWidth,
-          window.innerWidth <= 640
-            ? window.innerWidth * 0.88
-            : document.body.classList.contains("ai-guide-open")
-              ? window.innerWidth / 2 - rootFontSize * 2
-              : rootFontSize * 38.75,
-        );
+        const headerStyle = siteHeader ? getComputedStyle(siteHeader) : null;
+        const headerContentWidth = siteHeader && headerStyle
+          ? siteHeader.clientWidth - Number.parseFloat(headerStyle.paddingLeft) - Number.parseFloat(headerStyle.paddingRight)
+          : rootFontSize * 34.75;
+        const maxLayerWidth = Math.min(imageStage?.clientWidth ?? gallery.clientWidth, headerContentWidth);
         gallery.querySelectorAll<HTMLElement>(".photo-scroll-layer").forEach((layer) => {
           const image = layer.querySelector("img");
           if (!image || !imageStage) return;
@@ -77,10 +75,10 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         });
 
         gallery.style.setProperty("--photo-outgoing-opacity", String(1 - progress));
-        gallery.style.setProperty("--photo-outgoing-x", `${-0.18 * gallery.clientWidth * progress}px`);
+        gallery.style.setProperty("--photo-outgoing-x", `${-0.1 * headerContentWidth * progress}px`);
         gallery.style.setProperty("--photo-outgoing-scale", String(1 - 0.22 * progress));
         gallery.style.setProperty("--photo-incoming-opacity", String(progress));
-        gallery.style.setProperty("--photo-incoming-x", `${0.14 * gallery.clientWidth * (1 - progress)}px`);
+        gallery.style.setProperty("--photo-incoming-x", `${0.1 * headerContentWidth * (1 - progress)}px`);
         gallery.style.setProperty("--photo-incoming-scale", String(0.78 + 0.22 * progress));
         gallery.style.setProperty("--photo-outgoing-pointer-events", active === index ? "auto" : "none");
         gallery.style.setProperty("--photo-incoming-pointer-events", active === index + 1 ? "auto" : "none");
@@ -88,11 +86,9 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         const activeLayer = gallery.querySelector<HTMLElement>(
           active === index ? ".photo-scroll-layer.is-outgoing" : ".photo-scroll-layer.is-incoming",
         );
-        const activeImageRect = activeLayer?.getBoundingClientRect();
-        if (activeImageRect && storyRef.current) {
-          const galleryCenter = gallery.getBoundingClientRect().left + gallery.clientWidth / 2;
-          storyRef.current.style.width = `${activeImageRect.width}px`;
-          storyRef.current.style.transform = `translateX(${activeImageRect.left + activeImageRect.width / 2 - galleryCenter}px)`;
+        if (activeLayer && storyRef.current) {
+          storyRef.current.style.width = `${activeLayer.offsetWidth}px`;
+          storyRef.current.style.removeProperty("transform");
         }
 
         if (active !== previousActive) {
@@ -122,6 +118,7 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
 
     const layoutObserver = new ResizeObserver(() => update());
     if (imageStage) layoutObserver.observe(imageStage);
+    if (siteHeader) layoutObserver.observe(siteHeader);
 
     updateRef.current = update;
     update();
