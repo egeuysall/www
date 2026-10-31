@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { DitherShader } from "@/components/ui/dither-shader";
 import "@/styles/photo-scroll.css";
 
@@ -23,10 +24,6 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
     readyPhotosRef.current.add(slug);
     updateRef.current();
   }, []);
-
-  useLayoutEffect(() => {
-    galleryRef.current?.classList.remove("is-transition-swapping");
-  }, [transitionIndex]);
 
   useEffect(() => {
     let frame = 0;
@@ -53,9 +50,8 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         const active = Math.min(Math.round(index + progress), photos.length - 1);
 
         if (index !== previousTransition) {
-          gallery.classList.add("is-transition-swapping");
           previousTransition = index;
-          setTransitionIndex(index);
+          flushSync(() => setTransitionIndex(index));
         }
 
         gallery.style.setProperty("--photo-outgoing-opacity", String(1 - progress));

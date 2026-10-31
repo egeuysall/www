@@ -36,11 +36,21 @@
   max-width: min(100%, 38.75rem);
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  border-radius: 2px;
-  clip-path: inset(0 round 2px);
+  border-radius: .5rem;
+  clip-path: inset(0 round .5rem);
   transform-origin: center;
   transition: none;
   will-change: transform, opacity;
+}
+
+.photo-scroll-layer::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  border: 1px solid var(--line);
+  border-radius: inherit;
+  content: "";
+  pointer-events: none;
 }
 
 .photo-scroll-layer img {
@@ -48,21 +58,25 @@
   height: 100%;
   object-fit: contain;
   filter: grayscale(1);
-  border-radius: 2px;
+  border-radius: .5rem;
 }
 
-.photo-scroll-layer canvas { border-radius: 2px; }
+.photo-scroll-dither,
+.photo-scroll-layer canvas {
+  overflow: hidden;
+  border-radius: .5rem;
+  clip-path: inset(0 round .5rem);
+}
 
 .photo-scroll-dither { transition: opacity 300ms ease-out; }
 .photo-scroll-layer.is-pointer-hovered .photo-scroll-dither,
 .photo-scroll-layer:focus-within .photo-scroll-dither { opacity: 0; }
 
 .photo-scroll-layer:not(.is-ready) { visibility: hidden; }
-.photo-scroll-gallery.is-transition-swapping .photo-scroll-layer { visibility: hidden; }
 
 .photo-scroll-story {
   display: grid;
-  width: min(100%, 61.25rem);
+  width: min(100%, 38.75rem);
   max-height: 10svh;
   flex: none;
   gap: .45rem;
