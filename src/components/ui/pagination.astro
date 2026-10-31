@@ -8,6 +8,7 @@ interface Props {
   ariaLabel?: string;
   previousText?: string;
   nextText?: string;
+  animationDelay?: number;
 }
 
 const {
@@ -17,6 +18,7 @@ const {
   ariaLabel = "Pagination navigation",
   previousText = "Previous",
   nextText = "Next",
+  animationDelay = 500,
 } = Astro.props;
 
 const normalizedBasePath = basePath.replace(/\/+$/, "");
@@ -29,7 +31,7 @@ const tokens = getPaginationTokens(currentPage, totalPages);
 
 {
   totalPages > 0 && (
-    <nav aria-label={ariaLabel} class="mt-8 flex justify-center">
+    <nav aria-label={ariaLabel} class="animate-enter mt-8 flex justify-center" style={`--delay: ${animationDelay}ms;`}>
       <ul class="m-0 flex list-none flex-wrap items-center gap-2 p-0 text-xs text-neutral-400">
         <li>
           {currentPage > 1 ? (

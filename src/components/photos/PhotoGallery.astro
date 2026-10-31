@@ -94,7 +94,7 @@ const optimizeImages = import.meta.env.PROD;
     )
   }
 
-  <Pagination currentPage={currentPage} totalPages={totalPages} basePath="/photo" ariaLabel="Photo pagination" />
+  <Pagination currentPage={currentPage} totalPages={totalPages} basePath="/photo" ariaLabel="Photo pagination" animationDelay={500} />
   <PhotoGalleryPrefetch
     client:load
     nextPageHref={nextPageHref}

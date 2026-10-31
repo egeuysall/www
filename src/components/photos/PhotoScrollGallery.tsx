@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { flushSync } from "react-dom";
 import { DitherShader } from "@/components/ui/dither-shader";
 import "@/styles/photo-scroll.css";
@@ -160,7 +160,13 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         </div>
         <div ref={storyRef} className="photo-scroll-story" aria-live="polite">
           {photos[activeIndex]?.story.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => (
-            <p key={`${activeIndex}-${index}`}>{paragraph.trim()}</p>
+            <p
+              key={`${activeIndex}-${index}`}
+              className="animate-enter"
+              style={{ "--delay": `${60 + index * 55}ms` } as CSSProperties}
+            >
+              {paragraph.trim()}
+            </p>
           ))}
         </div>
       </div>

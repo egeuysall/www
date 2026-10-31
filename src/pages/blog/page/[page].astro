@@ -37,9 +37,9 @@ const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
   description="Technical notes, architecture choices, and build logs."
   noindex
 >
-  <section class="space-y-5 animate-enter" style="--delay: 100ms;">
-    {pagination.items.map((post) => (
-      <article class="row-border pb-5">
+  <section class="space-y-5">
+    {pagination.items.map((post, index) => (
+      <article class="row-border animate-enter pb-5" style={`--delay: ${140 + index * 65}ms;`}>
         <a href={`/blog/${post.id}/`} class="block">
           <h2 class="text-sm text-neutral-100">{post.data.title}</h2>
           <p class="mt-1 flex gap-2 text-xs text-neutral-400">
@@ -50,5 +50,5 @@ const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
       </article>
     ))}
   </section>
-  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/blog" />
+  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/blog" animationDelay={700} />
 </BaseLayout>

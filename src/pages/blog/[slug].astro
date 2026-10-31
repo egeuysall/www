@@ -69,12 +69,11 @@ const jsonLd = {
   jsonLd={jsonLd}
 >
   <article
-    class="prose prose-neutral font-bold prose-invert max-w-none animate-enter prose-p:text-neutral-300 prose-headings:text-neutral-100 prose-h2:text-[0.95rem]! prose-h2:leading-6! prose-h2:font-medium! prose-h3:text-[0.88rem]! prose-h3:leading-6! prose-h3:font-medium! prose-h4:text-[0.82rem]! prose-h4:leading-5! prose-h4:font-medium prose-strong:font-semibold! prose-strong:text-neutral-100 prose-a:text-neutral-100 prose-a:decoration-neutral-700 prose-hr:border-neutral-900 prose-thead:!border-neutral-900 prose-tr:!border-neutral-900 prose-th:!border-neutral-900 prose-td:!border-neutral-900 prose-pre:border prose-pre:border-neutral-800"
-    style="--delay: 40ms;"
+    class="prose prose-neutral font-bold prose-invert max-w-none prose-p:text-neutral-300 prose-headings:text-neutral-100 prose-h2:text-[0.95rem]! prose-h2:leading-6! prose-h2:font-medium! prose-h3:text-[0.88rem]! prose-h3:leading-6! prose-h3:font-medium! prose-h4:text-[0.82rem]! prose-h4:leading-5! prose-h4:font-medium prose-strong:font-semibold! prose-strong:text-neutral-100 prose-a:text-neutral-100 prose-a:decoration-neutral-700 prose-hr:border-neutral-900 prose-thead:!border-neutral-900 prose-tr:!border-neutral-900 prose-th:!border-neutral-900 prose-td:!border-neutral-900 prose-pre:border prose-pre:border-neutral-800"
   >
     <header class="mb-6 border-b border-neutral-900 pb-5">
-      <h1 class="text-base font-semibold! text-neutral-100">{post.data.title}</h1>
-      <p class="mt-2 text-xs text-neutral-400">
+      <h1 class="animate-enter text-base font-semibold! text-neutral-100" style="--delay: 40ms;">{post.data.title}</h1>
+      <p class="animate-enter mt-2 text-xs text-neutral-400" style="--delay: 110ms;">
         {formatDate(post.data.publishedAt)}
         {post.data.updatedAt ? (
           <>
@@ -85,8 +84,12 @@ const jsonLd = {
       </p>
     </header>
 
-    <Content components={contentComponents} />
-    <EngagementPanel client:load convexUrl={convexUrl} kind="blog" slug={post.id} />
+    <div class="stagger-enter" style="--stagger-start: 180ms;">
+      <Content components={contentComponents} />
+    </div>
+    <div class="animate-enter" style="--delay: 420ms;">
+      <EngagementPanel client:load convexUrl={convexUrl} kind="blog" slug={post.id} />
+    </div>
   </article>
   {post.body?.includes("```") && <CodeBlockCopyOnClick client:load />}
 </BaseLayout>

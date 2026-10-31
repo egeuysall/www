@@ -13,9 +13,9 @@ const newsletterMessage = "Get new posts by email. No account or password requir
 ---
 
 <BaseLayout title="Blog" pathname="/blog/" description="Technical notes, architecture choices, and build logs.">
-  <section class="mb-10 border-neutral-900 animate-enter" style="--delay: 40ms;">
-    <p data-newsletter-message class="max-w-lg text-sm leading-relaxed text-neutral-300">{newsletterMessage}</p>
-    <form id="newsletter-unsubscribe-form" data-newsletter-form hidden action="/api/newsletter" method="post" enctype="application/x-www-form-urlencoded" class="mt-6 max-w-lg">
+  <section class="mb-10 border-neutral-900">
+    <p data-newsletter-message class="animate-enter max-w-lg text-sm leading-relaxed text-neutral-300" style="--delay: 40ms;">{newsletterMessage}</p>
+    <form id="newsletter-unsubscribe-form" data-newsletter-form hidden action="/api/newsletter" method="post" enctype="application/x-www-form-urlencoded" class="animate-enter mt-6 max-w-lg" style="--delay: 120ms;">
         <input type="hidden" name="unsubscribe" value="" />
         <div class="flex gap-2">
           <button type="submit" class="rounded-sm border border-neutral-700 px-3 py-2 text-xs text-neutral-100 hover:border-neutral-400">
@@ -27,7 +27,7 @@ const newsletterMessage = "Get new posts by email. No account or password requir
         </div>
         <p data-newsletter-status class="mt-3 text-xs text-neutral-400" aria-live="polite" hidden></p>
     </form>
-    <form id="newsletter-subscribe-form" data-newsletter-form action="/api/newsletter" method="post" enctype="application/x-www-form-urlencoded" class="mt-6 max-w-lg">
+    <form id="newsletter-subscribe-form" data-newsletter-form action="/api/newsletter" method="post" enctype="application/x-www-form-urlencoded" class="animate-enter mt-6 max-w-lg" style="--delay: 120ms;">
         <div class="flex gap-2">
           <label class="sr-only" for="newsletter-email">Email address</label>
           <input
@@ -47,9 +47,9 @@ const newsletterMessage = "Get new posts by email. No account or password requir
     </form>
   </section>
 
-  <section class="space-y-5 animate-enter" style="--delay: 100ms;">
-    {pagination.items.map((post) => (
-      <article class="row-border pb-5">
+  <section class="space-y-5">
+    {pagination.items.map((post, index) => (
+      <article class="row-border animate-enter pb-5" style={`--delay: ${220 + index * 65}ms;`}>
         <a href={`/blog/${post.id}/`} class="block">
           <h2 class="text-sm text-neutral-100">{post.data.title}</h2>
           <p class="mt-1 flex gap-2 text-xs text-neutral-400">
@@ -61,7 +61,7 @@ const newsletterMessage = "Get new posts by email. No account or password requir
       </article>
     ))}
   </section>
-  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/blog" />
+  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/blog" animationDelay={800} />
 </BaseLayout>
 
 <script>

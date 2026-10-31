@@ -12,13 +12,13 @@ const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 ---
 
 <BaseLayout title="Diary" pathname="/diary/" description="Daily short progress notes, sorted by date.">
-  <section class="animate-enter" style="--delay: 110ms;">
+  <section>
     <ol class="space-y-4">
-      {pagination.items.map((entry) => {
+      {pagination.items.map((entry, index) => {
         const dayNumber = dayMap.get(entry.id) ?? 0;
 
         return (
-          <li class="row-border pb-4">
+          <li class="row-border animate-enter pb-4" style={`--delay: ${110 + index * 65}ms;`}>
             <a href={`/diary/${getDiaryEntrySlug(entry)}/`} class="block">
               <p class="flex gap-2 text-xs text-neutral-400 tabular-nums">
                 <span>Day {dayNumber}</span><span aria-hidden="true">·</span>
@@ -31,5 +31,5 @@ const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
       })}
     </ol>
   </section>
-  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/diary" />
+  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/diary" animationDelay={700} />
 </BaseLayout>
