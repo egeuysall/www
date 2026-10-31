@@ -596,7 +596,7 @@ export default function PageAiOverlay({
   }, [storageKey]);
 
   useEffect(() => {
-    if (!hasRestoredStorage) {
+    if (!isOpen || !hasRestoredStorage) {
       return;
     }
 
@@ -605,7 +605,7 @@ export default function PageAiOverlay({
     });
 
     return () => window.cancelAnimationFrame(frame);
-  }, [hasRestoredStorage, storageKey]);
+  }, [hasRestoredStorage, isOpen, storageKey]);
 
   useEffect(() => {
     if (!hasRestoredStorage) {
