@@ -17,6 +17,7 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
   const [transitionIndex, setTransitionIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
   const galleryRef = useRef<HTMLDivElement>(null);
+  const storyRef = useRef<HTMLDivElement>(null);
   const slidesRef = useRef<HTMLElement[]>([]);
   const readyPhotosRef = useRef(new Set<string>());
   const updateRef = useRef<() => void>(() => {});
@@ -62,6 +63,14 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         gallery.style.setProperty("--photo-incoming-scale", String(0.78 + 0.22 * progress));
         gallery.style.setProperty("--photo-outgoing-pointer-events", active === index ? "auto" : "none");
         gallery.style.setProperty("--photo-incoming-pointer-events", active === index + 1 ? "auto" : "none");
+
+        const activeLayer = gallery.querySelector<HTMLElement>(
+          active === index ? ".photo-scroll-layer.is-outgoing" : ".photo-scroll-layer.is-incoming",
+        );
+        const activeImageWidth = activeLayer?.getBoundingClientRect().width;
+        if (activeImageWidth && storyRef.current) {
+          storyRef.current.style.width = `${Math.round(activeImageWidth)}px`;
+        }
 
         if (active !== previousActive) {
           previousActive = active;
@@ -123,7 +132,7 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
             />
           )}
         </div>
-        <div className="photo-scroll-story" aria-live="polite">
+        <div ref={storyRef} className="photo-scroll-story" aria-live="polite">
           {photos[activeIndex]?.story.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => (
             <p key={`${activeIndex}-${index}`}>{paragraph.trim()}</p>
           ))}

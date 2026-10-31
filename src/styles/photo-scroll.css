@@ -36,21 +36,13 @@
   max-width: min(100%, 38.75rem);
   aspect-ratio: 3 / 4;
   overflow: hidden;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
   border-radius: .5rem;
   clip-path: inset(0 round .5rem);
   transform-origin: center;
   transition: none;
   will-change: transform, opacity;
-}
-
-.photo-scroll-layer::after {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  border: 1px solid var(--line);
-  border-radius: inherit;
-  content: "";
-  pointer-events: none;
 }
 
 .photo-scroll-layer img {
@@ -69,8 +61,7 @@
 }
 
 .photo-scroll-dither { transition: opacity 300ms ease-out; }
-.photo-scroll-layer.is-pointer-hovered .photo-scroll-dither,
-.photo-scroll-layer:focus-within .photo-scroll-dither { opacity: 0; }
+.photo-scroll-layer.is-pointer-hovered .photo-scroll-dither { opacity: 0; }
 
 .photo-scroll-layer:not(.is-ready) { visibility: hidden; }
 
