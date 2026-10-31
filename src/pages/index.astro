@@ -32,24 +32,24 @@ const jsonLd = [
 
 <BaseLayout title="Home" pathname="/" jsonLd={jsonLd}>
   <section class="animate-enter" style="--delay: 40ms;">
-    <p class="text-[13px] leading-relaxed text-neutral-200">
+    <p class="text-sm leading-6 text-neutral-200">
       I'm a founder building SaaS products at 16.
     </p>
-    <p class="mt-2 text-xs text-neutral-400">
+    <p class="mt-1 text-xs leading-5 text-neutral-400">
       Based in Chicago, building Ryva.
     </p>
   </section>
 
   <section class="mt-12 animate-enter" style="--delay: 120ms;">
-    <h2 class="text-[11px] uppercase tracking-[0.16em] text-neutral-300">Projects</h2>
+    <h2 class="text-sm font-semibold tracking-normal text-neutral-100">Projects</h2>
     <ul class="mt-4">
       {PROJECTS.map((project) => (
-        <li class="row-border py-4">
+        <li class="row-border py-3">
           <a href={project.url} target="_blank" rel="noopener noreferrer" class="block hover:text-neutral-100">
             <div class="flex items-start justify-between gap-6">
               <div>
-                <p class="text-sm text-neutral-100">{project.title}</p>
-                <p class="mt-1 text-xs text-neutral-400">{project.summary}</p>
+                <p class="text-[13px] font-medium leading-5 text-neutral-100">{project.title}</p>
+                <p class="mt-0.5 text-xs leading-5 text-neutral-400">{project.summary}</p>
               </div>
               <p class="shrink-0 pt-0.5 text-[11px] text-neutral-400">{project.linkLabel ?? "Open"}</p>
             </div>
@@ -61,18 +61,18 @@ const jsonLd = [
 
   <section class="mt-10 animate-enter" style="--delay: 200ms;">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-[11px] uppercase tracking-[0.16em] text-neutral-300">Latest Blog</h2>
+      <h2 class="text-sm font-semibold tracking-normal text-neutral-100">Latest Blog</h2>
       <a href="/blog" class="text-[11px] text-neutral-400 hover:text-neutral-200" aria-label="See all blog posts"
         >See all</a
       >
     </div>
-    <ul class="mt-4">
+    <ul>
       {recentPosts.map((post) => (
-        <li class="row-border py-4">
+        <li class="row-border py-3">
           <a href={`/blog/${post.id}/`} class="block hover:text-neutral-100">
             <div class="flex items-start justify-between gap-6">
-              <p class="text-sm text-neutral-100">{post.data.title}</p>
-              <p class="shrink-0 pt-0.5 text-[11px] text-neutral-400 tabular-nums">{formatDate(post.data.publishedAt)}</p>
+              <p class="text-[13px] font-medium leading-5 text-neutral-100">{post.data.title}</p>
+              <p class="shrink-0 pt-0.5 text-xs leading-5 text-neutral-400 tabular-nums">{formatDate(post.data.publishedAt)}</p>
             </div>
           </a>
         </li>
@@ -82,7 +82,7 @@ const jsonLd = [
 
   <section class="mt-10 animate-enter" style="--delay: 280ms;">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-[11px] uppercase tracking-[0.16em] text-neutral-300">Recent Diary</h2>
+      <h2 class="text-sm font-semibold tracking-normal text-neutral-100">Recent Diary</h2>
       <a
         href="/diary"
         class="text-[11px] text-neutral-400 hover:text-neutral-200"
@@ -93,11 +93,11 @@ const jsonLd = [
       {recentDiary.map((entry) => {
         const day = diaryDayMap.get(entry.id) ?? 0;
         return (
-          <li class="row-border py-4">
+          <li class="row-border py-3">
             <a href={`/diary/${getDiaryEntrySlug(entry)}/`} class="block hover:text-neutral-100">
               <div class="flex items-start justify-between gap-6">
-                <p class="text-sm text-neutral-100">{entry.data.summary}</p>
-                <p class="shrink-0 pt-0.5 text-[11px] text-neutral-400 tabular-nums">
+                <p class="text-[13px] font-medium leading-5 text-neutral-100">{entry.data.summary}</p>
+                <p class="shrink-0 pt-0.5 text-xs leading-5 text-neutral-400 tabular-nums">
                   Day {day}
                 </p>
               </div>

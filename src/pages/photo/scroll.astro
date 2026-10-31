@@ -1,0 +1,16 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import ScrollPhotoGallery from "@/components/photos/ScrollPhotoGallery.astro";
+import { getPhotoFeed } from "@/lib/photos";
+
+const photos = await getPhotoFeed();
+---
+
+<BaseLayout
+  title="Photo scroll"
+  pathname="/photo/scroll/"
+  description="A scroll-through monochrome photo gallery."
+  mainClass="relative left-1/2 w-screen max-w-none -translate-x-1/2 !pb-0"
+>
+  <ScrollPhotoGallery photos={photos} />
+</BaseLayout>

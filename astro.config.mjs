@@ -24,7 +24,11 @@ import remarkInlineShiki from "./src/plugins/remark-inline-shiki.mjs";
 // https://astro.build/config
 export default defineConfig({
   site: SITE.url,
-  adapter: vercel(),
+  adapter: vercel({
+    imageService: true,
+    maxDuration: 300,
+    imagesConfig: { sizes: [320, 640, 720, 960, 1080, 1280] },
+  }),
   integrations: [react(), mdx(), sitemap()],
   image: {
     domains: ALLOWED_IMAGE_HOSTS,
@@ -46,6 +50,9 @@ export default defineConfig({
     }),
   },
   vite: {
+    optimizeDeps: {
+      include: ["@streamdown/math", "streamdown", "sonner", "clsx", "tailwind-merge"],
+    },
     plugins: [
       tailwindcss(),
       {
@@ -64,7 +71,7 @@ export default defineConfig({
     server: {
       proxy: {
         "/cdn": {
-          target: "https://pub-9fdddd84473b494eaa064f2306a09969.r2.dev",
+          target: "https://cdn.egeuysal.com",
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/cdn/, ""),
         },

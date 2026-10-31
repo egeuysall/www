@@ -1,8 +1,5 @@
 @import "tailwindcss";
-@import "katex/dist/katex.min.css";
 @plugin "@tailwindcss/typography";
-@source "../../node_modules/streamdown/dist/*.js";
-@source "../../node_modules/@streamdown/math/dist/*.js";
 
 @font-face {
   font-family: "Geist Mono";
@@ -90,6 +87,25 @@ body {
 body {
   line-height: 1.5;
   overflow-x: hidden;
+  letter-spacing: normal;
+  text-transform: lowercase;
+}
+
+code,
+kbd,
+pre,
+samp,
+input,
+textarea {
+  text-transform: none;
+}
+
+button,
+select,
+option,
+input::placeholder,
+textarea::placeholder {
+  text-transform: lowercase;
 }
 
 ::selection {

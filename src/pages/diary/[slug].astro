@@ -9,6 +9,7 @@ import { resolveContentCdnShorthand } from "@/lib/content-cdn";
 import { getDiaryDayMap, getDiaryEntrySlug } from "@/lib/content";
 import { formatDate } from "@/lib/utils";
 import EngagementPanel from "@/components/engagement/EngagementPanel";
+import CodeBlockCopyOnClick from "@/components/content/CodeBlockCopyOnClick";
 
 type Props = {
   entry: CollectionEntry<"diary">;
@@ -92,4 +93,5 @@ const jsonLd = {
     <Content components={contentComponents} />
     <EngagementPanel client:load convexUrl={convexUrl} kind="diary" slug={slug} />
   </article>
+  {entry.body?.includes("```") && <CodeBlockCopyOnClick client:load />}
 </BaseLayout>

@@ -5,6 +5,7 @@ import rateLimiter from "@convex-dev/rate-limiter/convex.config.js";
 const app = defineApp({
   env: {
     INTERACTION_WRITE_SECRET: v.string(),
+    AI_KNOWLEDGE_SECRET: v.optional(v.string()),
   },
 });
 

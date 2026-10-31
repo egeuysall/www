@@ -7,6 +7,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import { formatDate } from "@/lib/utils";
 import { getPhotoFeed, type PhotoAsset } from "@/lib/photos";
 import EngagementPanel from "@/components/engagement/EngagementPanel";
+import { Picture } from "astro:assets";
+import CodeBlockCopyOnClick from "@/components/content/CodeBlockCopyOnClick";
 
 type Props = {
   photo: PhotoAsset;
@@ -22,6 +24,7 @@ export async function getStaticPaths() {
 }
 
 const { photo } = Astro.props as Props;
+const optimizeImages = import.meta.env.PROD;
 const canonicalPath = `/photo/${photo.slug}/`;
 const siteOrigin = Astro.site ?? new URL(SITE.url);
 const contentComponents = {
@@ -72,19 +75,38 @@ const jsonLd = {
       </p>
     </header>
 
-    <img
-      src={photo.displaySrc}
-      sizes="(min-width: 1024px) 52rem, 100vw"
-      alt={photo.alt}
-      width={720}
-      height={900}
-      loading="eager"
-      decoding="async"
-      fetchpriority="high"
-      class="not-prose mb-6 aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800 object-cover grayscale"
-    />
+    {optimizeImages ? (
+      <Picture
+        src={photo.displaySrc}
+        formats={["avif", "webp"]}
+        quality={78}
+        widths={[320, 640, 720, 960, 1080, 1280]}
+        sizes="(min-width: 1024px) 52rem, 100vw"
+        alt={photo.alt}
+        width={720}
+        height={900}
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        pictureAttributes={{ class: "not-prose mb-6 block aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800" }}
+        imgAttributes={{ class: "h-full w-full object-cover grayscale" }}
+      />
+    ) : (
+      <img
+        src={photo.displaySrc}
+        sizes="(min-width: 1024px) 52rem, 100vw"
+        alt={photo.alt}
+        width={720}
+        height={900}
+        loading="eager"
+        decoding="async"
+        fetchpriority="high"
+        class="not-prose mb-6 aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800 object-cover grayscale"
+      />
+    )}
 
     <Content components={contentComponents} />
     <EngagementPanel client:load convexUrl={convexUrl} kind="photo" slug={photo.slug} />
   </article>
+  {photo.storyEntry.body?.includes("```") && <CodeBlockCopyOnClick client:load />}
 </BaseLayout>

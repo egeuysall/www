@@ -47,7 +47,9 @@ function getOptimizedDisplaySrc(sourceUrl: string): string {
       ? parsed.pathname.replace(/^\/photo\//, "/photo-1080/")
       : parsed.pathname;
 
-    return `/cdn${optimizedPath}${parsed.search}`;
+    return import.meta.env.PROD
+      ? `https://${CDN_HOSTNAME}${optimizedPath}${parsed.search}`
+      : `/cdn${optimizedPath}${parsed.search}`;
   } catch {
     return sourceUrl;
   }
@@ -89,7 +91,7 @@ async function fetchPhotoPosts(): Promise<PhotoAsset[]> {
       tags,
       sourceSrc: originalImageUrl,
       displaySrc: getOptimizedDisplaySrc(imageUrl),
-      ditherSrc: getCdnProxyPath(imageUrl),
+      ditherSrc: getCdnProxyPath(getOptimizedDisplaySrc(imageUrl)),
       fullSrc: originalImageUrl,
       alt: title,
       storyEntry: entry,

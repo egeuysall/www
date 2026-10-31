@@ -3,6 +3,7 @@ import { math } from "@streamdown/math";
 import { Streamdown } from "streamdown";
 import type { Components } from "streamdown";
 import type {
+  AnchorHTMLAttributes,
   HTMLAttributes,
   KeyboardEvent,
   MouseEvent,
@@ -13,10 +14,13 @@ import type {
 import { toast } from "sonner";
 
 import { cn } from "@/lib/utils";
+import {
+  AI_GUIDE_CHAT_STORAGE_KEY,
+  AI_GUIDE_OPEN_STORAGE_KEY,
+  AI_GUIDE_WIDTH_STORAGE_KEY,
+} from "@/lib/ai-preferences";
 import { SHIKI_STREAMDOWN_THEMES, SHIKI_THEMES } from "@/lib/code-themes.mjs";
-
-import "katex/dist/katex.min.css";
-import "streamdown/styles.css";
+import { Spinner } from "@/components/ui/spinner";
 
 type OverlayMessage = {
   id: string;
@@ -31,11 +35,13 @@ type PageContext = {
   content: string;
 };
 
-const AI_STORAGE_VERSION = 1;
+const AI_STORAGE_VERSION = 3;
 const MAX_QUESTION_LENGTH = 800;
-const MAX_CONTEXT_LENGTH = 24_000;
+const MAX_CONTEXT_LENGTH = 6_000;
+const MIN_AI_GUIDE_WIDTH = 320;
+const emojiPattern = /[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Regional_Indicator}\p{Emoji_Modifier}\uFE0F\u200D]/gu;
 const AI_CODE_COPY_ATTR = "data-ai-copyable-code-block";
-const looseMathPattern = /\(([^()\n]*(?:\\[a-zA-Z]+|[_^{}=+\-*/]|[∫√π∞])[^()\n]*)\)/g;
+const looseMathPattern = /\(([^()\n]*(?:\\[a-zA-Z]+|[_^{}=+*]|\s[/-]\s|[∫√π∞])[^()\n]*)\)/g;
 const codeFencePattern = /(```[\s\S]*?```|`[^`\n]*`|\$\$[\s\S]*?\$\$|\$[^$\n]*\$)/g;
 const codeFenceStartPattern = /(^|\n)```([A-Za-z0-9_-]+)?[ \t]*\n/g;
 
@@ -48,6 +54,7 @@ type SectionProps = HTMLAttributes<HTMLTableSectionElement> & { node?: unknown }
 type RowProps = HTMLAttributes<HTMLTableRowElement> & { node?: unknown };
 type HeaderCellProps = ThHTMLAttributes<HTMLTableCellElement> & { node?: unknown };
 type DataCellProps = TdHTMLAttributes<HTMLTableCellElement> & { node?: unknown };
+type LinkProps = AnchorHTMLAttributes<HTMLAnchorElement> & { node?: unknown };
 
 function createId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
@@ -214,12 +221,42 @@ function getPageContext(): PageContext {
   };
 }
 
-function getStorageKey(path: string): string {
-  return `egeuysal:www-ai:${path}`;
+function getStorageKey(): string {
+  return AI_GUIDE_CHAT_STORAGE_KEY;
 }
 
-function isAiOverlayPath(path: string): boolean {
-  return /^\/(?:blog|diary|photo)\/[^/]+\/?$/.test(path);
+function clampAiGuideWidth(width: number): number {
+  const viewportWidth = window.innerWidth;
+  const minWidth = Math.min(MIN_AI_GUIDE_WIDTH, Math.max(280, viewportWidth - 280));
+  const maxWidth = Math.max(minWidth, Math.min(viewportWidth * 0.8, viewportWidth - 320));
+  return Math.round(Math.min(maxWidth, Math.max(minWidth, width)));
+}
+
+function getStoredMessages(raw: string): OverlayMessage[] {
+  const parsed = JSON.parse(raw) as { version?: number; messages?: unknown };
+  if (![1, 2, AI_STORAGE_VERSION].includes(parsed.version ?? 0) || !Array.isArray(parsed.messages)) {
+    return [];
+  }
+
+  return parsed.messages
+    .filter((message): message is OverlayMessage => {
+      return (
+        typeof message === "object" &&
+        message !== null &&
+        "id" in message &&
+        "role" in message &&
+        "content" in message &&
+        typeof message.id === "string" &&
+        (message.role === "user" || message.role === "assistant") &&
+        typeof message.content === "string"
+      );
+    })
+    .map((message) => ({
+      ...message,
+      content: message.role === "assistant"
+        ? message.content.slice(0, 32_000).replace(emojiPattern, "")
+        : message.content.slice(0, 32_000),
+    }));
 }
 
 function markCopyableCodeBlocks(root: HTMLElement | null) {
@@ -296,7 +333,31 @@ function AiTd({ children, className, node: _node, ...props }: DataCellProps) {
   );
 }
 
+function AiLink({ href, children, className, node: _node, ...props }: LinkProps) {
+  if (!href) return <>{children}</>;
+
+  try {
+    const url = new URL(href, window.location.origin);
+    const allowedHosts = new Set([window.location.hostname, "egeuysal.com", "www.egeuysal.com"]);
+    if (url.protocol !== "https:" && url.origin !== window.location.origin) {
+      return <>{children}</>;
+    }
+    if (!allowedHosts.has(url.hostname)) {
+      return <>{children}</>;
+    }
+    const safeHref = `${url.pathname}${url.search}${url.hash}`;
+    return (
+      <a href={safeHref} className={cn("ai-guide-link", className)} {...props}>
+        {children}
+      </a>
+    );
+  } catch {
+    return <>{children}</>;
+  }
+}
+
 const aiMarkdownComponents: Components = {
+  a: AiLink,
   table: AiTable,
   thead: AiThead,
   tbody: AiTbody,
@@ -390,83 +451,130 @@ function AiMarkdown({ content, className }: { content: string; className?: strin
   );
 }
 
-export default function PageAiOverlay() {
-  const [pagePath, setPagePath] = useState(() =>
-    typeof window === "undefined" ? "/" : window.location.pathname || "/",
-  );
-  const [isOpen, setIsOpen] = useState(false);
+export default function PageAiOverlay({
+  openOnMount = false,
+  restoreOpenOnMount = false,
+}: {
+  openOnMount?: boolean;
+  restoreOpenOnMount?: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(restoreOpenOnMount);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<OverlayMessage[]>([]);
   const [hasRestoredStorage, setHasRestoredStorage] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [panelWidth, setPanelWidth] = useState(0);
   const abortRef = useRef<AbortController | null>(null);
+  const panelWidthRef = useRef(0);
+  const hasSavedPanelWidthRef = useRef(false);
   const overlayRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const transcriptRef = useRef<HTMLDivElement | null>(null);
-  const storageKey = getStorageKey(pagePath);
+  const storageKey = getStorageKey();
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   useEffect(() => {
-    const syncPagePath = () => {
-      setPagePath(window.location.pathname || "/");
+    document.body.classList.toggle("ai-guide-open", isOpen);
+    try {
+      window.sessionStorage.setItem(AI_GUIDE_OPEN_STORAGE_KEY, String(isOpen));
+    } catch {
+      // The panel can still be used when browser storage is unavailable.
+    }
+    return () => document.body.classList.remove("ai-guide-open");
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (!restoreOpenOnMount && (openOnMount || window.sessionStorage.getItem(AI_GUIDE_OPEN_STORAGE_KEY) === "true")) {
+      const frame = window.requestAnimationFrame(() => setIsOpen(true));
+      return () => window.cancelAnimationFrame(frame);
+    }
+  }, [openOnMount, restoreOpenOnMount]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, [isOpen]);
+
+  useEffect(() => {
+    let savedWidth = 0;
+    try {
+      savedWidth = Number(window.localStorage.getItem(AI_GUIDE_WIDTH_STORAGE_KEY));
+    } catch {
+      // Use the default width when browser storage is unavailable.
+    }
+    hasSavedPanelWidthRef.current = Number.isFinite(savedWidth) && savedWidth > 0;
+    const initialWidth = hasSavedPanelWidthRef.current
+      ? (window.innerWidth <= 640 ? Math.round(savedWidth) : clampAiGuideWidth(savedWidth))
+      : Math.round(window.innerWidth * 0.5);
+    panelWidthRef.current = initialWidth;
+    setPanelWidth(initialWidth);
+
+    const clampOnResize = () => {
+      if (window.innerWidth <= 640) return;
+      const nextWidth = hasSavedPanelWidthRef.current
+        ? clampAiGuideWidth(panelWidthRef.current)
+        : Math.round(window.innerWidth * 0.5);
+      panelWidthRef.current = nextWidth;
+      setPanelWidth(nextWidth);
+      if (hasSavedPanelWidthRef.current) {
+        try {
+          window.localStorage.setItem(AI_GUIDE_WIDTH_STORAGE_KEY, String(nextWidth));
+        } catch {
+          // Keep the current width for this page when storage is unavailable.
+        }
+      }
     };
 
-    syncPagePath();
-    document.addEventListener("astro:page-load", syncPagePath);
-
-    return () => {
-      document.removeEventListener("astro:page-load", syncPagePath);
-      abortRef.current?.abort();
-    };
+    window.addEventListener("resize", clampOnResize);
+    return () => window.removeEventListener("resize", clampOnResize);
   }, []);
+
+  useEffect(() => {
+    if (panelWidth > 0) {
+      document.documentElement.style.setProperty("--ai-guide-width", `${panelWidth}px`);
+    }
+  }, [panelWidth]);
 
   useEffect(() => {
     setHasRestoredStorage(false);
     setQuestion("");
     setMessages([]);
-    setIsOpen(false);
-
     try {
       const raw = window.sessionStorage.getItem(storageKey);
-      if (!raw) {
-        return;
+      let restoredMessages = raw ? getStoredMessages(raw) : [];
+
+      if (!restoredMessages.length) {
+        const migrated: OverlayMessage[] = [];
+        const oldPathKeyPrefix = `${AI_GUIDE_CHAT_STORAGE_KEY}:`;
+        for (let index = 0; index < window.sessionStorage.length; index += 1) {
+          const key = window.sessionStorage.key(index);
+          if (!key?.startsWith(oldPathKeyPrefix)) continue;
+          const oldRaw = window.sessionStorage.getItem(key);
+          if (!oldRaw) continue;
+          try {
+            migrated.push(...getStoredMessages(oldRaw));
+          } catch {
+            window.sessionStorage.removeItem(key);
+          }
+        }
+        const unique = new Map(migrated.map((message) => [message.id, message]));
+        restoredMessages = [...unique.values()]
+          .sort((left, right) => Number.parseInt(left.id.split("-")[0], 36) - Number.parseInt(right.id.split("-")[0], 36))
+          .slice(-20);
       }
 
-      const parsed = JSON.parse(raw) as {
-        version?: number;
-        question?: unknown;
-        messages?: unknown;
-      };
+      if (restoredMessages.length) setMessages(restoredMessages);
 
-      if (parsed.version !== AI_STORAGE_VERSION) {
-        return;
-      }
-
-      if (typeof parsed.question === "string") {
-        setQuestion(parsed.question.slice(0, MAX_QUESTION_LENGTH));
-      }
-
-      if (Array.isArray(parsed.messages)) {
-        const restoredMessages = parsed.messages
-          .filter((message): message is OverlayMessage => {
-            return (
-              typeof message === "object" &&
-              message !== null &&
-              "id" in message &&
-              "role" in message &&
-              "content" in message &&
-              typeof message.id === "string" &&
-              (message.role === "user" || message.role === "assistant") &&
-              typeof message.content === "string"
-            );
-          })
-          .slice(-20)
-          .map((message) => ({
-            ...message,
-            content: message.content.slice(0, 32_000),
-          }));
-
-        setMessages(restoredMessages);
-        setIsOpen(restoredMessages.length > 0);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { question?: unknown };
+        if (typeof parsed.question === "string") {
+          setQuestion(parsed.question.slice(0, MAX_QUESTION_LENGTH));
+        }
       }
     } catch {
       window.sessionStorage.removeItem(storageKey);
@@ -577,10 +685,6 @@ export default function PageAiOverlay() {
     }
 
     const context = getPageContext();
-    if (!context.content) {
-      toast.error("No page context found");
-      return;
-    }
 
     const userMessage: OverlayMessage = { id: createId(), role: "user", content: trimmed };
     const assistantId = createId();
@@ -601,7 +705,14 @@ export default function PageAiOverlay() {
       const response = await fetch("/api/ask", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: trimmed, page: context }),
+        body: JSON.stringify({
+          question: trimmed,
+          page: context,
+          history: messages
+            .filter((message) => message.content.trim())
+            .slice(-20)
+            .map(({ role, content }) => ({ role, content: content.slice(-1_200) })),
+        }),
         signal: controller.signal,
       });
 
@@ -664,79 +775,123 @@ export default function PageAiOverlay() {
 
   const hasTranscript = messages.length > 0;
 
-  if (!isAiOverlayPath(pagePath)) {
-    return null;
+  function updatePanelWidthFromPointer(clientX: number) {
+    const nextWidth = clampAiGuideWidth(window.innerWidth - clientX);
+    panelWidthRef.current = nextWidth;
+    setPanelWidth(nextWidth);
+  }
+
+  function finishPanelResize() {
+    document.body.classList.remove("ai-guide-resizing");
+    hasSavedPanelWidthRef.current = true;
+    try {
+      window.localStorage.setItem(AI_GUIDE_WIDTH_STORAGE_KEY, String(panelWidthRef.current));
+    } catch {
+      // Keep the current width for this page when storage is unavailable.
+    }
+  }
+
+  function handleResizeKeyDown(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    const direction = event.key === "ArrowLeft" ? 1 : -1;
+    const nextWidth = clampAiGuideWidth(panelWidthRef.current + direction * 24);
+    panelWidthRef.current = nextWidth;
+    setPanelWidth(nextWidth);
+    hasSavedPanelWidthRef.current = true;
+    try {
+      window.localStorage.setItem(AI_GUIDE_WIDTH_STORAGE_KEY, String(nextWidth));
+    } catch {
+      // Keep the current width for this page when storage is unavailable.
+    }
   }
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-[100] flex justify-center px-3 sm:bottom-5">
-      <div
-        ref={overlayRef}
-        className="pointer-events-auto w-full max-w-[32rem]"
-        onClick={(event) => void handleOverlayClick(event)}
-        onKeyDown={(event) => void handleOverlayKeyDown(event)}
+    <>
+      <aside
+        className="ai-guide-panel"
+        data-open={isOpen}
+        aria-label="Ask AI"
+        aria-hidden={!isOpen}
+        inert={!isOpen}
       >
-        {isOpen && hasTranscript ? (
-          <div className="mb-1.5 rounded-sm border border-line bg-bg text-fg">
-            <div
-              ref={transcriptRef}
-              className="max-h-[min(28rem,58vh)] overflow-y-auto overflow-x-hidden overscroll-contain px-2.5 py-2"
-            >
-              <div className="flex flex-col gap-2">
+          <div
+            className="ai-guide-resizer"
+            role="separator"
+            aria-label="Resize Ask AI panel"
+            aria-orientation="vertical"
+            aria-valuemin={MIN_AI_GUIDE_WIDTH}
+            aria-valuenow={panelWidth || MIN_AI_GUIDE_WIDTH}
+            tabIndex={0}
+            onKeyDown={handleResizeKeyDown}
+            onPointerDown={(event) => {
+              if (window.innerWidth <= 640) return;
+              event.preventDefault();
+              event.currentTarget.setPointerCapture(event.pointerId);
+              document.body.classList.add("ai-guide-resizing");
+            }}
+            onPointerMove={(event) => {
+              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                updatePanelWidthFromPointer(event.clientX);
+              }
+            }}
+            onPointerUp={(event) => {
+              event.currentTarget.releasePointerCapture(event.pointerId);
+              finishPanelResize();
+            }}
+            onPointerCancel={finishPanelResize}
+            onLostPointerCapture={finishPanelResize}
+          />
+          <div className="ai-guide-panel-header">
+          <p>ask ai</p>
+            <button type="button" onClick={() => setIsOpen(false)} aria-label="Close Ask AI">close</button>
+          </div>
+          <p className="ai-guide-intro">Ask anything about the public blog, diary, and photo archive. I’ll search the sources and build a reading path.</p>
+          <div
+            ref={overlayRef}
+            className="ai-guide-conversation"
+            onClick={(event) => void handleOverlayClick(event)}
+            onKeyDown={(event) => void handleOverlayKeyDown(event)}
+          >
+            {hasTranscript ? (
+              <div ref={transcriptRef} className="ai-guide-transcript">
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={cn(
-                      "max-w-full text-xs leading-5",
-                      message.role === "user"
-                        ? "ml-auto max-w-[90%] rounded-sm border border-line px-2 py-1.5 text-fg"
-                        : "text-muted",
-                    )}
+                    className={cn("ai-guide-message", message.role === "user" && "ai-guide-user-message")}
                   >
                     {message.content ? (
-                      <AiMarkdown
-                        content={message.content}
-                        className={
-                          message.role === "user"
-                            ? "prose-p:!my-0 prose-p:!leading-4 prose-pre:!my-0"
-                            : undefined
-                        }
-                      />
+                      <AiMarkdown content={message.content} className={message.role === "user" ? "prose-p:!my-0" : undefined} />
                     ) : (
-                      <span className="text-neutral-500">thinking...</span>
+                      <span className="ai-guide-thinking"><Spinner className="size-3" /> searching the archive…</span>
                     )}
                   </div>
                 ))}
               </div>
-            </div>
+            ) : (
+              <p className="ai-guide-empty">I’ll look across published posts and photo stories, then link the sources I used.</p>
+            )}
           </div>
-        ) : null}
-
-        <form onSubmit={(event) => void handleSubmit(event)}>
-          <div className="flex min-h-10 items-center gap-2 rounded-sm border border-line bg-bg px-2 py-1.5">
+          <form className="ai-guide-form" onSubmit={(event) => void handleSubmit(event)}>
             <input
               ref={inputRef}
               value={question}
-              onFocus={() => {
-                if (hasTranscript) setIsOpen(true);
-              }}
               onChange={(event) => setQuestion(event.currentTarget.value)}
               maxLength={MAX_QUESTION_LENGTH}
-              className="h-7 min-w-0 flex-1 appearance-none border-0 bg-transparent px-0 text-sm text-fg shadow-none outline-none ring-0 placeholder:text-muted focus:border-transparent focus:shadow-none focus:outline-none focus:ring-0 focus-visible:border-transparent focus-visible:shadow-none focus-visible:outline-none focus-visible:ring-0"
-              placeholder="Ask AI"
-              aria-label="Ask AI about this page"
+              className="ai-guide-input"
+              placeholder="What do you want to learn?"
+              aria-label="Ask AI"
             />
-            <button
-              type="submit"
-              disabled={!question.trim() || isLoading}
-              className="shrink-0 px-1 font-mono text-sm text-muted transition-colors hover:text-fg disabled:cursor-not-allowed disabled:opacity-40"
-              aria-label="Send question"
-            >
-              {isLoading ? "..." : ">"}
+            <button type="submit" disabled={!question.trim() || isLoading} aria-label="Send question">
+              {isLoading ? <Spinner /> : ">"}
             </button>
-          </div>
-        </form>
-      </div>
-    </div>
+          </form>
+      </aside>
+      {!isOpen ? (
+        <button className="ai-guide-launcher" type="button" onClick={() => setIsOpen(true)}>
+          ask ai
+        </button>
+      ) : null}
+    </>
   );
 }

@@ -2,6 +2,14 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 const kind = v.union(v.literal("blog"), v.literal("diary"), v.literal("photo"));
+const knowledgeKind = v.union(
+  v.literal("blog"),
+  v.literal("diary"),
+  v.literal("photo"),
+  v.literal("project"),
+  v.literal("site"),
+  v.literal("brain"),
+);
 
 export default defineSchema({
   contentStats: defineTable({
@@ -105,4 +113,35 @@ export default defineSchema({
     startedAt: v.number(),
     completedAt: v.optional(v.number()),
   }).index("by_deliveryId", ["deliveryId"]),
+
+  aiKnowledgeState: defineTable({
+    key: v.literal("active"),
+    activeGeneration: v.optional(v.string()),
+    stagingGeneration: v.optional(v.string()),
+    cleanupGenerations: v.array(v.string()),
+  }).index("by_key", ["key"]),
+
+  aiKnowledgeChunks: defineTable({
+    generation: v.string(),
+    sourceId: v.string(),
+    chunkIndex: v.number(),
+    kind: knowledgeKind,
+    title: v.string(),
+    url: v.string(),
+    sourceLabel: v.string(),
+    content: v.string(),
+    tags: v.array(v.string()),
+    publishedAt: v.number(),
+    embedding: v.array(v.float64()),
+  })
+    .index("by_generation", ["generation"])
+    .searchIndex("search_content", {
+      searchField: "content",
+      filterFields: ["generation"],
+    })
+    .vectorIndex("by_embedding", {
+      vectorField: "embedding",
+      dimensions: 1536,
+      filterFields: ["generation"],
+    }),
 });

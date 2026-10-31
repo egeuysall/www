@@ -1,5 +1,6 @@
 import type { MDXComponents } from "mdx/types";
 
+import { ALLOWED_IMAGE_HOSTS, SITE } from "@/config/site";
 import { resolveContentCdnShorthand } from "@/lib/content-cdn";
 
 const ALLOWED_EXTERNAL_PROTOCOLS = new Set([
@@ -9,6 +10,8 @@ const ALLOWED_EXTERNAL_PROTOCOLS = new Set([
   "tel:",
 ]);
 const ALLOWED_IMAGE_PROTOCOLS = new Set(["http:", "https:"]);
+const OPTIMIZABLE_IMAGE_EXTENSIONS = /\.(?:avif|jpe?g|png|webp)$/i;
+const RESPONSIVE_IMAGE_WIDTHS = [320, 640, 960, 1280] as const;
 
 const YOUTUBE_HOSTS = new Set([
   "youtube.com",
@@ -115,6 +118,33 @@ function getSafeImageSrc(
       : "";
   } catch {
     return "";
+  }
+}
+
+function getVercelResponsiveImage(src: string) {
+  if (!import.meta.env.PROD) return null;
+
+  try {
+    const parsed = new URL(src, SITE.url);
+    const isSameOrigin = parsed.origin === new URL(SITE.url).origin;
+    const isAllowedRemote = ALLOWED_IMAGE_HOSTS.includes(parsed.hostname)
+      || parsed.hostname.endsWith(".public.blob.vercel-storage.com");
+    if ((!isSameOrigin && !isAllowedRemote) || !OPTIMIZABLE_IMAGE_EXTENSIONS.test(parsed.pathname)) {
+      return null;
+    }
+
+    const sourceUrl = isSameOrigin ? `${parsed.pathname}${parsed.search}` : parsed.toString();
+    const optimizedUrl = (width: number) => {
+      const query = new URLSearchParams({ url: sourceUrl, w: String(width), q: "78" });
+      return `/_vercel/image?${query.toString()}`;
+    };
+
+    return {
+      src: optimizedUrl(960),
+      srcSet: RESPONSIVE_IMAGE_WIDTHS.map((width) => `${optimizedUrl(width)} ${width}w`).join(", "),
+    };
+  } catch {
+    return null;
   }
 }
 
@@ -389,27 +419,33 @@ export const mdxComponents: MDXComponents = {
     }
 
     if (className) {
+      const responsive = getVercelResponsiveImage(safeSrc);
       return (
         <img
-          src={safeSrc}
+          {...props}
+          src={responsive?.src ?? safeSrc}
+          srcSet={responsive?.srcSet}
+          sizes={props.sizes ?? "(max-width: 48rem) 100vw, 48rem"}
           alt={normalizedAlt}
           loading="lazy"
           decoding="async"
           className={`grayscale ${mergedClassName}`}
-          {...props}
         />
       );
     }
 
+    const responsive = getVercelResponsiveImage(safeSrc);
     return (
       <figure className="not-prose my-6 aspect-video overflow-hidden rounded-sm border border-neutral-800 bg-[#fafafa] p-6 md:p-8 dark:bg-neutral-900">
         <img
-          src={safeSrc}
+          {...props}
+          src={responsive?.src ?? safeSrc}
+          srcSet={responsive?.srcSet}
+          sizes={props.sizes ?? "(max-width: 48rem) 100vw, 48rem"}
           alt={normalizedAlt}
           loading="lazy"
           decoding="async"
           className="block h-full w-full max-w-none origin-top-left scale-150 rounded-sm md:rounded-md object-cover object-top-left grayscale shadow-[0_6px_16px_-10px_rgba(0,0,0,0.22)] dark:shadow-[0_8px_16px_-12px_rgba(0,0,0,0.3)]"
-          {...props}
         />
       </figure>
     );
@@ -437,14 +473,17 @@ export const mdxComponentsPlainImage: MDXComponents = {
       );
     }
 
+    const responsive = getVercelResponsiveImage(safeSrc);
     return (
       <img
-        src={safeSrc}
+        {...props}
+        src={responsive?.src ?? safeSrc}
+        srcSet={responsive?.srcSet}
+        sizes={props.sizes ?? "(max-width: 48rem) 100vw, 48rem"}
         alt={normalizedAlt}
         loading="lazy"
         decoding="async"
         className={mergedClassName}
-        {...props}
       />
     );
   },

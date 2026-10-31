@@ -9,6 +9,7 @@
  */
 
 import type * as interactions from "../interactions.js";
+import type * as knowledge from "../knowledge.js";
 import type * as newsletter from "../newsletter.js";
 import type * as publication from "../publication.js";
 
@@ -20,6 +21,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   interactions: typeof interactions;
+  knowledge: typeof knowledge;
   newsletter: typeof newsletter;
   publication: typeof publication;
 }>;

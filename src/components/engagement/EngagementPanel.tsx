@@ -5,6 +5,7 @@ import type { FunctionReturnType } from "convex/server";
 import { api } from "../../../convex/_generated/api";
 import { getConvexClient } from "@/lib/client/convex";
 import { REPORT_REASONS, type ContentKind } from "@/lib/engagement-input";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Props {
   convexUrl: string;
@@ -24,10 +25,10 @@ export default function EngagementPanel(props: Props) {
 
 function Panel({ kind, slug }: Props) {
   const stats = useQuery(api.interactions.getStatsBatch, { items: [{ kind, slug }] });
-  const comments = useQuery(api.interactions.listComments, { kind, slug });
   const [liked, setLiked] = useState(false);
   const [likedComments, setLikedComments] = useState<Set<string>>(new Set());
   const [ownedComments, setOwnedComments] = useState<Set<string>>(new Set());
+  const [commentsAttempt, setCommentsAttempt] = useState(0);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const recorded = useRef(false);
@@ -83,21 +84,66 @@ function Panel({ kind, slug }: Props) {
         onPosted={(commentId) => setOwnedComments((current) => new Set(current).add(commentId))}
       />
 
-      <div className="mt-8 space-y-5">
-        {comments === undefined ? (
-          <p className="text-xs text-neutral-500">Loading comments…</p>
-        ) : comments.length === 0 ? (
-          <p className="text-xs text-neutral-500">No comments yet.</p>
-        ) : comments.map((comment) => (
-          <Comment
-            key={comment._id}
-            comment={comment}
-            initiallyLiked={likedComments.has(comment._id)}
-            canDelete={ownedComments.has(comment._id)}
-          />
-        ))}
-      </div>
+      <CommentsFeed
+        key={commentsAttempt}
+        kind={kind}
+        slug={slug}
+        likedComments={likedComments}
+        ownedComments={ownedComments}
+        onRetry={() => setCommentsAttempt((attempt) => attempt + 1)}
+      />
     </section>
+  );
+}
+
+function CommentsFeed({
+  kind,
+  slug,
+  likedComments,
+  ownedComments,
+  onRetry,
+}: Pick<Props, "kind" | "slug"> & {
+  likedComments: Set<string>;
+  ownedComments: Set<string>;
+  onRetry: () => void;
+}) {
+  const comments = useQuery(api.interactions.listComments, { kind, slug });
+  const [timedOut, setTimedOut] = useState(false);
+
+  useEffect(() => {
+    if (comments !== undefined) {
+      setTimedOut(false);
+      return;
+    }
+
+    const timeout = window.setTimeout(() => setTimedOut(true), 10_000);
+    return () => window.clearTimeout(timeout);
+  }, [comments]);
+
+  return (
+    <div className="mt-8 space-y-5" aria-live="polite">
+      {comments === undefined ? (
+        timedOut ? (
+          <p className="flex items-center gap-3 text-xs text-neutral-500">
+            Comments aren’t responding.
+            <button type="button" onClick={onRetry} className="text-neutral-300 underline underline-offset-4 hover:text-neutral-100">
+              try again
+            </button>
+          </p>
+        ) : (
+          <p className="flex items-center gap-2 text-xs text-neutral-500"><Spinner className="size-3" /> Loading comments…</p>
+        )
+      ) : comments.length === 0 ? (
+        <p className="text-xs text-neutral-500">No comments yet.</p>
+      ) : comments.map((comment) => (
+        <Comment
+          key={comment._id}
+          comment={comment}
+          initiallyLiked={likedComments.has(comment._id)}
+          canDelete={ownedComments.has(comment._id)}
+        />
+      ))}
+    </div>
   );
 }
 

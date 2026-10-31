@@ -1,31 +1,16 @@
 ---
-import PhotoGallery from "@/components/photos/PhotoGallery.astro";
+import ScrollPhotoGallery from "@/components/photos/ScrollPhotoGallery.astro";
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import { getPhotoFeed, PHOTO_PAGE_SIZE } from "@/lib/photos";
-import { paginateItems } from "@/lib/pagination";
+import { getPhotoFeed } from "@/lib/photos";
 
 const photos = await getPhotoFeed();
-const pagination = paginateItems(photos, 1, PHOTO_PAGE_SIZE);
-const configured = photos.length > 0;
-
-const hasNextPage = pagination.currentPage < pagination.totalPages;
-const nextPage = hasNextPage
-  ? paginateItems(photos, pagination.currentPage + 1, PHOTO_PAGE_SIZE)
-  : null;
-const nextPageHref = nextPage ? `/photo/page/${nextPage.currentPage}/` : undefined;
 ---
 
 <BaseLayout
   title="Photo"
   pathname="/photo/"
   description="Portrait photo archive by Ege Uysal."
-  mainClass="flex items-center justify-center !pb-0"
+  mainClass="relative left-1/2 w-screen max-w-none -translate-x-1/2"
 >
-  <PhotoGallery
-    photos={pagination.items}
-    currentPage={pagination.currentPage}
-    totalPages={pagination.totalPages}
-    configured={configured}
-    nextPageHref={nextPageHref}
-  />
+  <ScrollPhotoGallery photos={photos} />
 </BaseLayout>

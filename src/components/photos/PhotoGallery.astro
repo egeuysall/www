@@ -3,6 +3,7 @@ import Pagination from "@/components/ui/pagination.astro";
 import { DitherShader } from "@/components/ui/dither-shader";
 import PhotoGalleryPrefetch from "@/components/photos/PhotoGalleryPrefetch";
 import type { PhotoAsset } from "@/lib/photos";
+import { Picture } from "astro:assets";
 
 interface Props {
   photos: PhotoAsset[];
@@ -19,6 +20,7 @@ const {
   configured,
   nextPageHref,
 } = Astro.props;
+const optimizeImages = import.meta.env.PROD;
 ---
 
 <div class="mx-auto w-full md:max-w-[48rem]">
@@ -32,18 +34,35 @@ const {
             class="group block"
             aria-label={`Open ${photo.title} story`}
           >
-            <div class="not-prose relative aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800">
-              <img
-                src={photo.displaySrc}
-                sizes="(min-width: 640px) 44vw, 100vw"
-                alt={photo.alt}
-                width={720}
-                height={900}
-                loading={currentPage === 1 && index === 0 ? "eager" : "lazy"}
-                decoding="async"
-                fetchpriority={currentPage === 1 && index === 0 ? "high" : "auto"}
-                class="h-full w-full object-cover grayscale"
-              />
+            <div data-dither-host class="not-prose relative aspect-[4/5] w-full overflow-hidden rounded-sm border border-neutral-800">
+              {optimizeImages ? (
+                <Picture
+                  src={photo.displaySrc}
+                  formats={["avif", "webp"]}
+                  quality={78}
+                  widths={[320, 640, 720, 960, 1080]}
+                  sizes="(min-width: 640px) 44vw, 100vw"
+                  alt={photo.alt}
+                  width={720}
+                  height={900}
+                  loading={currentPage === 1 && index === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchpriority={currentPage === 1 && index === 0 ? "high" : "auto"}
+                  pictureAttributes={{ class: "absolute inset-0 h-full w-full" }}
+                  imgAttributes={{ class: "h-full w-full object-cover grayscale" }}
+                />
+              ) : (
+                <img
+                  src={photo.displaySrc}
+                  alt={photo.alt}
+                  width={720}
+                  height={900}
+                  loading={currentPage === 1 && index === 0 ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchpriority={currentPage === 1 && index === 0 ? "high" : "auto"}
+                  class="absolute inset-0 h-full w-full object-cover grayscale"
+                />
+              )}
 
               <DitherShader
                 client:load

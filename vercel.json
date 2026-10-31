@@ -1,5 +1,11 @@
 {
   "buildCommand": "bunx convex deploy --cmd \"bun run build\" --cmd-url-env-var-name PUBLIC_CONVEX_URL",
+  "crons": [
+    {
+      "path": "/api/knowledge-index",
+      "schedule": "0 9 * * *"
+    }
+  ],
   "redirects": [
     {
       "source": "/",

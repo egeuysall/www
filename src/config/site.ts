@@ -67,6 +67,7 @@ export const PROJECTS: ProjectProofItem[] = [
 ];
 
 export const ALLOWED_IMAGE_HOSTS = [
+  "cdn.egeuysal.com",
   "images.githubusercontent.com",
   "avatars.githubusercontent.com",
   "opengraph.githubassets.com",

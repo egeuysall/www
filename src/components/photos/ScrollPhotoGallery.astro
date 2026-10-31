@@ -1,0 +1,22 @@
+---
+import { getImage } from "astro:assets";
+import PhotoScrollGallery from "@/components/photos/PhotoScrollGallery";
+import type { PhotoAsset } from "@/lib/photos";
+
+const { photos } = Astro.props as { photos: PhotoAsset[] };
+const galleryPhotos = await Promise.all(
+  photos.map(async ({ slug, title, sourceSrc, displaySrc, ditherSrc, alt, storyEntry }) => ({
+    slug,
+    title,
+    story: storyEntry.body ?? "",
+    displaySrc: import.meta.env.PROD
+      ? (await getImage({ src: displaySrc, width: 1080, format: "avif", quality: 78 })).src
+      : displaySrc,
+    fallbackSrc: sourceSrc,
+    ditherSrc,
+    alt,
+  })),
+);
+---
+
+<PhotoScrollGallery client:load photos={galleryPhotos} />

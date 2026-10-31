@@ -1,9 +1,7 @@
 ---
 import JsonLd from "@/components/seo/JsonLd.astro";
-import CodeBlockCopyOnClick from "@/components/content/CodeBlockCopyOnClick";
-import PageAiOverlay from "@/components/ai/PageAiOverlay";
+import DeferredPageAiOverlay from "@/components/ai/DeferredPageAiOverlay";
 import { NAV_LINKS, SEO_DEFAULTS, SITE, SOCIAL_LINKS } from "@/config/site";
-import Analytics from "@vercel/analytics/astro";
 import { ClientRouter } from "astro:transitions";
 import "@/styles/global.css";
 
@@ -18,6 +16,7 @@ interface Props {
   jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
   noindex?: boolean;
   mainClass?: string;
+  showPageAi?: boolean;
 }
 
 const {
@@ -31,6 +30,7 @@ const {
   jsonLd,
   noindex = false,
   mainClass = "",
+  showPageAi = true,
 } = Astro.props;
 
 const siteOrigin = Astro.site ?? new URL(SITE.url);
@@ -39,7 +39,8 @@ const canonical = new URL(pathname, siteOrigin).toString();
 const ogImage = new URL(image, siteOrigin).toString();
 const normalizePath = (value: string) => value.replace(/\/+$/, "") || "/";
 const currentPath = normalizePath(Astro.url.pathname);
-const shouldShowAiOverlay = /^\/(?:blog|diary|photo)\/[^/]+$/.test(currentPath);
+const isPhotoGallery = currentPath === "/photo" || currentPath === "/photo/scroll";
+const shouldShowAiOverlay = showPageAi;
 const isNavActive = (href: string): boolean => {
   const normalizedHref = normalizePath(href);
 
@@ -64,7 +65,7 @@ const isNavActive = (href: string): boolean => {
     <meta name="description" content={description} />
     <meta name="robots" content={noindex ? "noindex, nofollow" : "index, follow"} />
 
-    <title>{pageTitle}</title>
+    <title>{pageTitle.toLowerCase()}</title>
     <link rel="canonical" href={canonical} />
     <link rel="micropub" href={new URL("/api/micropub", siteOrigin).toString()} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -96,19 +97,19 @@ const isNavActive = (href: string): boolean => {
     {jsonLd && <JsonLd data={jsonLd} />}
     <ClientRouter />
   </head>
-  <body class="min-h-full bg-bg font-mono text-fg antialiased">
-    <div class="mx-auto flex min-h-screen w-full max-w-155 flex-col px-6 py-8 sm:px-8 sm:py-10">
-      <header class="pb-8">
+  <body class:list={["min-h-full bg-bg font-mono text-fg antialiased", { "photo-gallery-page": isPhotoGallery }]}>
+    <div class:list={["mx-auto flex min-h-screen w-full max-w-155 flex-col px-6 py-10 sm:px-8 sm:py-12", { "photo-gallery-shell": isPhotoGallery }]}>
+      <header class="site-header pb-10">
         <div class="flex items-end justify-between gap-6">
           <div>
             <a
               href="/"
-              class="text-[15px] tracking-tight text-neutral-100 hover:text-neutral-300 focus-visible:text-neutral-300"
+              class="text-sm font-semibold tracking-normal text-neutral-100 hover:text-neutral-300 focus-visible:text-neutral-300"
             >
               {SITE.title}
             </a>
           </div>
-          <nav class="flex items-center gap-4 text-xs text-neutral-400">
+          <nav class="flex items-center gap-4 text-xs tracking-normal text-neutral-400">
             {NAV_LINKS.map((item) => (
               <a
                 href={item.href}
@@ -126,7 +127,7 @@ const isNavActive = (href: string): boolean => {
         <slot />
       </main>
 
-      <footer class="pt-8 text-xs text-neutral-400">
+      <footer class="site-footer pt-8 text-xs text-neutral-400">
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-4">
             {SOCIAL_LINKS.map((link) => {
@@ -149,8 +150,41 @@ const isNavActive = (href: string): boolean => {
         </div>
       </footer>
     </div>
-    <CodeBlockCopyOnClick client:only="react" />
-    {shouldShowAiOverlay && <PageAiOverlay client:only="react" />}
-    <Analytics />
+    {shouldShowAiOverlay && <DeferredPageAiOverlay client:load />}
+    <script>
+      let lastAnalyticsPath = "";
+      let analyticsIsLoading = false;
+      const activateAnalytics = async () => {
+        if (analyticsIsLoading) return;
+        analyticsIsLoading = true;
+        try {
+          const { inject, pageview, computeRoute } = await import("@vercel/analytics");
+          const path = window.location.pathname;
+          if (lastAnalyticsPath === path) return;
+          inject(
+            {
+              disableAutoTrack: true,
+              framework: "astro",
+              basePath: import.meta.env.PUBLIC_VERCEL_OBSERVABILITY_BASEPATH,
+              beforeSend: window.webAnalyticsBeforeSend,
+            },
+            import.meta.env.PUBLIC_VERCEL_OBSERVABILITY_CLIENT_CONFIG,
+          );
+          pageview({ route: computeRoute(path, null), path });
+          lastAnalyticsPath = path;
+        } finally {
+          analyticsIsLoading = false;
+        }
+      };
+      const scheduleAnalytics = () => {
+        if ("requestIdleCallback" in window) {
+          window.requestIdleCallback(activateAnalytics, { timeout: 4000 });
+        } else {
+          window.setTimeout(activateAnalytics, 2000);
+        }
+      };
+      scheduleAnalytics();
+      document.addEventListener("astro:page-load", scheduleAnalytics);
+    </script>
   </body>
 </html>

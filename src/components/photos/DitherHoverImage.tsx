@@ -21,6 +21,7 @@ interface DitherShaderProps {
   brightness?: number;
   contrast?: number;
   invert?: boolean;
+  onReady?: () => void;
 }
 
 interface DitherRequest {
@@ -360,6 +361,7 @@ export const DitherShader: FC<DitherShaderProps> = ({
   contrast = 1,
   invert = false,
   className,
+  onReady,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -377,7 +379,9 @@ export const DitherShader: FC<DitherShaderProps> = ({
     const controller = new AbortController();
 
     const getHostImage = (): HTMLImageElement | null => {
-      const host = container.closest("astro-island")?.parentElement ?? container.parentElement;
+      const host = container.closest("[data-dither-host]")
+        ?? container.closest("astro-island")?.parentElement
+        ?? container.parentElement;
       if (!host) {
         return null;
       }
@@ -465,6 +469,7 @@ export const DitherShader: FC<DitherShaderProps> = ({
         context.clearRect(0, 0, targetWidth, targetHeight);
         context.drawImage(cachedBitmap, 0, 0, targetWidth, targetHeight);
         cachedBitmap.close();
+        onReady?.();
         return;
       }
 
@@ -514,6 +519,7 @@ export const DitherShader: FC<DitherShaderProps> = ({
       context.clearRect(0, 0, targetWidth, targetHeight);
       context.drawImage(outputBitmap, 0, 0, targetWidth, targetHeight);
       outputBitmap.close();
+      onReady?.();
       void storeDitherCanvas(ditherCacheKey, canvas).catch(() => {
         // Ignore cache write failures.
       });
@@ -559,6 +565,7 @@ export const DitherShader: FC<DitherShaderProps> = ({
     invert,
     maxResizeHeight,
     maxResizeWidth,
+    onReady,
     objectFit,
     processingWidth,
     src,
