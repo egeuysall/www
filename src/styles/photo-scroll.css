@@ -34,7 +34,7 @@
   height: 100%;
   width: auto;
   max-width: min(100%, 38.75rem);
-  aspect-ratio: 3 / 4;
+  aspect-ratio: 4 / 5;
   transform-origin: center;
   transition: none;
   will-change: transform, opacity;
@@ -45,9 +45,21 @@
   inset: 0;
   overflow: hidden;
   box-sizing: border-box;
-  border: 1px solid var(--line);
+  border: 0;
   border-radius: .5rem;
   clip-path: inset(0 round .5rem);
+  isolation: isolate;
+}
+
+.photo-scroll-frame::after {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  box-sizing: border-box;
+  border: 1px solid var(--line);
+  border-radius: inherit;
+  content: "";
+  pointer-events: none;
 }
 
 .photo-scroll-layer img {

@@ -374,9 +374,9 @@ export const DitherShader: FC<DitherShaderProps> = ({
       return;
     }
 
-    let started = false;
     let didUnmount = false;
-    const controller = new AbortController();
+    let renderGeneration = 0;
+    let activeController: AbortController | null = null;
 
     const getHostImage = (): HTMLImageElement | null => {
       const host = container.closest("[data-dither-host]")
@@ -390,7 +390,7 @@ export const DitherShader: FC<DitherShaderProps> = ({
       return candidate instanceof HTMLImageElement ? candidate : null;
     };
 
-    const waitForImageReady = async (image: HTMLImageElement): Promise<void> => {
+    const waitForImageReady = async (image: HTMLImageElement, signal: AbortSignal): Promise<void> => {
       if (image.complete && image.naturalWidth > 0 && image.naturalHeight > 0) {
         return;
       }
@@ -412,16 +412,16 @@ export const DitherShader: FC<DitherShaderProps> = ({
         const cleanup = () => {
           image.removeEventListener("load", onLoad);
           image.removeEventListener("error", onError);
-          controller.signal.removeEventListener("abort", onAbort);
+          signal.removeEventListener("abort", onAbort);
         };
 
         image.addEventListener("load", onLoad, { once: true });
         image.addEventListener("error", onError, { once: true });
-        controller.signal.addEventListener("abort", onAbort, { once: true });
+        signal.addEventListener("abort", onAbort, { once: true });
       });
     };
 
-    const renderOnce = async () => {
+    const renderOnce = async (generation: number, signal: AbortSignal) => {
       const rect = container.getBoundingClientRect();
       const cssWidth = Math.round(rect.width);
       const cssHeight = Math.round(rect.height);
@@ -461,7 +461,7 @@ export const DitherShader: FC<DitherShaderProps> = ({
 
       const cachedBitmap = await getCachedDitherBitmap(ditherCacheKey);
       if (cachedBitmap) {
-        if (didUnmount || controller.signal.aborted) {
+        if (didUnmount || signal.aborted || generation !== renderGeneration) {
           cachedBitmap.close();
           return;
         }
@@ -477,13 +477,13 @@ export const DitherShader: FC<DitherShaderProps> = ({
         bitmap: await (async () => {
           const hostImage = getHostImage();
           if (hostImage) {
-            await waitForImageReady(hostImage);
+            await waitForImageReady(hostImage, signal);
             return await createImageBitmap(hostImage);
           }
 
           const blob = await getCachedImageBlob(src, {
             maxNetworkWidth: maxResizeWidth,
-            signal: controller.signal,
+            signal,
           });
           return await createImageBitmap(blob);
         })(),
@@ -502,16 +502,16 @@ export const DitherShader: FC<DitherShaderProps> = ({
       let outputBitmap: ImageBitmap | null = null;
 
       try {
-        outputBitmap = await runDitherInWorker(await buildRequest(), controller.signal);
+        outputBitmap = await runDitherInWorker(await buildRequest(), signal);
       } catch (workerError) {
-        if (controller.signal.aborted) {
+        if (signal.aborted) {
           throw workerError;
         }
 
         outputBitmap = await runDitherOnMainThread(await buildRequest());
       }
 
-      if (didUnmount || controller.signal.aborted) {
+      if (didUnmount || signal.aborted || generation !== renderGeneration) {
         outputBitmap.close();
         return;
       }
@@ -525,21 +525,29 @@ export const DitherShader: FC<DitherShaderProps> = ({
       });
     };
 
+    let previousSize = "";
     const maybeStart = () => {
-      if (started || didUnmount) {
+      if (didUnmount) {
         return;
       }
 
       const rect = container.getBoundingClientRect();
-      if (rect.width <= 0 || rect.height <= 0) {
+      const cssWidth = Math.round(rect.width);
+      const cssHeight = Math.round(rect.height);
+      if (cssWidth <= 0 || cssHeight <= 0) {
         return;
       }
 
-      started = true;
-      observer.disconnect();
+      const size = `${cssWidth}x${cssHeight}`;
+      if (size === previousSize) return;
+      previousSize = size;
+      activeController?.abort();
+      const controller = new AbortController();
+      activeController = controller;
+      const generation = ++renderGeneration;
 
-      void renderOnce().catch((error: unknown) => {
-        if (controller.signal.aborted) {
+      void renderOnce(generation, controller.signal).catch((error: unknown) => {
+        if (controller.signal.aborted || generation !== renderGeneration) {
           return;
         }
 
@@ -556,7 +564,8 @@ export const DitherShader: FC<DitherShaderProps> = ({
 
     return () => {
       didUnmount = true;
-      controller.abort();
+      renderGeneration += 1;
+      activeController?.abort();
       observer.disconnect();
     };
   }, [

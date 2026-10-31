@@ -33,6 +33,7 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
     let previousActive = -1;
     let previousPreload = -1;
     const gallery = galleryRef.current;
+    const imageStage = gallery?.querySelector<HTMLElement>(".photo-scroll-image-stage");
 
     const update = () => {
       cancelAnimationFrame(frame);
@@ -54,6 +55,26 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
           previousTransition = index;
           flushSync(() => setTransitionIndex(index));
         }
+
+        const rootFontSize = Number.parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+        const maxLayerWidth = Math.min(
+          imageStage?.clientWidth ?? gallery.clientWidth,
+          window.innerWidth <= 640
+            ? window.innerWidth * 0.88
+            : document.body.classList.contains("ai-guide-open")
+              ? window.innerWidth / 2 - rootFontSize * 2
+              : rootFontSize * 38.75,
+        );
+        gallery.querySelectorAll<HTMLElement>(".photo-scroll-layer").forEach((layer) => {
+          const image = layer.querySelector("img");
+          if (!image || !imageStage) return;
+          const imageWidth = image.naturalWidth || Number(image.getAttribute("width"));
+          const imageHeight = image.naturalHeight || Number(image.getAttribute("height"));
+          if (!imageWidth || !imageHeight) return;
+          const scale = Math.min(imageStage.clientHeight / imageHeight, maxLayerWidth / imageWidth);
+          layer.style.width = `${imageWidth * scale}px`;
+          layer.style.height = `${imageHeight * scale}px`;
+        });
 
         gallery.style.setProperty("--photo-outgoing-opacity", String(1 - progress));
         gallery.style.setProperty("--photo-outgoing-x", `${-0.18 * gallery.clientWidth * progress}px`);
@@ -99,6 +120,9 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
       update();
     };
 
+    const layoutObserver = new ResizeObserver(() => update());
+    if (imageStage) layoutObserver.observe(imageStage);
+
     updateRef.current = update;
     update();
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -106,6 +130,7 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
     return () => {
       cancelAnimationFrame(frame);
       window.clearTimeout(scrollEndTimer);
+      layoutObserver.disconnect();
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", update);
     };
@@ -124,6 +149,7 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
             photo={photos[transitionIndex]}
             state="outgoing"
             onDitherReady={markDitherReady}
+            onImageLoad={() => updateRef.current()}
           />
           {photos[transitionIndex + 1] && (
             <PhotoLayer
@@ -131,6 +157,7 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
               photo={photos[transitionIndex + 1]}
               state="incoming"
               onDitherReady={markDitherReady}
+              onImageLoad={() => updateRef.current()}
             />
           )}
         </div>
@@ -162,10 +189,12 @@ function PhotoLayer({
   photo,
   state,
   onDitherReady,
+  onImageLoad,
 }: {
   photo: ScrollPhoto;
   state: "incoming" | "outgoing";
   onDitherReady: (slug: string) => void;
+  onImageLoad: () => void;
 }) {
   const [ditherReady, setDitherReady] = useState(false);
   const handleDitherReady = useCallback(() => {
@@ -192,6 +221,7 @@ function PhotoLayer({
           height={1350}
           loading="eager"
           decoding="async"
+          onLoad={onImageLoad}
           onError={(event) => {
             const image = event.currentTarget;
             if (image.dataset.fallbackAttempted || !photo.fallbackSrc) return;
