@@ -93,11 +93,9 @@
 .photo-scroll-story {
   display: grid;
   width: min(100%, 38.75rem);
-  max-height: 10svh;
   flex: none;
   gap: .45rem;
   margin-top: .75rem;
-  overflow-y: auto;
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.75;

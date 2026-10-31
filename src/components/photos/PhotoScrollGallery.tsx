@@ -13,6 +13,12 @@ type ScrollPhoto = {
   alt: string;
 };
 
+function truncateStory(story: string, maxCharacters = 160): string {
+  const characters = Array.from(story.trim());
+  if (characters.length <= maxCharacters) return story.trim();
+  return `${characters.slice(0, maxCharacters - 3).join("").trimEnd()}...`;
+}
+
 export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }) {
   const [transitionIndex, setTransitionIndex] = useState(0);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -159,15 +165,18 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
           )}
         </div>
         <div ref={storyRef} className="photo-scroll-story" aria-live="polite">
-          {photos[activeIndex]?.story.split(/\n\s*\n/).filter(Boolean).map((paragraph, index) => (
-            <p
-              key={`${activeIndex}-${index}`}
-              className="animate-enter"
-              style={{ "--delay": `${60 + index * 55}ms` } as CSSProperties}
-            >
-              {paragraph.trim()}
-            </p>
-          ))}
+          {truncateStory(photos[activeIndex]?.story ?? "")
+            .split(/\n\s*\n/)
+            .filter(Boolean)
+            .map((paragraph, index) => (
+              <p
+                key={`${activeIndex}-${index}`}
+                className="animate-enter"
+                style={{ "--delay": `${60 + index * 55}ms` } as CSSProperties}
+              >
+                {paragraph.trim()}
+              </p>
+            ))}
         </div>
       </div>
 
