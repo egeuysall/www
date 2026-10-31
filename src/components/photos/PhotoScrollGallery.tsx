@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { DitherShader } from "@/components/ui/dither-shader";
 import "@/styles/photo-scroll.css";
 
@@ -24,8 +24,13 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
     updateRef.current();
   }, []);
 
+  useLayoutEffect(() => {
+    galleryRef.current?.classList.remove("is-transition-swapping");
+  }, [transitionIndex]);
+
   useEffect(() => {
     let frame = 0;
+    let scrollEndTimer = 0;
     let previousTransition = -1;
     let previousActive = -1;
     let previousPreload = -1;
@@ -47,6 +52,12 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         const progress = ready ? boundedPosition - index : 0;
         const active = Math.min(Math.round(index + progress), photos.length - 1);
 
+        if (index !== previousTransition) {
+          gallery.classList.add("is-transition-swapping");
+          previousTransition = index;
+          setTransitionIndex(index);
+        }
+
         gallery.style.setProperty("--photo-outgoing-opacity", String(1 - progress));
         gallery.style.setProperty("--photo-outgoing-x", `${-0.18 * gallery.clientWidth * progress}px`);
         gallery.style.setProperty("--photo-outgoing-scale", String(1 - 0.22 * progress));
@@ -56,10 +67,6 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         gallery.style.setProperty("--photo-outgoing-pointer-events", active === index ? "auto" : "none");
         gallery.style.setProperty("--photo-incoming-pointer-events", active === index + 1 ? "auto" : "none");
 
-        if (index !== previousTransition) {
-          previousTransition = index;
-          setTransitionIndex(index);
-        }
         if (active !== previousActive) {
           previousActive = active;
           setActiveIndex(active);
@@ -73,13 +80,26 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
       });
     };
 
+    const handleScroll = () => {
+      if (gallery) {
+        gallery.classList.add("is-scrolling");
+        gallery.querySelectorAll(".is-pointer-hovered").forEach((layer) => {
+          layer.classList.remove("is-pointer-hovered");
+        });
+      }
+      window.clearTimeout(scrollEndTimer);
+      scrollEndTimer = window.setTimeout(() => gallery?.classList.remove("is-scrolling"), 140);
+      update();
+    };
+
     updateRef.current = update;
     update();
-    window.addEventListener("scroll", update, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", update);
     return () => {
       cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", update);
+      window.clearTimeout(scrollEndTimer);
+      window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", update);
     };
   }, [photos.length]);
@@ -147,7 +167,16 @@ function PhotoLayer({
   }, [onDitherReady, photo.slug]);
 
   return (
-    <div data-dither-host className={`photo-scroll-layer group is-${state}${ditherReady ? " is-ready" : ""}`}>
+    <div
+      data-dither-host
+      className={`photo-scroll-layer is-${state}${ditherReady ? " is-ready" : ""}`}
+      onPointerMove={(event) => {
+        if (event.pointerType === "mouse" && !event.currentTarget.closest(".photo-scroll-gallery.is-scrolling")) {
+          event.currentTarget.classList.add("is-pointer-hovered");
+        }
+      }}
+      onPointerLeave={(event) => event.currentTarget.classList.remove("is-pointer-hovered")}
+    >
       <img
         src={photo.displaySrc}
         alt={photo.alt}
@@ -171,7 +200,7 @@ function PhotoLayer({
         threshold={0.56}
         brightness={-0.18}
         contrast={1.8}
-        className="pointer-events-none transition-opacity duration-500 ease-out group-hover:opacity-0 group-focus-visible:opacity-0"
+        className="photo-scroll-dither pointer-events-none"
         onReady={handleDitherReady}
       />
       <a
