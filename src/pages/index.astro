@@ -31,20 +31,20 @@ const jsonLd = [
 ---
 
 <BaseLayout title="Home" pathname="/" jsonLd={jsonLd}>
-  <section class="animate-enter" style="--delay: 40ms;">
-    <p class="text-sm leading-6 text-neutral-200">
+  <section>
+    <p class="animate-enter text-sm leading-6 text-neutral-200" style="--delay: 40ms;">
       I'm a founder building SaaS products at 16.
     </p>
-    <p class="mt-1 text-xs leading-5 text-neutral-400">
+    <p class="animate-enter mt-1 text-xs leading-5 text-neutral-400" style="--delay: 105ms;">
       Based in Chicago, building Ryva.
     </p>
   </section>
 
-  <section class="mt-12 animate-enter" style="--delay: 120ms;">
-    <h2 class="text-sm font-semibold tracking-normal text-neutral-100">Projects</h2>
+  <section class="mt-12">
+    <h2 class="animate-enter text-sm font-semibold tracking-normal text-neutral-100" style="--delay: 170ms;">Projects</h2>
     <ul class="mt-4">
-      {PROJECTS.map((project) => (
-        <li class="row-border py-3">
+      {PROJECTS.map((project, index) => (
+        <li class="row-border animate-enter py-3" style={`--delay: ${225 + index * 65}ms;`}>
           <a href={project.url} target="_blank" rel="noopener noreferrer" class="block hover:text-neutral-100">
             <div class="flex items-start justify-between gap-6">
               <div>
@@ -59,16 +59,16 @@ const jsonLd = [
     </ul>
   </section>
 
-  <section class="mt-10 animate-enter" style="--delay: 200ms;">
+  <section class="mt-10">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-sm font-semibold tracking-normal text-neutral-100">Latest Blog</h2>
-      <a href="/blog" class="text-[11px] text-neutral-400 hover:text-neutral-200" aria-label="See all blog posts"
+      <h2 class="animate-enter text-sm font-semibold tracking-normal text-neutral-100" style="--delay: 440ms;">Latest Blog</h2>
+      <a href="/blog" class="animate-enter text-[11px] text-neutral-400 hover:text-neutral-200" style="--delay: 440ms;" aria-label="See all blog posts"
         >See all</a
       >
     </div>
     <ul>
-      {recentPosts.map((post) => (
-        <li class="row-border py-3">
+      {recentPosts.map((post, index) => (
+        <li class="row-border animate-enter py-3" style={`--delay: ${495 + index * 65}ms;`}>
           <a href={`/blog/${post.id}/`} class="block hover:text-neutral-100">
             <div class="flex items-start justify-between gap-6">
               <p class="text-[13px] font-medium leading-5 text-neutral-100">{post.data.title}</p>
@@ -80,20 +80,21 @@ const jsonLd = [
     </ul>
   </section>
 
-  <section class="mt-10 animate-enter" style="--delay: 280ms;">
+  <section class="mt-10">
     <div class="mb-4 flex items-center justify-between">
-      <h2 class="text-sm font-semibold tracking-normal text-neutral-100">Recent Diary</h2>
+      <h2 class="animate-enter text-sm font-semibold tracking-normal text-neutral-100" style="--delay: 850ms;">Recent Diary</h2>
       <a
         href="/diary"
-        class="text-[11px] text-neutral-400 hover:text-neutral-200"
+        class="animate-enter text-[11px] text-neutral-400 hover:text-neutral-200"
+        style="--delay: 850ms;"
         aria-label="See all diary entries">See all</a
       >
     </div>
     <ol>
-      {recentDiary.map((entry) => {
+      {recentDiary.map((entry, index) => {
         const day = diaryDayMap.get(entry.id) ?? 0;
         return (
-          <li class="row-border py-3">
+          <li class="row-border animate-enter py-3" style={`--delay: ${905 + index * 65}ms;`}>
             <a href={`/diary/${getDiaryEntrySlug(entry)}/`} class="block hover:text-neutral-100">
               <div class="flex items-start justify-between gap-6">
                 <p class="text-[13px] font-medium leading-5 text-neutral-100">{entry.data.summary}</p>

@@ -477,7 +477,7 @@ export default function PageAiOverlay({
   useEffect(() => {
     document.body.classList.toggle("ai-guide-open", isOpen);
     try {
-      window.sessionStorage.setItem(AI_GUIDE_OPEN_STORAGE_KEY, String(isOpen));
+      window.localStorage.setItem(AI_GUIDE_OPEN_STORAGE_KEY, String(isOpen));
     } catch {
       // The panel can still be used when browser storage is unavailable.
     }
@@ -485,7 +485,7 @@ export default function PageAiOverlay({
   }, [isOpen]);
 
   useEffect(() => {
-    if (!restoreOpenOnMount && (openOnMount || window.sessionStorage.getItem(AI_GUIDE_OPEN_STORAGE_KEY) === "true")) {
+    if (!restoreOpenOnMount && (openOnMount || window.localStorage.getItem(AI_GUIDE_OPEN_STORAGE_KEY) === "true")) {
       const frame = window.requestAnimationFrame(() => setIsOpen(true));
       return () => window.cancelAnimationFrame(frame);
     }
