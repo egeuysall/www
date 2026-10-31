@@ -20,7 +20,11 @@ import {
   AI_GUIDE_OPEN_STORAGE_KEY,
   AI_GUIDE_WIDTH_STORAGE_KEY,
 } from "@/lib/ai-preferences";
-import { SHIKI_STREAMDOWN_THEMES, SHIKI_THEMES } from "@/lib/code-themes.mjs";
+import {
+  SHIKI_DARK_THEME,
+  SHIKI_LIGHT_THEME,
+  SHIKI_STREAMDOWN_THEMES,
+} from "@/lib/code-themes.mjs";
 import { Spinner } from "@/components/ui/spinner";
 
 type OverlayMessage = {
@@ -377,13 +381,13 @@ function AiCodeBlock({ code, language }: { code: string; language: string }) {
 
   useEffect(() => {
     let cancelled = false;
+    const colorScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
-    async function highlight() {
+    async function highlight(isDark: boolean) {
       try {
         const highlighted = await codeToHtml(code, {
           lang: language,
-          themes: SHIKI_THEMES,
-          defaultColor: false,
+          theme: isDark ? SHIKI_DARK_THEME : SHIKI_LIGHT_THEME,
         });
 
         if (!cancelled) {
@@ -399,10 +403,13 @@ function AiCodeBlock({ code, language }: { code: string; language: string }) {
     }
 
     setHtml(null);
-    void highlight();
+    const onColorSchemeChange = (event: MediaQueryListEvent) => void highlight(event.matches);
+    colorScheme.addEventListener("change", onColorSchemeChange);
+    void highlight(colorScheme.matches);
 
     return () => {
       cancelled = true;
+      colorScheme.removeEventListener("change", onColorSchemeChange);
     };
   }, [code, language]);
 
