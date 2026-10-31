@@ -35,14 +35,19 @@
   width: auto;
   max-width: min(100%, 38.75rem);
   aspect-ratio: 3 / 4;
+  transform-origin: center;
+  transition: none;
+  will-change: transform, opacity;
+}
+
+.photo-scroll-frame {
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   box-sizing: border-box;
   border: 1px solid var(--line);
   border-radius: .5rem;
   clip-path: inset(0 round .5rem);
-  transform-origin: center;
-  transition: none;
-  will-change: transform, opacity;
 }
 
 .photo-scroll-layer img {
@@ -50,14 +55,13 @@
   height: 100%;
   object-fit: contain;
   filter: grayscale(1);
-  border-radius: .5rem;
+  border-radius: inherit;
 }
 
 .photo-scroll-dither,
 .photo-scroll-layer canvas {
   overflow: hidden;
-  border-radius: .5rem;
-  clip-path: inset(0 round .5rem);
+  border-radius: inherit;
 }
 
 .photo-scroll-dither { transition: opacity 300ms ease-out; }
@@ -76,6 +80,7 @@
   color: var(--muted);
   font-size: 1rem;
   line-height: 1.75;
+  transition: none;
 }
 
 .photo-scroll-story p { margin: 0; }

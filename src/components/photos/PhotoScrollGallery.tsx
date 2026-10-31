@@ -67,9 +67,11 @@ export default function PhotoScrollGallery({ photos }: { photos: ScrollPhoto[] }
         const activeLayer = gallery.querySelector<HTMLElement>(
           active === index ? ".photo-scroll-layer.is-outgoing" : ".photo-scroll-layer.is-incoming",
         );
-        const activeImageWidth = activeLayer?.getBoundingClientRect().width;
-        if (activeImageWidth && storyRef.current) {
-          storyRef.current.style.width = `${Math.round(activeImageWidth)}px`;
+        const activeImageRect = activeLayer?.getBoundingClientRect();
+        if (activeImageRect && storyRef.current) {
+          const galleryCenter = gallery.getBoundingClientRect().left + gallery.clientWidth / 2;
+          storyRef.current.style.width = `${activeImageRect.width}px`;
+          storyRef.current.style.transform = `translateX(${activeImageRect.left + activeImageRect.width / 2 - galleryCenter}px)`;
         }
 
         if (active !== previousActive) {
@@ -182,32 +184,34 @@ function PhotoLayer({
       }}
       onPointerLeave={(event) => event.currentTarget.classList.remove("is-pointer-hovered")}
     >
-      <img
-        src={photo.displaySrc}
-        alt={photo.alt}
-        width={1080}
-        height={1350}
-        loading="eager"
-        decoding="async"
-        onError={(event) => {
-          const image = event.currentTarget;
-          if (image.dataset.fallbackAttempted || !photo.fallbackSrc) return;
-          image.dataset.fallbackAttempted = "true";
-          image.src = photo.fallbackSrc;
-        }}
-      />
-      <DitherShader
-        src={photo.ditherSrc}
-        objectFit="contain"
-        processingWidth={240}
-        maxResizeWidth={720}
-        maxResizeHeight={900}
-        threshold={0.56}
-        brightness={-0.18}
-        contrast={1.8}
-        className="photo-scroll-dither pointer-events-none"
-        onReady={handleDitherReady}
-      />
+      <div className="photo-scroll-frame">
+        <img
+          src={photo.displaySrc}
+          alt={photo.alt}
+          width={1080}
+          height={1350}
+          loading="eager"
+          decoding="async"
+          onError={(event) => {
+            const image = event.currentTarget;
+            if (image.dataset.fallbackAttempted || !photo.fallbackSrc) return;
+            image.dataset.fallbackAttempted = "true";
+            image.src = photo.fallbackSrc;
+          }}
+        />
+        <DitherShader
+          src={photo.ditherSrc}
+          objectFit="contain"
+          processingWidth={240}
+          maxResizeWidth={720}
+          maxResizeHeight={900}
+          threshold={0.56}
+          brightness={-0.18}
+          contrast={1.8}
+          className="photo-scroll-dither pointer-events-none"
+          onReady={handleDitherReady}
+        />
+      </div>
       <a
         className="photo-scroll-image-link"
         href={`/photo/${photo.slug}/`}
