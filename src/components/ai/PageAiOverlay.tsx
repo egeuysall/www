@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { math } from "@streamdown/math";
 import { Streamdown } from "streamdown";
 import type { Components } from "streamdown";
+import { codeToHtml } from "shiki";
 import type {
   AnchorHTMLAttributes,
   HTMLAttributes,
@@ -81,8 +82,13 @@ function normalizeLooseMath(content: string): string {
 }
 
 function inferCodeLanguage(content: string, explicitLanguage?: string): string {
-  if (explicitLanguage && explicitLanguage !== "text") {
-    return explicitLanguage;
+  const normalizedLanguage = explicitLanguage?.toLowerCase();
+  if (normalizedLanguage && normalizedLanguage !== "text") {
+    return normalizedLanguage === "golang" ? "go" : normalizedLanguage;
+  }
+
+  if (/\bpackage\s+\w+|\bfunc\s+\w+\s*\(|\bgo\s+func\b|\bchan\s+\w+|:=|\bfmt\./.test(content)) {
+    return "go";
   }
 
   if (/\b(console\.log|const|let|var|function|import|export|=>|await)\b/.test(content)) {
@@ -374,7 +380,6 @@ function AiCodeBlock({ code, language }: { code: string; language: string }) {
 
     async function highlight() {
       try {
-        const { codeToHtml } = await import("shiki");
         const highlighted = await codeToHtml(code, {
           lang: language,
           themes: SHIKI_THEMES,

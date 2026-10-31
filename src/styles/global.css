@@ -342,7 +342,9 @@ a {
   border-radius: 0.25rem;
   overflow-x: auto;
   padding: 0.8572em 1.1429em;
+  font-family: var(--font-mono);
   font-size: 0.7875rem;
+  font-weight: 400;
   line-height: 1.7143;
 }
 
