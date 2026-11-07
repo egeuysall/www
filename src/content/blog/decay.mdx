@@ -1,0 +1,149 @@
+---
+title: "Decay"
+description: "A repository can sit untouched for a year and become harder to run every month. A certificate expires. An API changes. A dependency disappears. A runtime update changes a behavior the application quietly relied on. The source code is identical, but the system no longer works."
+publishedAt: 2026-11-07
+tags: []
+draft: false
+---
+A repository can sit untouched for a year and become harder to run every month. A certificate expires. An API changes. A dependency disappears. A runtime update changes a behavior the application quietly relied on. The source code is identical, but the system no longer works.
+
+This is a strange kind of decay. Nothing inside the file has physically deteriorated. The world around it has moved.
+
+AI makes this more important, not less. Generating an implementation is becoming easier in many workflows, but an implementation is only part of what a software project needs. Someone still has to establish what it should do, check that it does it, and maintain the conditions that make it work.
+
+I think the consequence of cheaper code is not that engineering becomes unimportant. It is that more of its value moves toward verification: deciding what evidence is sufficient to trust a change, and knowing when that evidence is no longer enough.
+
+## Correctness has an environment
+
+We often talk about correctness as though it belongs entirely to a function. Give it an input, observe an output, and decide whether the answer is right.
+
+That works for some questions. But an application also depends on its runtime, libraries, configuration, stored data, external services, and the clock. It exists inside a set of assumptions, whether or not anyone has written them down.
+
+The [expiration of DST Root CA X3](https://letsencrypt.org/docs/dst-root-ca-x3-expiration-september-2021/) illustrates this. On September 30, 2021, the older root certificate used in Let's Encrypt's compatibility chain expired. Compatibility depended on the client's trust store and certificate-validation implementation. Let's Encrypt documented, among other details, a verification quirk in OpenSSL 1.0.x that could break clients even when they trusted its newer root.
+
+The lesson is not that HTTPS stopped working everywhere. Most modern clients were unaffected. It is that a connection could fail without a developer changing the application's request code. A date and the client's surrounding trust machinery were enough.
+
+Software does not have to change for its assumptions to become false. Nor does decay always produce an obvious exception. A response can remain valid JSON after a provider changes what a field means. A calculation can still execute correctly against a business rule that is no longer the rule anyone wants.
+
+There are at least two different questions here: does the implementation still satisfy its specification, and does the specification still describe the job?
+
+## Cheap implementation is not cheap ownership
+
+Coding models can produce a function, a migration, a test suite, and an integration in one conversation. That makes it easy to confuse the speed of obtaining a candidate with the cost of owning the result.
+
+The costs arrive at different times. Implementation is immediate and visible. Review, debugging, upgrades, incident response, and eventual removal are spread across the future. A library added in seconds can become a dependency someone must track for years.
+
+This does not mean AI-generated code is inherently worse than human-written code. Humans create the same maintenance obligations. It also does not mean current AI tools universally improve or reduce productivity. The effect depends on the task, model, workflow, and standard of completion.
+
+An instructive example is [METR's 2025 comparison of algorithmic and holistic evaluation](https://metr.org/blog/2025-08-12-research-update-towards-reconciling-slowdown-with-time-horizons/). On eighteen tasks from two open-source repositories, the researchers found that early-2025 agents often produced functionally correct changes that were not readily usable as-is because of problems with testing, formatting, or code quality. This was a small study of specific systems, not a measurement of every coding agent available today.
+
+The distinction it exposes is durable: passing a selected check and delivering a maintainable change are different outcomes.
+
+When implementation becomes cheaper, the number of candidate changes can grow faster than the capacity to evaluate them. Without better verification, the bottleneck does not disappear. It becomes a queue of plausible patches.
+
+## A green test is a bounded claim
+
+A passing test says that a particular execution satisfied a particular assertion under particular conditions. That is useful evidence. It is not a certificate of universal correctness.
+
+Consider a small cache entry. Its contract says that it is usable only before its expiry time. Equality means expired. The values below are finite timestamps in milliseconds; parsing, storage, and clock synchronization are outside this example.
+
+```javascript
+// Save as expiry.test.mjs and run: node --test expiry.test.mjs
+import assert from "node:assert/strict";
+import test from "node:test";
+
+function isUsable(entry, now) {
+  return now < entry.expiresAt;
+}
+
+const expiresAt = 10_000;
+const cases = [
+  ["before expiry", expiresAt - 1, true],
+  ["at expiry", expiresAt, false],
+  ["after expiry", expiresAt + 1, false],
+];
+
+for (const [name, now, expected] of cases) {
+  test(name, () => {
+    assert.equal(isUsable({ expiresAt }, now), expected);
+  });
+}
+```
+
+Changing `<` to `<=` introduces a boundary bug. A test that checks only the moment before expiry will still pass. The equality case catches the difference because the expected result comes from an explicit requirement, not from copying the implementation.
+
+Passing time into the function also makes the assumption inspectable. A test does not need to wait for a real clock to reach the boundary. It can evaluate the behavior directly and repeatably.
+
+These three cases are still not proof of a complete cache system. They say nothing about eviction, concurrent reads, persistence, invalid timestamps, or whether the machine's clock is trustworthy. A well-tested helper can sit inside a broken system.
+
+The same problem appears when a model writes both the implementation and the tests. That can be productive, but the two artifacts may share the same misunderstanding. Asking for tests is not the same as obtaining an independent account of what should happen.
+
+## Test the evidence, not just the code
+
+Code coverage measures what the tests execute. It does not establish that the assertions would reject an incorrect result.
+
+[Mutation testing](https://stryker-mutator.io/docs) approaches that gap by deliberately changing the implementation and checking whether the tests notice. Replacing `<` with `<=` in the example is a small manual mutation. If the tests stay green, the suite has not distinguished those behaviors.
+
+A surviving mutation is not automatically a real defect. Some mutations are equivalent for the supported input domain. But investigating survivors can reveal where a reassuring coverage number hides weak assertions.
+
+Other techniques answer different questions. Property-based tests explore inputs against general requirements. Differential tests compare behavior with another implementation or reference model. Fault injection asks what happens when the network, disk, or process fails.
+
+[SQLite's testing documentation](https://www.sqlite.org/testing.html) describes a layered approach that includes independent test harnesses, out-of-memory tests, I/O failures, simulated crashes, fuzzing, and boundary checks. Its reliability is not explained by one giant collection of happy-path examples. Different methods expose different classes of failure.
+
+The useful question is not simply how many tests exist. It is which failure would make them fail, and which important failure could still pass unnoticed.
+
+## Proof is stronger, but still specific
+
+Verification does not always have to mean executing examples. Formal methods can express properties precisely and reason about behaviors that would be difficult to exercise through ordinary testing.
+
+A proof can establish that a specified property follows from a model and its assumptions. A model checker can explore a configured state space for violations. Neither should be casually described as proving that an entire deployed product can never fail.
+
+In its [account of ShardStore](https://aws.amazon.com/blogs/storage/how-automated-reasoning-helps-us-innovate-at-s3-scale/), Amazon describes combining property-based testing and model checking to validate storage behavior under scenarios including device failures and power failures. It also describes keeping the specification in the codebase so engineers can review changes to the expected behavior alongside implementation changes.
+
+That last part matters. A specification is maintained work, not a permanent document written before development starts.
+
+A valid theorem does not rot because time passes. What can become stale is its relevance to the deployed system: the implementation changes, the environment violates an assumption, or the requirement changes. The reasoning remains valid while the claim people think it supports no longer follows.
+
+Proof reduces uncertainty within its scope. Engineering still has to establish that the scope covers the thing being shipped.
+
+## Yesterday's evidence is not today's observation
+
+A clean build last month does not show that a fresh checkout builds today. A successful request in staging does not establish that production has the same permissions or certificate chain.
+
+[Reproducible Builds](https://reproducible-builds.org/docs/definition/) defines reproducibility as obtaining bit-for-bit identical specified artifacts from the same source, environment, and instructions. That is a valuable property, but it is not the same as runtime correctness. Two builds can reproduce the same bug perfectly.
+
+Likewise, pinning dependencies limits one source of drift. It does not keep an upstream API online, rotate a certificate, or ensure that archived dependencies remain obtainable. Reproducibility makes assumptions easier to inspect; it does not remove them.
+
+A practical verification process has to span several timescales:
+
+- **At change time:** check the specification, implementation, regression cases, and relevant integration paths.
+- **Without a source change:** periodically rebuild from a clean environment and check critical external contracts and expiring dependencies.
+- **After deployment:** observe real outcomes through appropriate health checks, synthetic transactions, error reporting, and rollback readiness.
+
+Those production checks need deliberate limits. A synthetic payment should use an appropriate test mode or controlled transaction, not casually charge a real customer. Monitoring is another system that needs its own safety boundaries.
+
+The goal is not to run every conceivable test on every commit. It is to match the evidence to the failure cost and to the kinds of change the system actually experiences.
+
+## Use AI on both sides of the change
+
+AI can help with verification as well as implementation: suggesting boundary cases, generating test inputs, investigating failures, or proposing counterexamples to a design. The answer is not to preserve all review work as manual labor.
+
+But a model's explanation that a patch is correct is not a check of the patch. The useful artifact is something inspectable: an assertion tied to a requirement, a reproducible failing case, an executed test, or a proof checked by an appropriate tool.
+
+Even those artifacts need scrutiny. A type checker proves nothing about a file it never checked. A test command that exits successfully after discovering zero tests is not evidence about the behavior. Weakening an assertion can remove a failure without fixing its cause.
+
+For an AI-assisted change, I would rather see a small patch with a clear requirement and a regression test demonstrated against the old behavior than a large implementation accompanied by a confident summary. Confidence is cheap to generate too.
+
+The review should preserve the chain from requirement to evidence: what was supposed to happen, which check establishes it, what actually ran, and what remains outside that check.
+
+## Less code can be the better result
+
+If generating software becomes easier, adding software becomes easier. Every addition can introduce more state, dependencies, configuration, and behavior that someone must understand later.
+
+Verification alone is not the whole answer. Reducing the surface that needs verification matters too. Removing a dependency, deleting an unused integration, or choosing a smaller implementation can eliminate future obligations rather than automate their management.
+
+I think this is where the meaning of productivity has to broaden. Producing more code is an output measure. Maintaining useful behavior with fewer failures and less ongoing work is closer to the outcome people actually want.
+
+Decay begins when software's assumptions stop matching its world. AI can help repair that mismatch faster, but it can also help create systems faster than anyone can understand or maintain them.
+
+Cheaper code makes verification more valuable because the cost of producing a plausible implementation is no longer a good proxy for the work required to trust it. The job is not finished when the code exists, or even when the tests turn green. It is finished only within a stated scope, with evidence that can be revisited when the world changes.
