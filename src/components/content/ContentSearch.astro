@@ -1,0 +1,141 @@
+---
+interface Props {
+  kind: "blog" | "diary";
+}
+const { kind } = Astro.props;
+const placeholder = kind === "blog" ? "Search posts" : "Search entries";
+---
+
+<div class="mb-6" data-content-search data-kind={kind}>
+  <label class="sr-only" for={`search-${kind}`}>{placeholder}</label>
+  <input
+    id={`search-${kind}`}
+    type="search"
+    autocomplete="off"
+    placeholder={`${placeholder}…`}
+    class="w-full rounded-sm border border-neutral-800 bg-transparent px-3 py-2 text-sm text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-neutral-500"
+  />
+  <p data-search-status class="mt-2 text-xs text-neutral-500" aria-live="polite" hidden></p>
+  <ul data-search-results class="mt-5 space-y-5" hidden></ul>
+</div>
+
+<script>
+  type Item = {
+    kind: "blog" | "diary";
+    url: string;
+    title: string;
+    description: string;
+    date: string;
+    tags: string[];
+    text: string;
+  };
+
+  let cache: Promise<Item[]> | null = null;
+  const load = () => (cache ??= fetch("/search-index.json").then((r) => r.json()));
+
+  const score = (item: Item, terms: string[]): number => {
+    const title = item.title.toLowerCase();
+    const desc = item.description.toLowerCase();
+    const tags = item.tags.join(" ").toLowerCase();
+    const text = item.text.toLowerCase();
+    let total = 0;
+    for (const term of terms) {
+      const s =
+        (title.includes(term) ? 10 : 0) +
+        (tags.includes(term) ? 5 : 0) +
+        (desc.includes(term) ? 3 : 0) +
+        (text.includes(term) ? 1 : 0);
+      if (!s) return 0;
+      total += s;
+    }
+    return total;
+  };
+
+  const snippet = (item: Item, terms: string[]): string => {
+    const lower = item.text.toLowerCase();
+    const at = terms.map((t) => lower.indexOf(t)).find((i) => i >= 0) ?? 0;
+    const start = Math.max(0, at - 50);
+    const slice = item.text.slice(start, start + 160);
+    return (start > 0 ? "…" : "") + slice + (start + 160 < item.text.length ? "…" : "");
+  };
+
+  function init() {
+    const root = document.querySelector<HTMLElement>("[data-content-search]");
+    if (!root || root.dataset.bound) return;
+    root.dataset.bound = "true";
+    const kind = root.dataset.kind;
+    const input = root.querySelector("input") as HTMLInputElement;
+    const status = root.querySelector("[data-search-status]") as HTMLElement;
+    const list = root.querySelector("[data-search-results]") as HTMLElement;
+    const hideWhileSearching = () =>
+      document.querySelectorAll<HTMLElement>("[data-search-hide]");
+
+    const render = async () => {
+      const raw = input.value.trim();
+      const q = raw.toLowerCase();
+      const url = new URL(location.href);
+      if (raw) url.searchParams.set("q", raw);
+      else url.searchParams.delete("q");
+      history.replaceState(null, "", url);
+
+      hideWhileSearching().forEach((el) => (el.hidden = Boolean(q)));
+      list.hidden = status.hidden = !q;
+      list.replaceChildren();
+      if (!q) return;
+
+      const items = (await load()).filter((i) => i.kind === kind);
+      if (input.value.trim().toLowerCase() !== q) return;
+      const terms = q.split(/\s+/);
+      const hits = items
+        .map((item) => ({ item, s: score(item, terms) }))
+        .filter((h) => h.s > 0)
+        .sort((a, b) => b.s - a.s || b.item.date.localeCompare(a.item.date));
+      status.textContent = hits.length
+        ? `${hits.length} result${hits.length === 1 ? "" : "s"}`
+        : "No results.";
+      for (const { item } of hits.slice(0, 30)) {
+        const li = document.createElement("li");
+        li.className = "row-border pb-5";
+        const a = document.createElement("a");
+        a.href = item.url;
+        a.className = "block";
+        const h = document.createElement("h2");
+        h.className = "text-sm text-neutral-100";
+        h.textContent = kind === "diary" ? item.description || item.title : item.title;
+        const meta = document.createElement("p");
+        meta.className = "mt-1 text-xs text-neutral-400";
+        meta.textContent = item.date.slice(0, 10);
+        const body = document.createElement("p");
+        body.className = "mt-2 text-xs leading-relaxed text-neutral-500";
+        body.textContent = snippet(item, terms);
+        a.append(h, meta, body);
+        li.append(a);
+        list.append(li);
+      }
+    };
+
+    input.addEventListener("input", () => void render());
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && input.value) {
+        input.value = "";
+        void render();
+      }
+    });
+    document.addEventListener("keydown", (event) => {
+      if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === "f") {
+        event.preventDefault();
+        input.focus();
+        input.select();
+      }
+    });
+    input.addEventListener("focus", () => void load(), { once: true });
+    const initial = new URLSearchParams(location.search).get("q");
+    if (initial) {
+      input.value = initial;
+      void render();
+    }
+  }
+
+  init();
+  document.addEventListener("astro:page-load", init);
+</script>

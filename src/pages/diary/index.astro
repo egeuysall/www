@@ -4,6 +4,7 @@ import Pagination from "@/components/ui/pagination.astro";
 import { getDiaryDayMap, getDiaryEntrySlug, getPublishedDiaryEntries } from "@/lib/content";
 import { paginateItems } from "@/lib/pagination";
 import ViewCount from "@/components/engagement/ViewCount";
+import ContentSearch from "@/components/content/ContentSearch.astro";
 
 const entries = await getPublishedDiaryEntries();
 const dayMap = await getDiaryDayMap();
@@ -12,7 +13,9 @@ const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
 ---
 
 <BaseLayout title="Diary" pathname="/diary/" description="Daily short progress notes, sorted by date.">
-  <section>
+  <ContentSearch kind="diary" />
+
+  <section data-search-hide>
     <ol class="space-y-4">
       {pagination.items.map((entry, index) => {
         const dayNumber = dayMap.get(entry.id) ?? 0;
@@ -31,5 +34,7 @@ const convexUrl = import.meta.env.PUBLIC_CONVEX_URL;
       })}
     </ol>
   </section>
-  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/diary" animationDelay={700} />
+  <div data-search-hide>
+    <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/diary" animationDelay={700} />
+  </div>
 </BaseLayout>

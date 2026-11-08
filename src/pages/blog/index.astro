@@ -5,6 +5,7 @@ import { getPublishedBlogPosts } from "@/lib/content";
 import { paginateItems } from "@/lib/pagination";
 import { formatDate } from "@/lib/utils";
 import ViewCount from "@/components/engagement/ViewCount";
+import ContentSearch from "@/components/content/ContentSearch.astro";
 
 const posts = await getPublishedBlogPosts();
 const pagination = paginateItems(posts, 1, 9);
@@ -47,7 +48,9 @@ const newsletterMessage = "Get new posts by email. No account or password requir
     </form>
   </section>
 
-  <section class="space-y-5">
+  <ContentSearch kind="blog" />
+
+  <section class="space-y-5" data-search-hide>
     {pagination.items.map((post, index) => (
       <article class="row-border animate-enter pb-5" style={`--delay: ${220 + index * 65}ms;`}>
         <a href={`/blog/${post.id}/`} class="block">
@@ -61,7 +64,9 @@ const newsletterMessage = "Get new posts by email. No account or password requir
       </article>
     ))}
   </section>
-  <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/blog" animationDelay={800} />
+  <div data-search-hide>
+    <Pagination currentPage={pagination.currentPage} totalPages={pagination.totalPages} basePath="/blog" animationDelay={800} />
+  </div>
 </BaseLayout>
 
 <script>
