@@ -23,7 +23,7 @@ async function fetchAsset(url: string, request: Request): Promise<Response> {
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
   }
-  return fetch(url, { method: request.method, headers, redirect: "error" });
+  return fetch(url, { method: request.method, headers, redirect: "manual" });
 }
 
 function proxyResponse(upstream: Response, path: string): Response {
@@ -48,14 +48,16 @@ const proxy: APIRoute = async ({ params, request }) => {
   try {
     upstream = await fetchAsset(new URL(path, IBX_PUBLIC_BASE).toString(), request);
     if (upstream.ok) return proxyResponse(upstream, path);
-  } catch {
+  } catch (error) {
     // Fall back to R2 while an asset is being migrated or if IBX is unavailable.
+    console.warn("cdn-asset ibx fetch failed", error instanceof Error ? error.message : "unknown");
   }
 
   try {
     upstream = await fetchAsset(new URL(path, R2_PUBLIC_BASE).toString(), request);
     return proxyResponse(upstream, path);
-  } catch {
+  } catch (error) {
+    console.warn("cdn-asset r2 fetch failed", error instanceof Error ? error.message : "unknown");
     return new Response("File not found", { status: 404 });
   }
 };

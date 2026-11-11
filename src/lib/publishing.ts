@@ -7,8 +7,6 @@ import { getConvexServerClient, getWriteSecret } from "@/lib/engagement";
 import { createUnsubscribeToken } from "@/lib/newsletter";
 import { formatDate } from "@/lib/utils";
 
-const X_LIMIT = 280;
-const LINKEDIN_LIMIT = 3_000;
 const EMAIL_BATCH_SIZE = 100;
 
 export type PublishedPost = {
@@ -20,7 +18,7 @@ export type PublishedPost = {
 };
 
 export type DistributionResult = {
-  channel: "x" | "linkedin" | "email";
+  channel: "email";
   status: "published" | "skipped" | "failed";
   detail?: string;
 };
@@ -33,113 +31,17 @@ export function publicationInfoFromMarkdown(content: string, slug: string): Publ
   return { slug, content, title, description, publishedAt };
 }
 
-export function socialCopy(post: PublishedPost, url: string, limit: number): string {
-  return truncate(`${post.title}\n\n${post.description}\n\n${url}`, limit);
-}
-
 // ponytail: direct fan-out keeps publishing immediate; add a durable delivery queue when retries/analytics are needed.
 export async function publishToChannels(post: PublishedPost): Promise<DistributionResult[]> {
   try {
     const url = new URL(`/blog/${post.slug}/`, process.env.PUBLIC_SITE_URL || "https://egeuysal.com").toString();
-    return await Promise.all([
-      publishToX(post, url),
-      publishToLinkedIn(post, url),
-      publishNewsletter(post, url),
-    ]);
+    return [await publishNewsletter(post, url)];
   } catch {
-    return (["x", "linkedin", "email"] as const).map((channel) => ({
+    return (["email"] as const).map((channel) => ({
       channel,
       status: "failed" as const,
       detail: "Publication fan-out failed",
     }));
-  }
-}
-
-async function publishToX(post: PublishedPost, url: string): Promise<DistributionResult> {
-  const token = await xAccessToken();
-  if (!token) return { channel: "x", status: "skipped", detail: "X_ACCESS_TOKEN is not configured" };
-  try {
-    const response = await fetch("https://api.x.com/2/tweets", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ text: socialCopy(post, url, X_LIMIT) }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!response.ok) return { channel: "x", status: "failed", detail: `X returned ${response.status}` };
-    return { channel: "x", status: "published" };
-  } catch {
-    return { channel: "x", status: "failed", detail: "X request failed" };
-  }
-}
-
-async function xAccessToken(): Promise<string> {
-  const accessToken = env("X_ACCESS_TOKEN");
-  const refreshToken = env("X_REFRESH_TOKEN");
-  const clientId = env("X_CLIENT_ID");
-  if (!refreshToken || !clientId) return accessToken;
-
-  try {
-    const response = await fetch("https://api.x.com/2/oauth2/token", {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({
-        refresh_token: refreshToken,
-        grant_type: "refresh_token",
-        client_id: clientId,
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (response.ok) {
-      const payload = (await response.json()) as { access_token?: unknown };
-      if (typeof payload.access_token === "string") return payload.access_token;
-    }
-  } catch {
-    // Fall back to the current access token if refresh is temporarily unavailable.
-  }
-  return accessToken;
-}
-
-async function publishToLinkedIn(post: PublishedPost, url: string): Promise<DistributionResult> {
-  const token = env("LINKEDIN_ACCESS_TOKEN");
-  const author = env("LINKEDIN_AUTHOR_URN");
-  const version = env("LINKEDIN_API_VERSION");
-  if (!token || !author || !version) {
-    return { channel: "linkedin", status: "skipped", detail: "LinkedIn publishing is not configured" };
-  }
-  try {
-    const response = await fetch("https://api.linkedin.com/rest/posts", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        "Content-Type": "application/json",
-        "Linkedin-Version": version,
-        "X-Restli-Protocol-Version": "2.0.0",
-      },
-      body: JSON.stringify({
-        author,
-        commentary: truncate(`${post.title}\n\n${post.description}`, LINKEDIN_LIMIT),
-        visibility: "PUBLIC",
-        distribution: {
-          feedDistribution: "MAIN_FEED",
-          targetEntities: [],
-          thirdPartyDistributionChannels: [],
-        },
-        content: {
-          article: {
-            source: url,
-            title: post.title,
-            description: post.description,
-          },
-        },
-        lifecycleState: "PUBLISHED",
-        isReshareDisabledByAuthor: false,
-      }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    if (!response.ok) return { channel: "linkedin", status: "failed", detail: `LinkedIn returned ${response.status}` };
-    return { channel: "linkedin", status: "published" };
-  } catch {
-    return { channel: "linkedin", status: "failed", detail: "LinkedIn request failed" };
   }
 }
 
@@ -230,11 +132,6 @@ function frontmatterValue(content: string, key: string): string {
     }
   }
   return raw.replace(/^'|'$/g, "");
-}
-
-function truncate(value: string, limit: number): string {
-  const characters = Array.from(value);
-  return characters.length <= limit ? value : `${characters.slice(0, limit - 1).join("")}…`;
 }
 
 function siteUrl(): URL {

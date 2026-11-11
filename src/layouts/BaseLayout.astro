@@ -151,40 +151,5 @@ const isNavActive = (href: string): boolean => {
       </footer>
     </div>
     {shouldShowAiOverlay && <DeferredPageAiOverlay client:load />}
-    <script>
-      let lastAnalyticsPath = "";
-      let analyticsIsLoading = false;
-      const activateAnalytics = async () => {
-        if (analyticsIsLoading) return;
-        analyticsIsLoading = true;
-        try {
-          const { inject, pageview, computeRoute } = await import("@vercel/analytics");
-          const path = window.location.pathname;
-          if (lastAnalyticsPath === path) return;
-          inject(
-            {
-              disableAutoTrack: true,
-              framework: "astro",
-              basePath: import.meta.env.PUBLIC_VERCEL_OBSERVABILITY_BASEPATH,
-              beforeSend: window.webAnalyticsBeforeSend,
-            },
-            import.meta.env.PUBLIC_VERCEL_OBSERVABILITY_CLIENT_CONFIG,
-          );
-          pageview({ route: computeRoute(path, null), path });
-          lastAnalyticsPath = path;
-        } finally {
-          analyticsIsLoading = false;
-        }
-      };
-      const scheduleAnalytics = () => {
-        if ("requestIdleCallback" in window) {
-          window.requestIdleCallback(activateAnalytics, { timeout: 4000 });
-        } else {
-          window.setTimeout(activateAnalytics, 2000);
-        }
-      };
-      scheduleAnalytics();
-      document.addEventListener("astro:page-load", scheduleAnalytics);
-    </script>
   </body>
 </html>

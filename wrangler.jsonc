@@ -1,0 +1,15 @@
+{
+  "main": "./src/worker.ts",
+  "name": "www",
+  "compatibility_date": "2026-11-10",
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "ai": { "binding": "AI" },
+  "assets": { "binding": "ASSETS", "directory": "./dist" },
+  "routes": [
+    { "pattern": "egeuysal.com", "custom_domain": true },
+    { "pattern": "www.egeuysal.com", "custom_domain": true },
+    { "pattern": "cdn.egeuysal.com", "custom_domain": true }
+  ],
+  "observability": { "enabled": true },
+  "triggers": { "crons": ["0 9 * * *"] }
+}

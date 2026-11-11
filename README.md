@@ -76,17 +76,11 @@ security find-generic-password -s www-admin-password -w
 
 ### Automatic publication
 
-The existing iA Writer Micropub endpoint remains the site publisher and keeps its original response contract. New Micropub commits are fanned out asynchronously by the GitHub webhook at `https://egeuysal.com/api/github-webhook`; the private editor publishes directly after writing GitHub. Both paths send new posts to configured X, LinkedIn, and email channels. Editing an existing post does not repost it.
+The existing iA Writer Micropub endpoint remains the site publisher and keeps its original response contract. New Micropub commits are fanned out asynchronously by the GitHub webhook at `https://egeuysal.com/api/github-webhook`; the private editor publishes directly after writing GitHub. Both paths send new posts to the email newsletter. Editing an existing post does not repost it.
 
-Set these additional Vercel environment variables to enable distribution:
+Set these additional environment variables to enable distribution:
 
 ```bash
-X_ACCESS_TOKEN=          # X user OAuth token with tweet.write (fallback)
-X_REFRESH_TOKEN=         # X OAuth 2 refresh token with offline.access
-X_CLIENT_ID=             # X OAuth 2 public client ID
-LINKEDIN_ACCESS_TOKEN=   # LinkedIn OAuth token with w_member_social
-LINKEDIN_AUTHOR_URN=urn:li:person:<your-member-id>
-LINKEDIN_API_VERSION=202603
 RESEND_API_KEY=
 NEWSLETTER_FROM=Ege Uysal <hi@egeuysal.com>
 NEWSLETTER_TOKEN_SECRET=
@@ -95,11 +89,9 @@ GITHUB_WEBHOOK_SECRET=
 
 One-time setup:
 
-1. In the [X Developer Portal](https://developer.x.com/en/portal/dashboard), enable OAuth 2.0 with `tweet.write` and `offline.access`, then set `X_CLIENT_ID`, `X_ACCESS_TOKEN`, and `X_REFRESH_TOKEN`. These are user credentials, not the app-only bearer token; the refresh token keeps publishing alive after the access token expires.
-2. In the [LinkedIn Developer Portal](https://www.linkedin.com/developers/apps), create/select an app with the Share on LinkedIn product, authorize `w_member_social`, and set the returned member token and `urn:li:person:<member-id>`.
-3. Verify `egeuysal.com` in Resend, create an API key, set `RESEND_API_KEY` and `NEWSLETTER_FROM`, then generate `NEWSLETTER_TOKEN_SECRET` with `openssl rand -hex 32`.
-4. Add a repository push webhook to `https://egeuysal.com/api/github-webhook` with the same random value in `GITHUB_WEBHOOK_SECRET`; subscribe to the `push` event and send JSON.
-5. For other publishing platforms, use the site's RSS feed at `/rss.xml` or add a separately reviewed distribution adapter.
+1. Verify `egeuysal.com` in Resend, create an API key, set `RESEND_API_KEY` and `NEWSLETTER_FROM`, then generate `NEWSLETTER_TOKEN_SECRET` with `openssl rand -hex 32`.
+2. Add a repository push webhook to `https://egeuysal.com/api/github-webhook` with the same random value in `GITHUB_WEBHOOK_SECRET`; subscribe to the `push` event and send JSON.
+3. For other publishing platforms, use the site's RSS feed at `/rss.xml` or add a separately reviewed distribution adapter.
 
 The newsletter uses double opt-in and one-click unsubscribe. Readers do not need passwords or accounts; likes and comments continue using the existing anonymous, rate-limited flow.
 

@@ -6,7 +6,7 @@ import react from "@astrojs/react";
 import mdx from "@astrojs/mdx";
 import { unified } from "@astrojs/markdown-remark";
 import sitemap from "@astrojs/sitemap";
-import vercel from "@astrojs/vercel";
+import cloudflare from "@astrojs/cloudflare";
 import tailwindcss from "@tailwindcss/vite";
 import rehypeKatex from "rehype-katex";
 import remarkMath from "remark-math";
@@ -24,10 +24,8 @@ import remarkInlineShiki from "./src/plugins/remark-inline-shiki.mjs";
 // https://astro.build/config
 export default defineConfig({
   site: SITE.url,
-  adapter: vercel({
-    imageService: true,
-    maxDuration: 300,
-    imagesConfig: { sizes: [320, 640, 720, 960, 1080, 1280] },
+  adapter: cloudflare({
+    imageService: "passthrough",
   }),
   integrations: [react(), mdx(), sitemap()],
   image: {
@@ -50,6 +48,8 @@ export default defineConfig({
     }),
   },
   vite: {
+    // Lets deploy builds use an isolated env dir instead of the dev values in .env.local.
+    ...(process.env.WWW_ENV_DIR ? { envDir: process.env.WWW_ENV_DIR } : {}),
     optimizeDeps: {
       include: ["@streamdown/math", "streamdown", "sonner", "clsx", "tailwind-merge"],
     },

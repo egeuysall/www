@@ -1,22 +1,18 @@
 ---
-import { getImage } from "astro:assets";
 import PhotoScrollGallery from "@/components/photos/PhotoScrollGallery";
 import type { PhotoAsset } from "@/lib/photos";
 
 const { photos } = Astro.props as { photos: PhotoAsset[] };
-const galleryPhotos = await Promise.all(
-  photos.map(async ({ slug, title, sourceSrc, displaySrc, ditherSrc, alt, storyEntry }) => ({
+const galleryPhotos = photos.map(({ slug, title, sourceSrc, displaySrc, ditherSrc, alt, storyEntry }) => ({
     slug,
     title,
     story: storyEntry.body ?? "",
-    displaySrc: import.meta.env.PROD
-      ? (await getImage({ src: displaySrc, width: 1080, format: "avif", quality: 78 })).src
-      : displaySrc,
+    // Same-origin proxy path keeps the dither canvas untainted (the cdn host is cross-origin).
+    displaySrc: ditherSrc,
     fallbackSrc: sourceSrc,
     ditherSrc,
     alt,
-  })),
-);
+  }));
 ---
 
 <PhotoScrollGallery client:load photos={galleryPhotos} />

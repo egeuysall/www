@@ -1,4 +1,6 @@
 import { createGateway } from "@ai-sdk/gateway";
+import { createAI } from "agents/models/ai-sdk";
+import { env as cfEnv } from "cloudflare:workers";
 import type { APIRoute } from "astro";
 import { isStepCount, streamText, tool } from "ai";
 import { z } from "astro/zod";
@@ -14,6 +16,7 @@ import {
 export const prerender = false;
 
 const DEFAULT_MODEL_ID = "openai/gpt-6-luna";
+const WORKERS_AI_MODEL = "@cf/zai-org/glm-4.7-flash";
 const MAX_AI_REQUEST_BYTES = 65_536;
 const emojiPattern = /[\p{Extended_Pictographic}\p{Emoji_Presentation}\p{Regional_Indicator}\p{Emoji_Modifier}\uFE0F\u200D]/gu;
 
@@ -113,14 +116,17 @@ export const POST: APIRoute = async ({ request }) => {
     );
   }
 
+  const workersAi = (cfEnv as { AI?: Parameters<typeof createAI>[0]["binding"] }).AI;
   const apiKey = process.env.AI_GATEWAY_API_KEY || import.meta.env.AI_GATEWAY_API_KEY;
-  if (!apiKey) {
+  if (!workersAi && !apiKey) {
     return jsonResponse({ error: "AI is not configured" }, 503);
   }
 
-  const gateway = createGateway({ apiKey });
+  const model = workersAi
+    ? createAI({ binding: workersAi })(WORKERS_AI_MODEL)
+    : createGateway({ apiKey })(process.env.AI_GATEWAY_MODEL || import.meta.env.AI_GATEWAY_MODEL || DEFAULT_MODEL_ID);
   const result = streamText({
-    model: gateway(process.env.AI_GATEWAY_MODEL || import.meta.env.AI_GATEWAY_MODEL || DEFAULT_MODEL_ID),
+    model,
     system: [
       "You are Ask AI on egeuysal.com. Help visitors understand Ege's work, projects, and ideas by connecting evidence across the public site, writing, photo stories, and Brain reference library.",
       "Search before answering. Use searchArchive first, then search again with related queries when the question spans projects, timelines, or themes. Ask the tool for distinct concepts rather than repeating the same wording.",

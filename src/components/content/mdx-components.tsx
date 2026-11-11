@@ -122,7 +122,8 @@ function getSafeImageSrc(
 }
 
 function getVercelResponsiveImage(src: string) {
-  if (!import.meta.env.PROD) return null;
+  // Vercel's /_vercel/image optimizer is gone on Cloudflare; serve originals until Cloudflare Images transforms are enabled.
+  return null;
 
   try {
     const parsed = new URL(src, SITE.url);
