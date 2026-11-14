@@ -1,0 +1,69 @@
+---
+title: "I Built Memory for AI Agents That Knows What Is Current"
+description: "Most agent memory returns what sounds similar. kaibo returns what is still true, with the event it came from."
+publishedAt: 2026-11-14
+tags: ["building", "ai", "agents", "kaibo"]
+---
+
+Tell an agent "the release is July 13", then tell it "move the release to July 17", and ask when the release is. A lot of memory systems hand back both sentences and let the model guess.
+
+That is the problem I built kaibo around. It is live at [kaibo.egeuysal.com](https://kaibo.egeuysal.com).
+
+## What it does
+
+Four operations: `remember`, `recall`, `explain`, `forget`. They work the same over HTTP, a TypeScript SDK, a Python SDK, a CLI and MCP.
+
+```ts
+import { Kaibo } from "kaibo";
+
+const kaibo = new Kaibo();
+await kaibo.remember("The release target is July 13.");
+await kaibo.remember("Move the release target from July 13 to July 17.", { wait: true });
+
+const pack = await kaibo.recall("release target");
+console.log(pack.answer); // the July 17 memory, with its source event
+```
+
+The July 13 memory is not deleted. It is marked superseded, with the time range it was true. Ask `recall` with `asOf` set to an earlier date and you get July 13 back.
+
+## The part I care about most
+
+Every answer comes with where it came from. `explain` returns the chain: what the memory replaced, and the source events with their hashes. The events are hash chained, so `kaibo verify` can recompute the chain on your machine and tell you if anything was edited.
+
+`forget` returns a receipt you can verify later. If someone asks you to delete something, you can show that it is gone.
+
+Memories that came from tool output or a file are marked untrusted and cannot retire trusted ones. Recalled text is wrapped as data, so a stored sentence that says "ignore your instructions" stays a sentence.
+
+## The numbers, and why to be careful with them
+
+I ported a benchmark I had, RecallBench: one fictional 90 event timeline and 30 questions, graded with a keyword rubric. It is small and the rubric is crude, so treat it as a regression test, not a leaderboard.
+
+- Deterministic rules only: 4 of 30.
+- Llama 3.3 70B as the writer: 20 of 30 strict.
+- Llama 4 Scout as the writer with the 70B as judge: 16 of 30.
+
+Several of the misses are rubric artifacts. "No longer blocked" contains "blocked", so a correct answer can fail. I would not publish a percentage from this as a claim about the product.
+
+## Speed was the thing I got wrong
+
+I shipped, then tried it from my own terminal. `kaibo memories` felt slow. Here is what I found.
+
+The site worker was large, and Cloudflare kept evicting it, so about one call in ten took a second or more. The fix was a tiny second Worker that only forwards `/v1` to the database. After that, 30 calls in a row all came back under 0.6 seconds.
+
+The model was the other one. Llama 4 Scout took 4 to 6 seconds for a small extraction call. The 70B model did the same call in about 1.5 seconds and scored higher on my benchmark. I had assumed the smaller model would be faster. I never measured it until now.
+
+Today `kaibo remember` returns in about 0.6 seconds, and the new memory is searchable almost at once. Waiting for the model to finish structuring it, with `--wait`, takes 4.6 to 7 seconds. `recall` takes 0.65 seconds in fast mode and about 1.2 in the default mode, which calls a model to pick the memories.
+
+## Install it
+
+```bash
+curl -fsSL https://kaibo.egeuysal.com/install.sh | sh
+kaibo login
+kaibo init
+```
+
+Or `bun add kaibo` for the TypeScript SDK, `pip install kaibo` for Python. The npm name is plain `kaibo` because someone else owns the `@kaibo` scope.
+
+## What is not done
+
+I think agent memory should be judged on one question: can it tell you what is true now, and prove where that came from. Most of what I looked at answers a different question, which is what sounds like this. Check it at https://kaibo.egeuysal.com.
