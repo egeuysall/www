@@ -1,4 +1,5 @@
 import { handle } from "@astrojs/cloudflare/handler";
+import { handleTerminalCurl } from "./lib/terminal-curl";
 
 // cdn.egeuysal.com and /cdn/* proxy assets that live in ibx (see src/pages/cdn-asset). Replaces the host rules from vercel.json.
 const CDN_HOST = "cdn.egeuysal.com";
@@ -27,6 +28,9 @@ function routeCdn(request: Request): Request | Response | null {
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    if (new URL(request.url).pathname === "/api/terminal-curl") {
+      return handleTerminalCurl(request, env);
+    }
     const routed = routeCdn(request);
     if (routed instanceof Response) return routed;
     return handle(routed ?? request, env, ctx);

@@ -3,6 +3,13 @@
   "name": "www",
   "compatibility_date": "2026-11-10",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "ratelimits": [
+    {
+      "name": "TERMINAL_CURL_LIMITER",
+      "namespace_id": "1511202611",
+      "simple": { "limit": 30, "period": 60 }
+    }
+  ],
   "ai": { "binding": "AI" },
   "assets": { "binding": "ASSETS", "directory": "./dist" },
   "routes": [
