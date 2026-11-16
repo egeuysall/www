@@ -70,7 +70,6 @@ function publicWebUrl(value: string): URL | null {
       !["http:", "https:"].includes(url.protocol) ||
       url.username ||
       url.password ||
-      url.port ||
       ipLiteral ||
       localHost ||
       proxyLoop ||
@@ -236,10 +235,10 @@ export async function handleTerminalCurl(
     typeof payload.url === "string" ? publicWebUrl(payload.url) : null;
   const requestedMethod = payload.method || "GET";
   if (!url) {
-    return new Response(
-      "URL must be a public HTTP(S) hostname on port 80 or 443",
-      { status: 400, headers },
-    );
+    return new Response("URL must be a public HTTP(S) hostname", {
+      status: 400,
+      headers,
+    });
   }
   if (requestedMethod !== "GET" && requestedMethod !== "HEAD") {
     return new Response("Only GET and HEAD are supported", {

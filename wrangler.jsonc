@@ -2,21 +2,25 @@
   "main": "./src/worker.ts",
   "name": "www",
   "compatibility_date": "2026-11-10",
-  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public",
+    "allow_custom_ports",
+  ],
   "ratelimits": [
     {
       "name": "TERMINAL_CURL_LIMITER",
       "namespace_id": "1511202611",
-      "simple": { "limit": 30, "period": 60 }
-    }
+      "simple": { "limit": 30, "period": 60 },
+    },
   ],
   "ai": { "binding": "AI" },
   "assets": { "binding": "ASSETS", "directory": "./dist" },
   "routes": [
     { "pattern": "egeuysal.com", "custom_domain": true },
     { "pattern": "www.egeuysal.com", "custom_domain": true },
-    { "pattern": "cdn.egeuysal.com", "custom_domain": true }
+    { "pattern": "cdn.egeuysal.com", "custom_domain": true },
   ],
   "observability": { "enabled": true },
-  "triggers": { "crons": ["0 9 * * *"] }
+  "triggers": { "crons": ["0 9 * * *"] },
 }

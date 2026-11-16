@@ -55,13 +55,29 @@ describe("terminal curl proxy", () => {
       "http://localhost/admin",
       "http://127.0.0.1/admin",
       "http://[::1]/admin",
-      "https://example.com:8443/",
       "file:///etc/passwd",
     ]) {
       const response = await handleTerminalCurl(request(target), env);
       expect(response.status).toBe(400);
     }
     expect(upstreamFetch).not.toHaveBeenCalled();
+  });
+
+  it("supports public sites on custom HTTP ports", async () => {
+    const upstreamFetch = spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response("custom port response", { status: 200 }),
+    );
+
+    const response = await handleTerminalCurl(
+      request("https://example.com:8443/status"),
+      env,
+    );
+
+    expect(response.status).toBe(200);
+    expect(upstreamFetch).toHaveBeenCalledWith(
+      new URL("https://example.com:8443/status"),
+      expect.objectContaining({ method: "GET" }),
+    );
   });
 
   it("checks redirect destinations before following them", async () => {
